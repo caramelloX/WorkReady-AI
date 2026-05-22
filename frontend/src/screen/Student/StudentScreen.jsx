@@ -1,8 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import './StudentScreen.css';
+import { api } from '../../api.js';
 
 export default function StudentScreen({ onNavigate }) {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('currentUser');
+    if (userStr) {
+      try {
+        setCurrentUser(JSON.parse(userStr));
+      } catch (e) {}
+    }
+  }, []);
+
+  const firstName = currentUser?.fullname?.split(' ')[0] || 'Student';
+  const fullName = currentUser?.fullname || 'Aarav Sharma';
+  const initials = fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'ST';
+  const targetTrack = currentUser?.target_track || 'Computer Engineering';
+  const targetIndustry = currentUser?.target_industry || 'Fintech';
+  const occupationGoal = currentUser?.occupation_goal || targetTrack;
+  const email = currentUser?.email || 'student@workready.ai';
+  const major = currentUser?.major || 'Computer Science & Engineering';
+  const educationLevel = currentUser?.education_level || "Bachelor's (Final year)";
+  const careerGoal = currentUser?.career_goal || `Land a ${occupationGoal} role at a top ${targetIndustry} company.`;
+  const strengthsList = currentUser?.strengths?.length ? currentUser.strengths : ['Understanding of systems', 'Root cause analysis', 'Technical writing', 'Secure code review'];
+  const developAreasList = currentUser?.develop_areas?.length ? currentUser.develop_areas : ['System design at scale', 'Cloud / DevOps depth', 'Stakeholder communication'];
 
   // Interactive self-rating competency ratings ('low', 'medium', 'high')
   const [ratings, setRatings] = useState({
@@ -13,6 +37,62 @@ export default function StudentScreen({ onNavigate }) {
     memo: 'medium',
     responsibleAi: 'medium',
   });
+
+  const [scenarios, setScenarios] = useState([]);
+  const [portfolioItems, setPortfolioItems] = useState([]);
+
+  // Onboarding Modal State
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [obMajor, setObMajor] = useState('');
+  const [obEducationLevel, setObEducationLevel] = useState("Bachelor's (Final year)");
+  const [obTargetIndustry, setObTargetIndustry] = useState('');
+  const [obOccupationGoal, setObOccupationGoal] = useState('');
+  const [obCareerGoal, setObCareerGoal] = useState('');
+  const [obStrengths, setObStrengths] = useState('');
+  const [obDevelopAreas, setObDevelopAreas] = useState('');
+  const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
+
+  // Load backend data on mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const userStr = localStorage.getItem('currentUser');
+        let userId = 'student-01';
+        if (userStr) {
+          try {
+            const u = JSON.parse(userStr);
+            userId = u._id || u.id || 'student-01';
+            if (u && !u.profile_completed) {
+              setShowOnboardingModal(true);
+              if (u.target_industry) setObTargetIndustry(u.target_industry);
+            }
+          } catch(e) {}
+        }
+
+        const data = await api.getStudentRatings(userId);
+        if (data) {
+          setRatings({
+            processMap: data.processMap || 'medium',
+            safetyRisk: data.safetyRisk || 'medium',
+            rca: data.rca || 'medium',
+            traceability: data.traceability || 'medium',
+            memo: data.memo || 'medium',
+            responsibleAi: data.responsibleAi || 'medium',
+          });
+        }
+
+        const scenariosData = await api.getScenarios();
+        setScenarios(scenariosData || []);
+
+        const portfolioData = await api.getPortfolio();
+        setPortfolioItems(portfolioData || []);
+
+      } catch (err) {
+        console.error('Failed to retrieve data from database:', err);
+      }
+    };
+    loadData();
+  }, []);
 
   // Derived statistics based on ratings
   const [overallReadiness, setOverallReadiness] = useState(65);
@@ -44,23 +124,80 @@ export default function StudentScreen({ onNavigate }) {
   }, [ratings]);
 
   // Self-rating handler
-  const handleRate = (competency, level) => {
-    setRatings((prev) => ({
-      ...prev,
-      [competency]: level,
-    }));
+  const handleRate = async (competency, level) => {
+    const updated = {
+      ...ratings,
+      [competency]: level
+    };
+    setRatings(updated);
+    try {
+      const userId = currentUser?._id || currentUser?.id || 'student-01';
+      await api.saveStudentRatings(userId, updated);
+    } catch (err) {
+      console.error('Failed to save ratings to DB:', err);
+    }
   };
 
   // Reset ratings handler
-  const handleResetRatings = () => {
-    setRatings({
+  const handleResetRatings = async () => {
+    const defaultRatings = {
       processMap: 'medium',
       safetyRisk: 'medium',
       rca: 'medium',
       traceability: 'medium',
       memo: 'medium',
       responsibleAi: 'medium',
-    });
+    };
+    setRatings(defaultRatings);
+    try {
+      const userId = currentUser?._id || currentUser?.id || 'student-01';
+      await api.saveStudentRatings(userId, defaultRatings);
+    } catch (err) {
+      console.error('Failed to reset ratings in DB:', err);
+    }
+  };
+
+  const handleOnboardingSubmit = async (e) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    setIsSubmittingProfile(true);
+
+    try {
+      const strengthsArr = obStrengths.split(',').map(s => s.trim()).filter(Boolean);
+      const developArr = obDevelopAreas.split(',').map(d => d.trim()).filter(Boolean);
+
+      const res = await api.updateProfile(currentUser._id || currentUser.id, {
+        major: obMajor,
+        education_level: obEducationLevel,
+        career_goal: obCareerGoal,
+        occupation_goal: obOccupationGoal,
+        target_industry: obTargetIndustry,
+        strengths: strengthsArr,
+        develop_areas: developArr
+      });
+
+      if (res.success) {
+        localStorage.setItem('currentUser', JSON.stringify(res.user));
+        setCurrentUser(res.user);
+        setShowOnboardingModal(false);
+      } else {
+        alert('Failed to update profile.');
+      }
+    } catch (err) {
+      alert(err.message || 'An error occurred.');
+    } finally {
+      setIsSubmittingProfile(false);
+    }
+  };
+
+  const handleSubmitPortfolio = async () => {
+    try {
+      await api.addSubmission(fullName, 'Full Portfolio', 'Evidence Portfolio Submission');
+      alert('Portfolio successfully submitted to course mentor and persisted in database!');
+    } catch (err) {
+      console.error('Failed to submit portfolio:', err);
+      alert('Failed to submit portfolio to database.');
+    }
   };
 
   // Interactive Scenario Simulator States
@@ -70,28 +207,6 @@ export default function StudentScreen({ onNavigate }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [inputVal, setInputVal] = useState('');
   const [simCompleted, setSimCompleted] = useState(false);
-
-  // Scenarios mock data
-  const scenarios = [
-    {
-      id: 'S-101',
-      title: 'Production API Returning 500s — Checkout Service',
-      desc: 'A recent deployment broke key card verification pipelines. Inspect GitHub PR diffs, write automated tests, and restore payment pathways.',
-      difficulty: 'Intermediate',
-    },
-    {
-      id: 'S-102',
-      title: 'Database Connection Pool Exhausted at 2 AM',
-      desc: 'Checkout API response times spiked to 4500ms under high load. Uncover why database connections are failing and fix the root-cause bug.',
-      difficulty: 'Advanced',
-    },
-    {
-      id: 'S-104',
-      title: 'Memory Leak in Node.js Worker',
-      desc: 'Heap sizes spike every 6 hours, triggering container OOM kills. Analyze core dumps, locate closure references, and plug the memory leak.',
-      difficulty: 'Intermediate',
-    },
-  ];
 
 
   // Radar Chart Dynamic coordinate calculation for SVG
@@ -138,21 +253,10 @@ export default function StudentScreen({ onNavigate }) {
     setStepIndex(0);
     
     // Initial terminal logs
-    setTerminalLogs([
-      `[SYSTEM] 2026-05-22T14:09:44Z - Spin up simulated staging environment...`,
-      `[SYSTEM] Connecting to mock checkout db instance: postgresql://admin:****@db-cluster.us-east-1.internal:5432/checkout...`,
-      `[WARN] 2026-05-22T14:09:46Z - API response time exceeds threshold: 4610ms on /v1/checkout`,
-      `[ERR] 2026-05-22T14:09:47Z - PostgreSQL connection refused: Fatal: remaining connection slots are reserved for non-replication superuser connections`,
-      `[ERR] 2026-05-22T14:09:48Z - Pool exhausted! active=100 idle=0 waiting=89`,
-    ]);
+    setTerminalLogs(sc.initialLogs || []);
 
     // Initial AI Coach chats
-    setChatMessages([
-      {
-        sender: 'coach',
-        text: `Hey Aarav! We have a critical SRE alert: Checkout requests are timing out, and logs show PostgreSQL connection pool exhaustion (100/100 active connections). What should we do first to isolate this issue?`
-      }
-    ]);
+    setChatMessages(sc.initialChat || []);
   };
 
   // Simulation Choices Flow
@@ -328,57 +432,6 @@ export default function StudentScreen({ onNavigate }) {
     }, 800);
   };
 
-  // Mock Evidence Portfolio data
-  const portfolioItems = [
-    {
-      id: 'P-901',
-      scenarioId: 'S-102',
-      title: 'Database connection pool exhaustion',
-      topic: 'Database Tuning & Triage',
-      status: 'Verified',
-      score: '91/100',
-      desc: 'Diagnosed a high-priority outage on the coupons route in a PostgreSQL backend. Isolated an "idle in transaction" leak and refactored core code with bulletproof try-catch-finally constructs.',
-      logs: [
-        'Checked DB connections using telemetry suites.',
-        'Identified early-return unreleased clients on verifyCoupon.',
-        'Fixed using standard finally block connection cleanup.'
-      ],
-      mentor: 'Outstanding root cause tracing, Aarav! You backed up your theory with solid telemetry checks rather than scaling settings blindly. Excellent RFC note.',
-      mentorName: 'Emily Vance, Principal SRE at FinTech Corp'
-    },
-    {
-      id: 'P-882',
-      scenarioId: 'S-104',
-      title: 'Optimizing Slow SQL JOIN Queries',
-      topic: 'Backend Optimization',
-      status: 'Verified',
-      score: '88/100',
-      desc: 'Tackled an 800ms query latency on analytics dashboards. Analyzed query execution planners (EXPLAIN ANALYZE), discovered sequential scan bottlenecks, and added composite indexes.',
-      logs: [
-        'Ran EXPLAIN ANALYZE on metrics queries.',
-        'Located nested loop and seq-scans on users table.',
-        'Created composite index idx_users_org_created_at.'
-      ],
-      mentor: 'Excellent optimization! A composite index was exactly what was needed. Latency dropped by 98%. Double check index bloat thresholds in the future.',
-      mentorName: 'Rajesh Koothra, Tech Lead at Razorpay'
-    },
-    {
-      id: 'P-821',
-      scenarioId: 'S-109',
-      title: 'CSRF Token Verification Triage',
-      topic: 'Application Security',
-      status: 'Verified',
-      score: '85/100',
-      desc: 'Resolved high-priority CORS and CSRF authentication failures in decoupled SPA environments. Restored secure SameSite cookies configuration rules.',
-      logs: [
-        'Debugged Axios requests dropping credentials.',
-        'Analyzed CORS pre-flight HTTP logs.',
-        'Configured express-cors and helmet rules.'
-      ],
-      mentor: 'Securing web applications is highly challenging. You explained CORS pre-flight and SameSite cookie headers like a seasoned engineer.',
-      mentorName: 'Sarah Jenkins, Lead Security Architect'
-    }
-  ];
 
   return (
     <div className="student-workspace">
@@ -467,7 +520,7 @@ export default function StudentScreen({ onNavigate }) {
             {/* Greeting Header Row */}
             <div className="student-dashboard-header">
               <div className="student-dashboard-header-text">
-                <h1>Welcome back, Aarav</h1>
+                <h1>Welcome back, {firstName}</h1>
                 <p>Here's where you stand today, and what to tackle next.</p>
               </div>
               <button className="continue-training-btn" onClick={() => setActiveTab('simulator')}>
@@ -482,11 +535,11 @@ export default function StudentScreen({ onNavigate }) {
             {/* Student ID Profile Card */}
             <div className="student-profile-overview-card">
               <div className="student-profile-overview-header">
-                <div className="student-profile-overview-avatar">AS</div>
+                <div className="student-profile-overview-avatar">{initials}</div>
                 <div className="student-profile-overview-meta">
                   <h2>
-                    Aarav Sharma
-                    <span className="student-cohort-pill">· Cohort 2026 — Computer Engineering Track</span>
+                    {fullName}
+                    <span className="student-cohort-pill">· Cohort 2026 — {targetTrack} Track</span>
                   </h2>
                 </div>
               </div>
@@ -501,8 +554,8 @@ export default function StudentScreen({ onNavigate }) {
                       <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
                     </svg>
                     <div className="student-info-column-details">
-                      <h4 className="student-info-column-title">Computer Science & Engineering</h4>
-                      <p className="student-info-column-subtitle">IIT Roorkee</p>
+                      <h4 className="student-info-column-title">{major}</h4>
+                      <p className="student-info-column-subtitle">{educationLevel}</p>
                     </div>
                   </div>
                 </div>
@@ -516,8 +569,8 @@ export default function StudentScreen({ onNavigate }) {
                       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                     </svg>
                     <div className="student-info-column-details">
-                      <h4 className="student-info-column-title">Backend Software Engineer</h4>
-                      <p className="student-info-column-subtitle">Targeting Series B+ fintech</p>
+                      <h4 className="student-info-column-title">{occupationGoal}</h4>
+                      <p className="student-info-column-subtitle">Targeting {targetIndustry}</p>
                     </div>
                   </div>
                 </div>
@@ -762,68 +815,29 @@ export default function StudentScreen({ onNavigate }) {
                 </div>
                 
                 <div className="scenarios-list">
-                  {/* Scenario 1 */}
-                  <div className="scenario-row-item">
-                    <div className="scenario-left-info">
-                      <div className="scenario-badge-row">
-                        <span className="sc-code-badge">S-101</span>
-                        <span className="sc-status-pill available">Available</span>
+                  {scenarios.slice(0, 3).map((sc) => (
+                    <div className="scenario-row-item" key={sc.id}>
+                      <div className="scenario-left-info">
+                        <div className="scenario-badge-row">
+                          <span className="sc-code-badge">{sc.id}</span>
+                          <span className={`sc-status-pill ${sc.difficulty === 'In progress' ? 'in-progress' : 'available'}`}>
+                            {sc.difficulty}
+                          </span>
+                        </div>
+                        <h4 className="sc-title-text" onClick={() => handleOpenScenario(sc.id)}>
+                          {sc.title}
+                        </h4>
+                        <p className="sc-meta-text">{sc.desc}</p>
                       </div>
-                      <h4 className="sc-title-text" onClick={() => handleOpenScenario('S-101')}>
-                        Production API Returning 500s — Checkout Service
-                      </h4>
-                      <p className="sc-meta-text">Backend · Intermediate · 25 min</p>
+                      <button className="sc-open-link" onClick={() => handleOpenScenario(sc.id)}>
+                        <span>Open</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                          <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                      </button>
                     </div>
-                    <button className="sc-open-link" onClick={() => handleOpenScenario('S-101')}>
-                      <span>Open</span>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Scenario 2 */}
-                  <div className="scenario-row-item">
-                    <div className="scenario-left-info">
-                      <div className="scenario-badge-row">
-                        <span className="sc-code-badge">S-102</span>
-                        <span className="sc-status-pill in-progress">In progress</span>
-                      </div>
-                      <h4 className="sc-title-text" onClick={() => handleOpenScenario('S-102')}>
-                        Database Connection Pool Exhausted at 2 AM
-                      </h4>
-                      <p className="sc-meta-text">Infra · Advanced · 40 min</p>
-                    </div>
-                    <button className="sc-open-link" onClick={() => handleOpenScenario('S-102')}>
-                      <span>Open</span>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Scenario 3 */}
-                  <div className="scenario-row-item">
-                    <div className="scenario-left-info">
-                      <div className="scenario-badge-row">
-                        <span className="sc-code-badge">S-104</span>
-                        <span className="sc-status-pill available">Available</span>
-                      </div>
-                      <h4 className="sc-title-text" onClick={() => handleOpenScenario('S-104')}>
-                        Memory Leak in Node.js Worker
-                      </h4>
-                      <p className="sc-meta-text">Backend · Intermediate · 30 min</p>
-                    </div>
-                    <button className="sc-open-link" onClick={() => handleOpenScenario('S-104')}>
-                      <span>Open</span>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                      </svg>
-                    </button>
-                  </div>
+                  ))}
                 </div>
               </div>
 
@@ -958,9 +972,9 @@ export default function StudentScreen({ onNavigate }) {
               
               {/* Profile Left Details Card */}
               <div className="student-card profile-left-card">
-                <div className="profile-avatar-circle">AS</div>
-                <h3 className="profile-name">Aarav Sharma</h3>
-                <p className="profile-cohort">Cohort 2026 — Computer Engineering Track</p>
+                <div className="profile-avatar-circle">{initials}</div>
+                <h3 className="profile-name">{fullName}</h3>
+                <p className="profile-cohort">Cohort 2026 — {targetTrack} Track</p>
 
                 <div className="profile-contact-details">
                   <div className="profile-contact-item">
@@ -968,7 +982,7 @@ export default function StudentScreen({ onNavigate }) {
                       <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                       <polyline points="22,6 12,13 2,6" />
                     </svg>
-                    <span>aarav.sharma@workready.ai</span>
+                    <span>{email}</span>
                   </div>
                   <div className="profile-contact-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -982,7 +996,7 @@ export default function StudentScreen({ onNavigate }) {
                       <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                     </svg>
-                    <span style={{ color: 'var(--accent-teal)', fontWeight: '600' }}>Open to backend / SRE roles</span>
+                    <span style={{ color: 'var(--accent-teal)', fontWeight: '600' }}>Open to {occupationGoal} roles</span>
                   </div>
                 </div>
 
@@ -994,7 +1008,7 @@ export default function StudentScreen({ onNavigate }) {
                       </svg>
                       <span>Education Level</span>
                     </span>
-                    <span className="profile-detail-val">Bachelor's (Final year) — B.E. Computer Science</span>
+                    <span className="profile-detail-val">{educationLevel} — {major}</span>
                   </div>
 
                   <div className="profile-details-section">
@@ -1006,7 +1020,7 @@ export default function StudentScreen({ onNavigate }) {
                       </svg>
                       <span>Target Industry</span>
                     </span>
-                    <span className="profile-detail-val">Fintech & SaaS — backend / site reliability</span>
+                    <span className="profile-detail-val">{targetIndustry}</span>
                   </div>
                 </div>
               </div>
@@ -1018,20 +1032,19 @@ export default function StudentScreen({ onNavigate }) {
                 <div className="student-card">
                   <h4 className="profile-section-title">About</h4>
                   <p className="profile-about-text">
-                    Final-year computer engineering student with a focus on backend systems and site reliability engineering. Active in WorkReady AI's Razorpay mentorship track, with hands-on simulated experience in production incident response, database tuning, and secure code review.
+                    Final-year student targeting {occupationGoal} roles. Active in WorkReady AI's mentorship track, with hands-on simulated experience in production incident response, database tuning, and secure code review.
                   </p>
                 </div>
 
                 {/* Career Goals */}
                 <div className="student-card">
                   <h4 className="profile-section-title">Career Goals</h4>
-                  <ul className="profile-goals-list">
-                    <li>Land a backend software engineering role at a Series B+ fintech.</li>
-                    <li>Reach a composite Work-Ready score of 85+ before graduation.</li>
-                    <li>Ship 3 mentor-reviewed RCA memos and a portfolio-grade incident write-up.</li>
-                  </ul>
+                  <p className="profile-about-text" style={{ fontStyle: 'italic', color: 'var(--text-secondary)' }}>
+                    "{careerGoal}"
+                  </p>
                 </div>
 
+                {/* Strengths & Develop Areas */}
                 {/* Strengths & Develop Areas */}
                 <div className="profile-two-column-row">
                   
@@ -1039,10 +1052,9 @@ export default function StudentScreen({ onNavigate }) {
                   <div className="student-card">
                     <h4 className="profile-section-title" style={{ color: 'var(--accent-green)', borderColor: '#a7f3d0' }}>Strengths</h4>
                     <div className="profile-tags-container">
-                      <span className="profile-pill green">Understanding of systems</span>
-                      <span className="profile-pill green">Root cause analysis</span>
-                      <span className="profile-pill green">Technical writing</span>
-                      <span className="profile-pill green">Secure code review</span>
+                      {strengthsList.map((str, idx) => (
+                        <span key={idx} className="profile-pill green">{str}</span>
+                      ))}
                     </div>
                   </div>
 
@@ -1050,9 +1062,9 @@ export default function StudentScreen({ onNavigate }) {
                   <div className="student-card">
                     <h4 className="profile-section-title" style={{ color: 'var(--accent-blue)', borderColor: '#bfdbfe' }}>Develop areas</h4>
                     <div className="profile-tags-container">
-                      <span className="profile-pill blue">System design at scale</span>
-                      <span className="profile-pill blue">Cloud / DevOps depth</span>
-                      <span className="profile-pill blue">Stakeholder communication</span>
+                      {developAreasList.map((dev, idx) => (
+                        <span key={idx} className="profile-pill blue">{dev}</span>
+                      ))}
                     </div>
                   </div>
 
@@ -1648,92 +1660,29 @@ export default function StudentScreen({ onNavigate }) {
                     <h3 className="portfolio-card-title">Evidence list</h3>
                     <p className="portfolio-card-subtitle">All artifacts collected through scenarios and coaching.</p>
                   </div>
-
                   <div className="portfolio-evidence-items">
-                    {/* Item 1 */}
-                    <div className="portfolio-evidence-item">
-                      <div className="portfolio-evidence-item-left">
-                        <div className="portfolio-icon-wrapper blue">
-                          {/* Map Icon */}
+                    {portfolioItems.map(item => {
+                      const getIcon = (topic) => {
+                        if (topic === 'blue') return (
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
                             <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
                             <line x1="9" y1="3" x2="9" y2="18" />
                             <line x1="15" y1="6" x2="15" y2="21" />
                           </svg>
-                        </div>
-                        <div className="portfolio-evidence-item-details">
-                          <span className="portfolio-evidence-item-code">EV-01</span>
-                          <span className="portfolio-evidence-item-name">Process Map</span>
-                        </div>
-                      </div>
-                      <div className="portfolio-evidence-item-right">
-                        <span className="portfolio-evidence-badge completed">Completed</span>
-                        <div className="portfolio-evidence-progress-section">
-                          <span className="portfolio-evidence-score">90/100</span>
-                          <div className="portfolio-evidence-progress-bar-container">
-                            <div className="portfolio-evidence-progress-bar-fill green" style={{ width: '90%' }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Item 2 */}
-                    <div className="portfolio-evidence-item">
-                      <div className="portfolio-evidence-item-left">
-                        <div className="portfolio-icon-wrapper green">
-                          {/* Shield Check Icon */}
+                        );
+                        if (topic === 'green') return (
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                             <polyline points="9 11 11 13 15 9" />
                           </svg>
-                        </div>
-                        <div className="portfolio-evidence-item-details">
-                          <span className="portfolio-evidence-item-code">EV-02</span>
-                          <span className="portfolio-evidence-item-name">Safety & Quality Checklist</span>
-                        </div>
-                      </div>
-                      <div className="portfolio-evidence-item-right">
-                        <span className="portfolio-evidence-badge completed">Completed</span>
-                        <div className="portfolio-evidence-progress-section">
-                          <span className="portfolio-evidence-score">85/100</span>
-                          <div className="portfolio-evidence-progress-bar-container">
-                            <div className="portfolio-evidence-progress-bar-fill green" style={{ width: '85%' }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Item 3 */}
-                    <div className="portfolio-evidence-item">
-                      <div className="portfolio-evidence-item-left">
-                        <div className="portfolio-icon-wrapper yellow">
-                          {/* Search Icon */}
+                        );
+                        if (topic === 'yellow') return (
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
                             <circle cx="11" cy="11" r="8" />
                             <line x1="21" y1="21" x2="16.65" y2="16.65" />
                           </svg>
-                        </div>
-                        <div className="portfolio-evidence-item-details">
-                          <span className="portfolio-evidence-item-code">EV-03</span>
-                          <span className="portfolio-evidence-item-name">RCA Log</span>
-                        </div>
-                      </div>
-                      <div className="portfolio-evidence-item-right">
-                        <span className="portfolio-evidence-badge needs-review">Needs review</span>
-                        <div className="portfolio-evidence-progress-section">
-                          <span className="portfolio-evidence-score">70/100</span>
-                          <div className="portfolio-evidence-progress-bar-container">
-                            <div className="portfolio-evidence-progress-bar-fill blue" style={{ width: '70%' }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Item 4 */}
-                    <div className="portfolio-evidence-item">
-                      <div className="portfolio-evidence-item-left">
-                        <div className="portfolio-icon-wrapper orange">
-                          {/* Document Icon */}
+                        );
+                        if (topic === 'orange') return (
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                             <polyline points="14 2 14 8 20 8" />
@@ -1741,28 +1690,8 @@ export default function StudentScreen({ onNavigate }) {
                             <line x1="16" y1="17" x2="8" y2="17" />
                             <polyline points="10 9 9 9 8 9" />
                           </svg>
-                        </div>
-                        <div className="portfolio-evidence-item-details">
-                          <span className="portfolio-evidence-item-code">EV-04</span>
-                          <span className="portfolio-evidence-item-name">Technical Memo</span>
-                        </div>
-                      </div>
-                      <div className="portfolio-evidence-item-right">
-                        <span className="portfolio-evidence-badge needs-revision">Needs revision</span>
-                        <div className="portfolio-evidence-progress-section">
-                          <span className="portfolio-evidence-score">55/100</span>
-                          <div className="portfolio-evidence-progress-bar-container">
-                            <div className="portfolio-evidence-progress-bar-fill orange" style={{ width: '55%' }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Item 5 */}
-                    <div className="portfolio-evidence-item">
-                      <div className="portfolio-evidence-item-left">
-                        <div className="portfolio-icon-wrapper purple">
-                          {/* CPU/Robot Icon */}
+                        );
+                        return (
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
                             <rect x="4" y="4" width="16" height="16" rx="2" />
                             <rect x="9" y="9" width="6" height="6" />
@@ -1775,23 +1704,41 @@ export default function StudentScreen({ onNavigate }) {
                             <line x1="1" y1="9" x2="4" y2="9" />
                             <line x1="1" y1="15" x2="4" y2="15" />
                           </svg>
-                        </div>
-                        <div className="portfolio-evidence-item-details">
-                          <span className="portfolio-evidence-item-code">EV-05</span>
-                          <span className="portfolio-evidence-item-name">AI Usage Log</span>
-                        </div>
-                      </div>
-                      <div className="portfolio-evidence-item-right">
-                        <span className="portfolio-evidence-badge completed">Completed</span>
-                        <div className="portfolio-evidence-progress-section">
-                          <span className="portfolio-evidence-score">80/100</span>
-                          <div className="portfolio-evidence-progress-bar-container">
-                            <div className="portfolio-evidence-progress-bar-fill green" style={{ width: '80%' }}></div>
+                        );
+                      };
+
+                      const badgeClass = item.status === 'Completed' ? 'completed' 
+                        : item.status === 'Needs review' ? 'needs-review' 
+                        : 'needs-revision';
+                      
+                      const scoreVal = item.score ? item.score.split('/')[0] : 0;
+                      let barColor = 'green';
+                      if (scoreVal < 60) barColor = 'orange';
+                      else if (scoreVal < 80) barColor = 'blue';
+
+                      return (
+                        <div className="portfolio-evidence-item" key={item.id}>
+                          <div className="portfolio-evidence-item-left">
+                            <div className={`portfolio-icon-wrapper ${item.topic}`}>
+                              {getIcon(item.topic)}
+                            </div>
+                            <div className="portfolio-evidence-item-details">
+                              <span className="portfolio-evidence-item-code">{item.id}</span>
+                              <span className="portfolio-evidence-item-name">{item.title}</span>
+                            </div>
+                          </div>
+                          <div className="portfolio-evidence-item-right">
+                            <span className={`portfolio-evidence-badge ${badgeClass}`}>{item.status}</span>
+                            <div className="portfolio-evidence-progress-section">
+                              <span className="portfolio-evidence-score">{item.score}</span>
+                              <div className="portfolio-evidence-progress-bar-container">
+                                <div className={`portfolio-evidence-progress-bar-fill ${barColor}`} style={{ width: `${scoreVal}%` }}></div>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -1836,7 +1783,7 @@ export default function StudentScreen({ onNavigate }) {
                   <p className="portfolio-submit-desc">
                     Send your completed evidence portfolio to your course mentor for final assessment.
                   </p>
-                  <button className="portfolio-submit-btn" onClick={() => alert('Portfolio submitted to course mentor!')}>
+                  <button className="portfolio-submit-btn" onClick={handleSubmitPortfolio}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
                       <line x1="22" y1="2" x2="11" y2="13"></line>
                       <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -1902,6 +1849,81 @@ export default function StudentScreen({ onNavigate }) {
         )}
 
       </div>
+
+      {showOnboardingModal && (
+        <div className="onboarding-modal-overlay" style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+        }}>
+          <div className="onboarding-modal-content" style={{
+            backgroundColor: 'var(--surface)', padding: '2rem', borderRadius: '12px',
+            width: '100%', maxWidth: '500px', border: '1px solid var(--border)',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.4)', color: 'var(--text-primary)', maxHeight: '90vh', overflowY: 'auto'
+          }}>
+            <h2 style={{ marginBottom: '0.5rem' }}>Complete Your Profile</h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+              We need a few more details to personalize your dashboard.
+            </p>
+            <form onSubmit={handleOnboardingSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Major / Degree Focus</label>
+                <input type="text" value={obMajor} onChange={e => setObMajor(e.target.value)} required style={{
+                  padding: '0.6rem', borderRadius: '6px', backgroundColor: 'var(--background)', color: 'white', border: '1px solid var(--border)'
+                }} placeholder="e.g. Computer Science" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Education Level</label>
+                <select value={obEducationLevel} onChange={e => setObEducationLevel(e.target.value)} style={{
+                  padding: '0.6rem', borderRadius: '6px', backgroundColor: 'var(--background)', color: 'white', border: '1px solid var(--border)'
+                }}>
+                  <option value="Bachelor's (1st/2nd year)">Bachelor's (1st/2nd year)</option>
+                  <option value="Bachelor's (3rd year)">Bachelor's (3rd year)</option>
+                  <option value="Bachelor's (Final year)">Bachelor's (Final year)</option>
+                  <option value="Master's Student">Master's Student</option>
+                  <option value="Bootcamp Graduate">Bootcamp Graduate</option>
+                  <option value="Self-Taught">Self-Taught</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Target Industry</label>
+                <input type="text" value={obTargetIndustry} onChange={e => setObTargetIndustry(e.target.value)} required style={{
+                  padding: '0.6rem', borderRadius: '6px', backgroundColor: 'var(--background)', color: 'white', border: '1px solid var(--border)'
+                }} placeholder="e.g. Fintech" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Occupation Goal</label>
+                <input type="text" value={obOccupationGoal} onChange={e => setObOccupationGoal(e.target.value)} required style={{
+                  padding: '0.6rem', borderRadius: '6px', backgroundColor: 'var(--background)', color: 'white', border: '1px solid var(--border)'
+                }} placeholder="e.g. Backend Software Engineer" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Career Goal Description</label>
+                <textarea value={obCareerGoal} onChange={e => setObCareerGoal(e.target.value)} required rows={2} style={{
+                  padding: '0.6rem', borderRadius: '6px', backgroundColor: 'var(--background)', color: 'white', border: '1px solid var(--border)'
+                }} placeholder="e.g. Land a backend role at a Series B+ startup" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Key Strengths (comma separated)</label>
+                <input type="text" value={obStrengths} onChange={e => setObStrengths(e.target.value)} required style={{
+                  padding: '0.6rem', borderRadius: '6px', backgroundColor: 'var(--background)', color: 'white', border: '1px solid var(--border)'
+                }} placeholder="e.g. System design, Python" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Areas to Develop (comma separated)</label>
+                <input type="text" value={obDevelopAreas} onChange={e => setObDevelopAreas(e.target.value)} required style={{
+                  padding: '0.6rem', borderRadius: '6px', backgroundColor: 'var(--background)', color: 'white', border: '1px solid var(--border)'
+                }} placeholder="e.g. Cloud architecture, DevOps" />
+              </div>
+              <button type="submit" disabled={isSubmittingProfile} style={{
+                marginTop: '0.5rem', padding: '0.8rem', backgroundColor: 'var(--text-primary)', color: 'var(--background)',
+                border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer'
+              }}>
+                {isSubmittingProfile ? 'Saving...' : 'Complete Profile'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

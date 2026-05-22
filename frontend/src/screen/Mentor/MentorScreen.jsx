@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './MentorScreen.css';
+import { api } from '../../api.js';
 
 export default function MentorScreen({ onNavigate }) {
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'students', 'submissions', 'portfolio'
@@ -14,121 +15,68 @@ export default function MentorScreen({ onNavigate }) {
     'student-06': 'Competent post-mortem memo drafting. Very collaborative attitude.'
   });
   const [editingHighlight, setEditingHighlight] = useState('');
+  const [submissions, setSubmissions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Initial student roster data
-  const students = [
-    {
-      id: 'student-01',
-      name: 'Aarav Sharma',
-      readiness: 76,
-      scenarios: '5/12',
-      risk: 'Medium',
-      lastActive: '2 hours ago',
-      targetIndustry: 'Fintech',
-      level: 'Competent',
-      evidence: [
-        { name: 'EV-01: Database RCA Log', points: 88 },
-        { name: 'EV-02: Connection Pool Memo', points: 76 },
-        { name: 'EV-03: Process Map draft', points: 82 }
-      ]
-    },
-    {
-      id: 'student-02',
-      name: 'Diya Patel',
-      readiness: 89,
-      scenarios: '8/12',
-      risk: 'Low',
-      lastActive: '5 hours ago',
-      targetIndustry: 'E-commerce',
-      level: 'Job-ready',
-      evidence: [
-        { name: 'EV-01: API WebSocket patch', points: 92 },
-        { name: 'EV-02: Systems Memo', points: 86 },
-        { name: 'EV-03: Gateway Diagnostics Map', points: 90 }
-      ]
-    },
-    {
-      id: 'student-03',
-      name: 'Rohan Mehta',
-      readiness: 45,
-      scenarios: '3/12',
-      risk: 'High',
-      lastActive: 'Yesterday',
-      targetIndustry: 'SaaS',
-      level: 'Foundational',
-      evidence: [
-        { name: 'EV-01: Resource Leak RCA Log', points: 55 },
-        { name: 'EV-02: Error Handling Memo', points: 40 }
-      ]
-    },
-    {
-      id: 'student-04',
-      name: 'Sara Khan',
-      readiness: 92,
-      scenarios: '11/12',
-      risk: 'Low',
-      lastActive: '1 day ago',
-      targetIndustry: 'Security / DevOps',
-      level: 'Job-ready',
-      evidence: [
-        { name: 'EV-01: Security Penetration Memo', points: 96 },
-        { name: 'EV-02: Token Sanitization log', points: 92 },
-        { name: 'EV-03: Path Traversal RCA', points: 88 }
-      ]
-    },
-    {
-      id: 'student-05',
-      name: 'Vikram Singh',
-      readiness: 68,
-      scenarios: '6/12',
-      risk: 'Medium',
-      lastActive: '3 days ago',
-      targetIndustry: 'Enterprise SaaS',
-      level: 'Developing',
-      evidence: [
-        { name: 'EV-01: Memory Diagnostics Map', points: 70 },
-        { name: 'EV-02: GC Logs Memo', points: 66 }
-      ]
-    },
-    {
-      id: 'student-06',
-      name: 'Neha Verma',
-      readiness: 81,
-      scenarios: '7/12',
-      risk: 'Low',
-      lastActive: 'Yesterday',
-      targetIndustry: 'AI Solutions',
-      level: 'Competent',
-      evidence: [
-        { name: 'EV-01: AI Interceptor RCA Log', points: 85 },
-        { name: 'EV-02: Tokenizer usage process map', points: 80 },
-        { name: 'EV-03: LLM Safety Memo', points: 78 }
-      ]
-    }
-  ];
+  const [students, setStudents] = useState([]);
 
-  // Mock submissions queue
-  const submissionsData = [
-    { id: 'sub-1', student: 'Rohan Mehta', type: 'RCA', artifact: 'Resource Leak RCA Log', date: 'Yesterday', status: 'Pending' },
-    { id: 'sub-2', student: 'Aarav Sharma', type: 'Memo', artifact: 'Connection Pool Memo', date: 'Today', status: 'Pending' },
-    { id: 'sub-3', student: 'Vikram Singh', type: 'Process Map', artifact: 'Memory Diagnostics Map', date: '2 days ago', status: 'Reviewed' },
-    { id: 'sub-4', student: 'Neha Verma', type: 'Memo', artifact: 'Tokenizer usage Memo', date: 'Today', status: 'Needs Revision' },
-    { id: 'sub-5', student: 'Diya Patel', type: 'RCA', artifact: 'API WebSocket patch', date: '3 days ago', status: 'Reviewed' }
-  ];
+  // Load submissions and highlights on mount
+  useEffect(() => {
+    const loadMentorData = async () => {
+      try {
+        setIsLoading(true);
+        const subs = await api.getSubmissions();
+        setSubmissions(subs || []);
+        
+        const highlights = await api.getMentorHighlights();
+        if (highlights) {
+          setMentorHighlights(highlights);
+        }
 
-  const currentStudent = students.find(s => s.id === selectedStudentId) || students[0];
+        const stData = await api.getMentorStudents();
+        setStudents(stData || []);
+      } catch (err) {
+        console.error('Failed to load mentor workspace data from database:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadMentorData();
+  }, []);
 
-  const handleSaveHighlight = (e) => {
+  const currentStudent = students.find(s => s.id === selectedStudentId) || students[0] || null;
+
+  const handleSaveHighlight = async (e) => {
     e.preventDefault();
-    setMentorHighlights({
-      ...mentorHighlights,
-      [selectedStudentId]: editingHighlight || mentorHighlights[selectedStudentId]
-    });
-    alert('Mentor highlight comment updated successfully!');
-    setEditingHighlight('');
+    if (!editingHighlight.trim()) return;
+    try {
+      await api.saveMentorHighlight(selectedStudentId, editingHighlight);
+      setMentorHighlights({
+        ...mentorHighlights,
+        [selectedStudentId]: editingHighlight
+      });
+      alert('Mentor highlight comment updated successfully and saved to database!');
+      setEditingHighlight('');
+    } catch (err) {
+      console.error('Failed to save mentor highlight to DB:', err);
+      alert('Failed to save highlight to database.');
+    }
   };
 
-  const filteredSubmissions = submissionsData.filter(sub => {
+  const handleReviewSub = async (id, status, feedback) => {
+    try {
+      await api.reviewSubmission(id, status, feedback);
+      // Reload submissions queue
+      const subs = await api.getSubmissions();
+      setSubmissions(subs || []);
+      alert(`Submission marked as ${status}!`);
+    } catch (err) {
+      console.error('Failed to review submission:', err);
+      alert('Failed to review submission in database.');
+    }
+  };
+
+  const filteredSubmissions = submissions.filter(sub => {
     if (submissionFilter === 'All') return true;
     return sub.status === submissionFilter;
   });
@@ -186,7 +134,11 @@ export default function MentorScreen({ onNavigate }) {
               <line x1="16" y1="17" x2="8" y2="17" />
             </svg>
             <span>Submissions</span>
-            <span className="mentor-badge-count">2</span>
+            {submissions.filter(sub => sub.status === 'Pending').length > 0 && (
+              <span className="mentor-badge-count">
+                {submissions.filter(sub => sub.status === 'Pending').length}
+              </span>
+            )}
           </button>
 
           <button 
@@ -329,20 +281,21 @@ export default function MentorScreen({ onNavigate }) {
                   <div className="widget-card">
                     <h3 className="widget-title">Pending Reviews</h3>
                     <div className="widget-list">
-                      <div className="widget-item">
-                        <div className="widget-item-info">
-                          <span className="student">Rohan Mehta</span>
-                          <span className="task">RCA Log - Outage #2</span>
-                        </div>
-                        <span className="widget-badge overdue">Overdue</span>
-                      </div>
-                      <div className="widget-item">
-                        <div className="widget-item-info">
-                          <span className="student">Aarav Sharma</span>
-                          <span className="task">Connection Pool Memo</span>
-                        </div>
-                        <span className="widget-badge today">Today</span>
-                      </div>
+                      {submissions.filter(sub => sub.status === 'Pending').length === 0 ? (
+                        <p style={{ fontSize: '13px', color: '#94a3b8', margin: '10px 0' }}>All reviews completed! 🎉</p>
+                      ) : (
+                        submissions.filter(sub => sub.status === 'Pending').map(sub => (
+                          <div className="widget-item" key={sub.id}>
+                            <div className="widget-item-info">
+                              <span className="student">{sub.student}</span>
+                              <span className="task">{sub.artifact} ({sub.type})</span>
+                            </div>
+                            <span className={`widget-badge ${sub.date === 'Today' ? 'today' : 'overdue'}`}>
+                              {sub.date === 'Today' ? 'Today' : 'Overdue'}
+                            </span>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -484,18 +437,37 @@ export default function MentorScreen({ onNavigate }) {
                             </span>
                           </td>
                           <td>
-                            <button 
-                              className="assess-action-btn"
-                              onClick={() => {
-                                const matched = students.find(s => s.name === sub.student);
-                                if (matched) {
-                                  setSelectedStudentId(matched.id);
-                                  setActiveTab('portfolio');
-                                }
-                              }}
-                            >
-                              Assess Solution
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              {sub.status === 'Pending' ? (
+                                <>
+                                  <button 
+                                    className="approve-action-btn"
+                                    onClick={() => handleReviewSub(sub.id, 'Reviewed', 'Excellent work!')}
+                                  >
+                                    Approve
+                                  </button>
+                                  <button 
+                                    className="revise-action-btn"
+                                    onClick={() => handleReviewSub(sub.id, 'Needs Revision', 'Please clarify your diagrams.')}
+                                  >
+                                    Revise
+                                  </button>
+                                </>
+                              ) : (
+                                <button 
+                                  className="assess-action-btn"
+                                  onClick={() => {
+                                    const matched = students.find(s => s.name === sub.student);
+                                    if (matched) {
+                                      setSelectedStudentId(matched.id);
+                                      setActiveTab('portfolio');
+                                    }
+                                  }}
+                                >
+                                  Assess Solution
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}

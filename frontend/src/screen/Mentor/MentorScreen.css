@@ -703,6 +703,48 @@
   background-color: var(--primary-hover);
 }
 
+.approve-action-btn {
+  background-color: var(--accent-green);
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.approve-action-btn:hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+}
+
+.approve-action-btn:active {
+  transform: translateY(0);
+}
+
+.revise-action-btn {
+  background-color: var(--accent-red);
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.revise-action-btn:hover {
+  background-color: #dc2626;
+  transform: translateY(-1px);
+}
+
+.revise-action-btn:active {
+  transform: translateY(0);
+}
+
 /* 9. Portfolio Review master-detail layout */
 .portfolio-review-layout {
   display: grid;

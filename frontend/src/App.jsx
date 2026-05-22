@@ -46,7 +46,6 @@ function App() {
     return <EmployerScreen onNavigate={setCurrentScreen} />
   }
 
-
   return (
     <>
       <div className="demo-header-banner">

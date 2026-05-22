@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './RegisterScreen.css';
+import { api } from '../api.js';
 
 export default function RegisterScreen({ onNavigate }) {
   const [role, setRole] = useState('student'); // 'student' or 'mentor'
@@ -7,10 +8,12 @@ export default function RegisterScreen({ onNavigate }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [targetTrack, setTargetTrack] = useState('');
+  const [targetIndustry, setTargetIndustry] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -19,13 +22,25 @@ export default function RegisterScreen({ onNavigate }) {
       return;
     }
 
-    // Simulate account registration success and navigate directly to respective dashboard
-    alert(`Account created successfully! Welcome, ${fullName}.`);
-    
-    if (role === 'student') {
-      onNavigate('demo'); // Renders the Student Screen workspace
-    } else {
-      onNavigate('mentor'); // Renders the Mentor Workspace
+    console.log('[DEBUG] Frontend submitting registration data:', { role, fullName, username, email, password, target_track: targetTrack, target_industry: targetIndustry });
+
+    try {
+      const resData = await api.register(role, fullName, username, email, password, targetTrack, targetIndustry);
+      if (resData.success && resData.user) {
+        // Save the logged-in user session
+        localStorage.setItem('currentUser', JSON.stringify(resData.user));
+        alert(`Account created successfully! Welcome, ${fullName}.`);
+        
+        if (role === 'student') {
+          onNavigate('demo'); // Renders the Student Screen workspace
+        } else {
+          onNavigate('mentor'); // Renders the Mentor Workspace
+        }
+      } else {
+        setErrorMessage('Failed to create account. Please try again.');
+      }
+    } catch (err) {
+      setErrorMessage(err.message || 'Failed to create account.');
     }
   };
 
@@ -99,7 +114,7 @@ export default function RegisterScreen({ onNavigate }) {
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                     <circle cx="9" cy="7" r="4" />
                   </svg>
-                  <span>Candidate</span>
+                  <span>Student</span>
                 </button>
                 <button
                   type="button"
@@ -125,7 +140,7 @@ export default function RegisterScreen({ onNavigate }) {
                   id="fullname"
                   type="text"
                   className="register-input-field"
-                  placeholder="Aarav Sharma"
+                  placeholder="e.g. Jane Doe"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
@@ -137,7 +152,7 @@ export default function RegisterScreen({ onNavigate }) {
                   id="username"
                   type="text"
                   className="register-input-field"
-                  placeholder="aarav.sharma"
+                  placeholder="e.g. janedoe"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -152,7 +167,7 @@ export default function RegisterScreen({ onNavigate }) {
                 id="email"
                 type="email"
                 className="register-input-field"
-                placeholder="aarav.sharma@gmail.com"
+                placeholder="e.g. jane.doe@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -166,12 +181,43 @@ export default function RegisterScreen({ onNavigate }) {
                 id="password"
                 type="password"
                 className="register-input-field"
-                placeholder="••••••••"
+                placeholder="Choose a strong password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
+
+            {/* Target Track & Industry (Student only) */}
+            {role === 'student' && (
+              <div className="register-form-row">
+                <div className="register-form-group">
+                  <label htmlFor="targetTrack" className="register-field-label">Target Track (Optional)</label>
+                  <select
+                    id="targetTrack"
+                    className="register-input-field"
+                    value={targetTrack}
+                    onChange={(e) => setTargetTrack(e.target.value)}
+                  >
+                    <option value="">Select a track</option>
+                    <option value="Software Engineer">Software Engineer</option>
+                    <option value="Data Scientist">Data Scientist</option>
+                    <option value="Product Manager">Product Manager</option>
+                  </select>
+                </div>
+                <div className="register-form-group">
+                  <label htmlFor="targetIndustry" className="register-field-label">Target Industry (Optional)</label>
+                  <input
+                    id="targetIndustry"
+                    type="text"
+                    className="register-input-field"
+                    placeholder="e.g. Fintech, Healthtech"
+                    value={targetIndustry}
+                    onChange={(e) => setTargetIndustry(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Terms of Service Checkbox */}
             <div className="register-checkbox-group">

@@ -1,35 +1,45 @@
 import React, { useState } from 'react';
 import './LoginScreen.css';
+import { api } from '../api.js';
 
 export default function LoginScreen({ onNavigate }) {
-  const [username, setUsername] = useState('aarav.sharma');
-  const [password, setPassword] = useState('supersecretpwd');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogoClick = (e) => {
     e.preventDefault();
     if (onNavigate) onNavigate('landing');
   };
 
-  const handleSignIn = (e) => {
+  const handleSignIn = async (e) => {
     if (e) e.preventDefault();
+    setErrorMessage('');
     
-    if (username.toLowerCase().includes('mentor')) {
-      if (onNavigate) onNavigate('mentor');
-    } else if (username.toLowerCase().includes('admin')) {
-      if (onNavigate) onNavigate('admin');
-    } else {
-      if (onNavigate) onNavigate('demo');
+    try {
+      const resData = await api.login(username, password);
+      if (resData.success && resData.user) {
+        // Store session info
+        localStorage.setItem('currentUser', JSON.stringify(resData.user));
+        
+        const role = resData.user.role;
+        if (role === 'mentor') {
+          if (onNavigate) onNavigate('mentor');
+        } else if (role === 'admin' || role === 'employer') {
+          if (onNavigate) onNavigate('admin');
+        } else {
+          if (onNavigate) onNavigate('demo');
+        }
+      } else {
+        setErrorMessage('Failed to sign in. Please try again.');
+      }
+    } catch (err) {
+      setErrorMessage(err.message || 'Invalid username or password.');
     }
   };
 
   const handleContinueAsEmployer = () => {
     if (onNavigate) onNavigate('admin');
-  };
-
-  const triggerQuickLogin = (uname, pwd, screen) => {
-    setUsername(uname);
-    setPassword(pwd);
-    if (onNavigate) onNavigate(screen);
   };
 
   return (
@@ -75,6 +85,11 @@ export default function LoginScreen({ onNavigate }) {
             <h2 className="login-form-title">Welcome back</h2>
             <p className="login-form-subtitle">Sign in to continue your training.</p>
           </div>
+          {errorMessage && (
+            <div className="login-error-banner">
+              {errorMessage}
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSignIn}>
@@ -142,21 +157,7 @@ export default function LoginScreen({ onNavigate }) {
             <span>Continue as Employer — find students</span>
           </button>
 
-          {/* Demo Helper Panel */}
-          <div className="login-demo-helper">
-            <h4 className="login-demo-helper-title">Quick Demo Logins (Click to auto-log in)</h4>
-            <div className="login-demo-helper-pills">
-              <button className="login-demo-pill student" onClick={() => triggerQuickLogin('aarav.sharma', 'password123', 'demo')}>
-                <span className="dot">•</span> Student Workspace
-              </button>
-              <button className="login-demo-pill mentor" onClick={() => triggerQuickLogin('mentor.alex', 'password123', 'mentor')}>
-                <span className="dot">•</span> Mentor Workspace
-              </button>
-              <button className="login-demo-pill admin" onClick={() => triggerQuickLogin('admin.stacy', 'password123', 'admin')}>
-                <span className="dot">•</span> Admin Workspace
-              </button>
-            </div>
-          </div>
+
 
           {/* Form Footer */}
           <div className="login-form-footer">
