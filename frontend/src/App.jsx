@@ -6,6 +6,7 @@ import './App.css'
 import LandingScreen from './screen/LandingScreen'
 import LoginScreen from './screen/LoginScreen'
 import StudentScreen from './screen/StudentScreen'
+import RegisterScreen from './screen/RegisterScreen'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -17,6 +18,10 @@ function App() {
 
   if (currentScreen === 'login') {
     return <LoginScreen onNavigate={setCurrentScreen} />
+  }
+
+  if (currentScreen === 'register') {
+    return <RegisterScreen onNavigate={setCurrentScreen} />
   }
 
   if (currentScreen === 'demo') {

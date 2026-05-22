@@ -11,6 +11,10 @@ export default function LandingScreen({ onNavigate }) {
     if (onNavigate) onNavigate('login');
   };
 
+  const handleGetStarted = () => {
+    if (onNavigate) onNavigate('register');
+  };
+
   const handleNavClick = (section, e) => {
     e.preventDefault();
     const sectionElement = document.getElementById(section);
@@ -55,7 +59,7 @@ export default function LandingScreen({ onNavigate }) {
           <button className="landing-btn-text" onClick={handleLaunchDemo}>
             Sign in
           </button>
-          <button className="landing-btn-primary" onClick={handleLaunchDemo}>
+          <button className="landing-btn-primary" onClick={handleGetStarted}>
             Get started
           </button>
         </div>

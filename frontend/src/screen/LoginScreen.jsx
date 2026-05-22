@@ -132,7 +132,7 @@ export default function LoginScreen({ onNavigate }) {
           {/* Form Footer */}
           <div className="login-form-footer">
             New to WorkReady AI? 
-            <a href="#signup" className="login-signup-link" onClick={(e) => e.preventDefault()}>Create an account</a>
+            <a href="#signup" className="login-signup-link" onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('register'); }}>Create an account</a>
           </div>
         </div>
       </div>
