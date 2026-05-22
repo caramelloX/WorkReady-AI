@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -11,6 +11,14 @@ import RegisterScreen from './screen/RegisterScreen'
 function App() {
   const [count, setCount] = useState(0)
   const [currentScreen, setCurrentScreen] = useState('landing')
+  const [backendStatus, setBackendStatus] = useState('Checking...')
+
+  useEffect(() => {
+    fetch('/api/health')
+      .then(res => res.json())
+      .then(data => setBackendStatus(data.status === 'OK' ? 'Connected to Backend ✅' : 'Backend Error ❌'))
+      .catch(() => setBackendStatus('Backend Not Reachable ❌'))
+  }, [])
 
   if (currentScreen === 'landing') {
     return <LandingScreen onNavigate={setCurrentScreen} />
@@ -53,6 +61,9 @@ function App() {
           <p>
             Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
           </p>
+          <div style={{ marginTop: '1rem', padding: '0.5rem', backgroundColor: '#f0f0f0', borderRadius: '8px', color: '#333' }}>
+            <strong>Backend Status: </strong> {backendStatus}
+          </div>
         </div>
         <button
           type="button"
