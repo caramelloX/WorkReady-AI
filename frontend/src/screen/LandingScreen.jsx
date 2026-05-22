@@ -8,7 +8,7 @@ export default function LandingScreen({ onNavigate }) {
   };
 
   const handleLaunchDemo = () => {
-    if (onNavigate) onNavigate('demo');
+    if (onNavigate) onNavigate('login');
   };
 
   const handleNavClick = (section, e) => {

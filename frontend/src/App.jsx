@@ -4,6 +4,8 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 import LandingScreen from './screen/LandingScreen'
+import LoginScreen from './screen/LoginScreen'
+import StudentScreen from './screen/StudentScreen'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -12,6 +14,15 @@ function App() {
   if (currentScreen === 'landing') {
     return <LandingScreen onNavigate={setCurrentScreen} />
   }
+
+  if (currentScreen === 'login') {
+    return <LoginScreen onNavigate={setCurrentScreen} />
+  }
+
+  if (currentScreen === 'demo') {
+    return <StudentScreen onNavigate={setCurrentScreen} />
+  }
+
 
   return (
     <>
