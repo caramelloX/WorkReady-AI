@@ -5,8 +5,10 @@ import heroImg from './assets/hero.png'
 import './App.css'
 import LandingScreen from './screen/LandingScreen'
 import LoginScreen from './screen/LoginScreen'
-import StudentScreen from './screen/StudentScreen'
+import StudentScreen from './screen/Student/StudentScreen'
 import RegisterScreen from './screen/RegisterScreen'
+import MentorScreen from './screen/Mentor/MentorScreen'
+import EmployerScreen from './screen/Employer/EmployerScreen'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -34,6 +36,14 @@ function App() {
 
   if (currentScreen === 'demo') {
     return <StudentScreen onNavigate={setCurrentScreen} />
+  }
+
+  if (currentScreen === 'mentor') {
+    return <MentorScreen onNavigate={setCurrentScreen} />
+  }
+
+  if (currentScreen === 'employer' || currentScreen === 'admin') {
+    return <EmployerScreen onNavigate={setCurrentScreen} />
   }
 
 

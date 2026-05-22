@@ -358,6 +358,68 @@
   }
 }
 
+/* Demo Login Credentials Helper Panel */
+.login-demo-helper {
+  margin-top: 28px;
+  background-color: #f8fafc;
+  border: 1px dashed var(--input-border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-sizing: border-box;
+}
+
+.login-demo-helper-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--neutral-heading);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
+.login-demo-helper-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-demo-pill {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--input-border);
+  background-color: #ffffff;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--neutral-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.login-demo-pill:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: var(--neutral-heading);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.login-demo-pill .dot {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.login-demo-pill.student .dot { color: var(--accent-blue); }
+.login-demo-pill.mentor .dot { color: var(--accent-teal); }
+.login-demo-pill.admin .dot { color: #8b5cf6; }
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .login-screen-container {
