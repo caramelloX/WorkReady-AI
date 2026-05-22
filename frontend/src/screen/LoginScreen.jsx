@@ -11,12 +11,25 @@ export default function LoginScreen({ onNavigate }) {
   };
 
   const handleSignIn = (e) => {
-    e.preventDefault();
-    if (onNavigate) onNavigate('demo');
+    if (e) e.preventDefault();
+    
+    if (username.toLowerCase().includes('mentor')) {
+      if (onNavigate) onNavigate('mentor');
+    } else if (username.toLowerCase().includes('admin')) {
+      if (onNavigate) onNavigate('admin');
+    } else {
+      if (onNavigate) onNavigate('demo');
+    }
   };
 
   const handleContinueAsEmployer = () => {
-    if (onNavigate) onNavigate('demo');
+    if (onNavigate) onNavigate('admin');
+  };
+
+  const triggerQuickLogin = (uname, pwd, screen) => {
+    setUsername(uname);
+    setPassword(pwd);
+    if (onNavigate) onNavigate(screen);
   };
 
   return (
@@ -128,6 +141,22 @@ export default function LoginScreen({ onNavigate }) {
             </svg>
             <span>Continue as Employer — find students</span>
           </button>
+
+          {/* Demo Helper Panel */}
+          <div className="login-demo-helper">
+            <h4 className="login-demo-helper-title">Quick Demo Logins (Click to auto-log in)</h4>
+            <div className="login-demo-helper-pills">
+              <button className="login-demo-pill student" onClick={() => triggerQuickLogin('aarav.sharma', 'password123', 'demo')}>
+                <span className="dot">•</span> Student Workspace
+              </button>
+              <button className="login-demo-pill mentor" onClick={() => triggerQuickLogin('mentor.alex', 'password123', 'mentor')}>
+                <span className="dot">•</span> Mentor Workspace
+              </button>
+              <button className="login-demo-pill admin" onClick={() => triggerQuickLogin('admin.stacy', 'password123', 'admin')}>
+                <span className="dot">•</span> Admin Workspace
+              </button>
+            </div>
+          </div>
 
           {/* Form Footer */}
           <div className="login-form-footer">

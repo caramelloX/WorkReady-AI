@@ -24,8 +24,12 @@
   background-color: var(--neutral-bg);
   color: var(--neutral-text);
   min-height: 100vh;
-  position: relative;
-  overflow: hidden;
+  width: 100vw;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  overflow-x: hidden;
   box-sizing: border-box;
   text-align: left;
   display: flex;
