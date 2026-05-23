@@ -22,7 +22,8 @@ export default function LoginScreen({ onNavigate }) {
       if (stored) {
         const accounts = JSON.parse(stored);
         if (accounts && accounts.length > 0) {
-          setSavedAccounts(accounts);
+          const filteredAccounts = accounts.filter(acc => acc.role === 'mentor' || acc.role === 'student');
+          setSavedAccounts(filteredAccounts);
         }
       }
     } catch (e) {}
@@ -50,7 +51,10 @@ export default function LoginScreen({ onNavigate }) {
           if (existingAccountsStr) existingAccounts = JSON.parse(existingAccountsStr);
           // Remove duplicate username
           existingAccounts = existingAccounts.filter(acc => acc.username !== resData.user.username);
-          existingAccounts.unshift(resData.user);
+          // Only save mentor and student accounts
+          if (resData.user.role === 'mentor' || resData.user.role === 'student') {
+            existingAccounts.unshift(resData.user);
+          }
           localStorage.setItem('savedAccounts', JSON.stringify(existingAccounts));
         } catch(e) {}
         
@@ -71,12 +75,12 @@ export default function LoginScreen({ onNavigate }) {
         setErrorMessage('ชื่อผู้ใช้หรือรหัสผ่านผิด');
       }
     } catch (err) {
-      setErrorMessage('ชื่อผู้ใช้หรือรหัสผ่านผิด');
+      setErrorMessage(err.message === 'Account suspended. Please contact support.' ? err.message : 'ชื่อผู้ใช้หรือรหัสผ่านผิด');
     }
   };
 
   const handleContinueAsEmployer = () => {
-    if (onNavigate) onNavigate('admin');
+    if (onNavigate) onNavigate('employer');
   };
 
   const handleSavedAccountClick = (account) => {
@@ -147,6 +151,16 @@ export default function LoginScreen({ onNavigate }) {
               
               <button type="button" className="login-btn-secondary" onClick={() => setShowSavedAccounts(false)}>
                 Sign in with another account
+              </button>
+              
+              <div className="login-divider" style={{margin: '16px 0'}}>or</div>
+              
+              <button className="login-btn-secondary" onClick={handleContinueAsEmployer}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="login-btn-secondary-icon">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+                <span>Continue as Employer — find students</span>
               </button>
             </>
           ) : (

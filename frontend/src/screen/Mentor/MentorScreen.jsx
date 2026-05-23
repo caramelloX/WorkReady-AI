@@ -3,7 +3,13 @@ import './MentorScreen.css';
 import { api } from '../../api.js';
 
 export default function MentorScreen({ onNavigate }) {
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'students', 'submissions', 'portfolio'
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem('mentorActiveTab') || 'dashboard';
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem('mentorActiveTab', activeTab);
+  }, [activeTab]);
   const [selectedStudentId, setSelectedStudentId] = useState('student-01');
   const [submissionFilter, setSubmissionFilter] = useState('All'); // All, Pending, Reviewed, Needs Revision
   const [mentorHighlights, setMentorHighlights] = useState({
@@ -19,6 +25,7 @@ export default function MentorScreen({ onNavigate }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const [students, setStudents] = useState([]);
+  const [scenarios, setScenarios] = useState([]);
 
   // Retrieve current user from localStorage
   const [currentUser, setCurrentUser] = useState(() => {
@@ -48,6 +55,9 @@ export default function MentorScreen({ onNavigate }) {
 
       const stData = await api.getMentorStudents();
       setStudents(stData || []);
+
+      const scens = await api.getScenarios();
+      setScenarios(scens || []);
     } catch (err) {
       console.error('Failed to load mentor workspace data from database:', err);
     } finally {
@@ -205,28 +215,28 @@ export default function MentorScreen({ onNavigate }) {
                 <div className="mentor-stat-card border-blue">
                   <div className="stat-card-inner">
                     <span className="mentor-stat-label color-blue">Mentees</span>
-                    <h3 className="mentor-stat-value">6</h3>
+                    <h3 className="mentor-stat-value">{students.length}</h3>
                     <p className="mentor-stat-subtext">Active this term</p>
                   </div>
                 </div>
                 <div className="mentor-stat-card border-yellow">
                   <div className="stat-card-inner">
                     <span className="mentor-stat-label color-yellow">Unfinished</span>
-                    <h3 className="mentor-stat-value">4</h3>
+                    <h3 className="mentor-stat-value">{submissions.filter(s => s.status === 'Pending' || s.status === 'Needs Revision').length}</h3>
                     <p className="mentor-stat-subtext">Requires attention</p>
                   </div>
                 </div>
                 <div className="mentor-stat-card border-teal">
                   <div className="stat-card-inner">
                     <span className="mentor-stat-label color-teal">Available</span>
-                    <h3 className="mentor-stat-value">4</h3>
+                    <h3 className="mentor-stat-value">{scenarios.length}</h3>
                     <p className="mentor-stat-subtext">Incident scenarios open</p>
                   </div>
                 </div>
                 <div className="mentor-stat-card border-green">
                   <div className="stat-card-inner">
                     <span className="mentor-stat-label color-green">Finished</span>
-                    <h3 className="mentor-stat-value">18</h3>
+                    <h3 className="mentor-stat-value">{submissions.filter(s => s.status === 'Reviewed').length}</h3>
                     <p className="mentor-stat-subtext">Approved evidence logs</p>
                   </div>
                 </div>
@@ -536,7 +546,23 @@ export default function MentorScreen({ onNavigate }) {
                     <h4 className="section-card-title">Job Readiness Index</h4>
                     <div className="readiness-big-display">
                       <div className="readiness-circle">
-                        <span className="num">{currentStudent.readiness}%</span>
+                        <svg width="80" height="80" viewBox="0 0 80 80" style={{ transform: 'rotate(-90deg)' }}>
+                          <circle cx="40" cy="40" r="34" fill="none" stroke="#eff6ff" strokeWidth="6" />
+                          <circle 
+                            cx="40" 
+                            cy="40" 
+                            r="34" 
+                            fill="none" 
+                            stroke="var(--accent-blue)" 
+                            strokeWidth="6" 
+                            strokeDasharray={`${(currentStudent.readiness / 100) * 2 * Math.PI * 34} 999`}
+                            strokeLinecap="round"
+                            style={{ transition: 'stroke-dasharray 1s ease-out' }}
+                          />
+                        </svg>
+                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span className="num">{currentStudent.readiness}%</span>
+                        </div>
                       </div>
                       <div className="readiness-scale-info">
                         <div className="scale-bar-container">

@@ -44,7 +44,13 @@ const StatusBadge = ({ variant, children }) => {
 };
 
 export default function AdminScreen({ onNavigate }) {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem('adminActiveTab') || 'dashboard';
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem('adminActiveTab', activeTab);
+  }, [activeTab]);
   const [isLoading, setIsLoading] = useState(false);
 
   // MOCK DATA STATES
@@ -98,6 +104,45 @@ export default function AdminScreen({ onNavigate }) {
   });
   const [isAddingUser, setIsAddingUser] = useState(false);
 
+  const [selectedProfile, setSelectedProfile] = useState(null);
+
+  // Edit Profile State
+  const [editingProfile, setEditingProfile] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+
+  const handleEditClick = (user) => {
+    setEditingProfile(user);
+    setEditForm({
+      fullname: user.fullname || user.name || '',
+      email: user.email || '',
+      username: user.username || '',
+      role: user.role || 'Student',
+      target_track: user.target_track || '',
+      target_industry: user.target_industry || '',
+      occupation_goal: user.occupation_goal || '',
+      major: user.major || '',
+      education_level: user.education_level || '',
+      career_goal: user.career_goal || '',
+      strengths: Array.isArray(user.strengths) ? user.strengths.join(', ') : '',
+      develop_areas: Array.isArray(user.develop_areas) ? user.develop_areas.join(', ') : ''
+    });
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setIsSubmittingEdit(true);
+      await api.updateAdminUser(editingProfile.id, editForm);
+      setEditingProfile(null);
+      await fetchAdminData();
+    } catch (err) {
+      console.error('Failed to update user', err);
+      alert(err.message || 'Failed to update user');
+    } finally {
+      setIsSubmittingEdit(false);
+    }
+  };
   const handleAddUserSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -399,8 +444,8 @@ export default function AdminScreen({ onNavigate }) {
                           <td><span style={{color: '#64748B', fontSize: '13px'}}>{u.lastActivity}</span></td>
                           <td>
                             <div className="admin-table-actions">
-                              <button className="admin-icon-btn"><Eye size={16} /></button>
-                              <button className="admin-icon-btn"><Edit size={16} /></button>
+                              <button className="admin-icon-btn" onClick={() => setSelectedProfile(u)}><Eye size={16} /></button>
+                              <button className="admin-icon-btn" onClick={() => handleEditClick(u)}><Edit size={16} /></button>
                               <button 
                                 className="admin-icon-btn" 
                                 title={u.status === 'Suspended' ? 'Reactivate User' : 'Suspend User'}
@@ -458,8 +503,8 @@ export default function AdminScreen({ onNavigate }) {
                           <td><span style={{color: '#64748B', fontSize: '13px'}}>{st.lastActive}</span></td>
                           <td>
                             <div className="admin-table-actions">
-                              <button className="admin-icon-btn"><Eye size={16} /></button>
-                              <button className="admin-icon-btn"><Edit size={16} /></button>
+                              <button className="admin-icon-btn" onClick={() => setSelectedProfile(st)}><Eye size={16} /></button>
+                              <button className="admin-icon-btn" onClick={() => handleEditClick(st)}><Edit size={16} /></button>
                             </div>
                           </td>
                         </tr>
@@ -509,8 +554,8 @@ export default function AdminScreen({ onNavigate }) {
                           <td><StatusBadge variant={getStatusBadge(m.status)}>{m.status}</StatusBadge></td>
                           <td>
                             <div className="admin-table-actions">
-                              <button className="admin-icon-btn"><Eye size={16} /></button>
-                              <button className="admin-icon-btn"><Edit size={16} /></button>
+                              <button className="admin-icon-btn" onClick={() => setSelectedProfile(m)}><Eye size={16} /></button>
+                              <button className="admin-icon-btn" onClick={() => handleEditClick(m)}><Edit size={16} /></button>
                               <button className="admin-icon-btn"><Ban size={16} /></button>
                             </div>
                           </td>
@@ -809,6 +854,216 @@ export default function AdminScreen({ onNavigate }) {
                 <button type="button" className="admin-btn-secondary" onClick={() => setShowAddUserModal(false)}>Cancel</button>
                 <button type="submit" className="admin-btn-primary" disabled={isAddingUser}>
                   {isAddingUser ? 'Adding...' : 'Add User'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Profile Modal (Detailed 2-Column Layout) */}
+      {selectedProfile && (
+        <div className="admin-modal-overlay" onClick={() => setSelectedProfile(null)}>
+          <div 
+            className="admin-modal-content glass-panel" 
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: '900px', padding: '32px' }}
+          >
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px'}}>
+              <h2 className="admin-modal-title" style={{margin: 0}}>Profile</h2>
+              <button className="admin-icon-btn" onClick={() => setSelectedProfile(null)}>✕</button>
+            </div>
+            <p style={{margin: '-16px 0 24px 0', color: '#64748B', fontSize: '14px'}}>
+              Public learner profile — what mentors and recruiters see.
+            </p>
+            
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '32px'}}>
+              {/* LEFT COLUMN */}
+              <div style={{background: 'rgba(255,255,255,0.4)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px'}}>
+                <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '12px'}}>
+                  <div style={{width: '90px', height: '90px', borderRadius: '50%', background: '#0d9488', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '36px', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(13, 148, 136, 0.3)'}}>
+                    {(selectedProfile.name || selectedProfile.fullname || 'U').charAt(0)}
+                  </div>
+                  <div>
+                    <h3 style={{margin: 0, fontSize: '22px', color: '#0F172A', fontWeight: 800}}>{selectedProfile.name || selectedProfile.fullname}</h3>
+                    <p style={{margin: '4px 0 0 0', color: '#64748B', fontSize: '13px'}}>{selectedProfile.major || 'Unknown Major'} — {selectedProfile.target_track || selectedProfile.role || 'Track'}</p>
+                  </div>
+                </div>
+
+                <div style={{borderTop: '1px solid rgba(255,255,255,0.5)', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px'}}>
+                  {selectedProfile.email && (
+                    <div style={{display: 'flex', gap: '12px', alignItems: 'center', color: '#475569', fontSize: '14px'}}>
+                      <Inbox size={16} /> <span>{selectedProfile.email}</span>
+                    </div>
+                  )}
+                  {selectedProfile.org && (
+                    <div style={{display: 'flex', gap: '12px', alignItems: 'center', color: '#475569', fontSize: '14px'}}>
+                      <GraduationCap size={16} /> <span>{selectedProfile.org}</span>
+                    </div>
+                  )}
+                  <div style={{display: 'flex', gap: '12px', alignItems: 'center', color: '#10b981', fontSize: '14px', fontWeight: 700}}>
+                    <Briefcase size={16} /> <span>Open to roles</span>
+                  </div>
+                </div>
+
+                <div style={{borderTop: '1px solid rgba(255,255,255,0.5)', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left'}}>
+                  <div style={{textAlign: 'left'}}>
+                    <div style={{fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px'}}>
+                      <BookOpen size={12} /> EDUCATION LEVEL
+                    </div>
+                    <div style={{fontSize: '14px', color: '#0F172A', fontWeight: 600}}>{selectedProfile.education_level || 'Not specified'}</div>
+                  </div>
+                  <div style={{textAlign: 'left'}}>
+                    <div style={{fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px'}}>
+                      <Database size={12} /> TARGET INDUSTRY
+                    </div>
+                    <div style={{fontSize: '14px', color: '#0F172A', fontWeight: 600}}>{selectedProfile.target_industry || 'Not specified'}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN */}
+              <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
+                
+                {/* ABOUT */}
+                <div style={{background: 'rgba(255,255,255,0.4)', borderRadius: '16px', padding: '24px'}}>
+                  <h4 style={{margin: '0 0 16px 0', fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0F172A', borderBottom: '1px solid rgba(255,255,255,0.5)', paddingBottom: '12px'}}>
+                    About
+                  </h4>
+                  <p style={{margin: 0, fontSize: '14px', color: '#475569', lineHeight: 1.6}}>
+                    {selectedProfile.occupation_goal ? `Targeting ${selectedProfile.occupation_goal} roles. Active in WorkReady AI's mentorship track.` : 'No description provided.'}
+                  </p>
+                </div>
+
+                {/* CAREER GOALS */}
+                <div style={{background: 'rgba(255,255,255,0.4)', borderRadius: '16px', padding: '24px'}}>
+                  <h4 style={{margin: '0 0 16px 0', fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0F172A', borderBottom: '1px solid rgba(255,255,255,0.5)', paddingBottom: '12px'}}>
+                    Career Goals
+                  </h4>
+                  <p style={{margin: 0, fontSize: '14px', color: '#475569', fontStyle: 'italic'}}>
+                    {selectedProfile.career_goal ? `"${selectedProfile.career_goal}"` : '"Not specified"'}
+                  </p>
+                </div>
+
+                {/* STRENGTHS & DEVELOP AREAS */}
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+                  <div style={{background: 'rgba(255,255,255,0.4)', borderRadius: '16px', padding: '24px'}}>
+                    <h4 style={{margin: '0 0 16px 0', fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#10b981', borderBottom: '1px solid rgba(16, 185, 129, 0.2)', paddingBottom: '12px'}}>
+                      Strengths
+                    </h4>
+                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
+                      {selectedProfile.strengths && selectedProfile.strengths.length > 0 ? selectedProfile.strengths.map((s, i) => (
+                        <span key={i} style={{padding: '6px 12px', background: 'rgba(209, 250, 229, 0.6)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#047857', borderRadius: '20px', fontSize: '12px', fontWeight: 600}}>{s}</span>
+                      )) : <span style={{fontSize: '13px', color: '#64748B'}}>None listed</span>}
+                    </div>
+                  </div>
+                  
+                  <div style={{background: 'rgba(255,255,255,0.4)', borderRadius: '16px', padding: '24px'}}>
+                    <h4 style={{margin: '0 0 16px 0', fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#3b82f6', borderBottom: '1px solid rgba(59, 130, 246, 0.2)', paddingBottom: '12px'}}>
+                      Develop Areas
+                    </h4>
+                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
+                      {selectedProfile.develop_areas && selectedProfile.develop_areas.length > 0 ? selectedProfile.develop_areas.map((d, i) => (
+                        <span key={i} style={{padding: '6px 12px', background: 'rgba(219, 234, 254, 0.6)', border: '1px solid rgba(59, 130, 246, 0.3)', color: '#1d4ed8', borderRadius: '20px', fontSize: '12px', fontWeight: 600}}>{d}</span>
+                      )) : <span style={{fontSize: '13px', color: '#64748B'}}>None listed</span>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* CERTIFICATIONS */}
+                <div style={{background: 'rgba(255,255,255,0.4)', borderRadius: '16px', padding: '24px'}}>
+                  <h4 style={{margin: '0 0 16px 0', fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0F172A', borderBottom: '1px solid rgba(255,255,255,0.5)', paddingBottom: '12px'}}>
+                    Certifications & Badges
+                  </h4>
+                  <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px'}}>
+                    <span style={{padding: '8px 16px', background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.8)', color: '#475569', borderRadius: '24px', fontSize: '13px', fontWeight: 600}}>Clean Coder</span>
+                    <span style={{padding: '8px 16px', background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.8)', color: '#475569', borderRadius: '24px', fontSize: '13px', fontWeight: 600}}>Incident Responder</span>
+                    <span style={{padding: '8px 16px', background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.8)', color: '#475569', borderRadius: '24px', fontSize: '13px', fontWeight: 600}}>Code Reviewer</span>
+                    <span style={{padding: '8px 16px', background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.8)', color: '#475569', borderRadius: '24px', fontSize: '13px', fontWeight: 600}}>System Designer</span>
+                    <span style={{padding: '8px 16px', background: 'rgba(209, 250, 229, 0.6)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#047857', borderRadius: '24px', fontSize: '13px', fontWeight: 600}}>AWS Cloud Practitioner</span>
+                    <span style={{padding: '8px 16px', background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.8)', color: '#475569', borderRadius: '24px', fontSize: '13px', fontWeight: 600}}>Git Pro</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div className="admin-modal-actions" style={{marginTop: '24px'}}>
+              <button type="button" className="admin-btn-secondary" onClick={() => setSelectedProfile(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {editingProfile && (
+        <div className="admin-modal-overlay">
+          <div className="admin-modal-content glass-panel" style={{ maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h2 className="admin-modal-title">Edit User Profile</h2>
+            <form onSubmit={handleEditSubmit} className="admin-modal-form">
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px'}}>
+                <div className="form-group">
+                  <label>Full Name</label>
+                  <input type="text" value={editForm.fullname} onChange={e => setEditForm({...editForm, fullname: e.target.value})} required />
+                </div>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input type="email" value={editForm.email} onChange={e => setEditForm({...editForm, email: e.target.value})} required />
+                </div>
+                <div className="form-group">
+                  <label>Username</label>
+                  <input type="text" value={editForm.username} onChange={e => setEditForm({...editForm, username: e.target.value})} required />
+                </div>
+                <div className="form-group">
+                  <label>Role</label>
+                  <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})}>
+                    <option value="Student">Student</option>
+                    <option value="Mentor">Mentor</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Target Track</label>
+                  <input type="text" value={editForm.target_track} onChange={e => setEditForm({...editForm, target_track: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label>Target Industry</label>
+                  <input type="text" value={editForm.target_industry} onChange={e => setEditForm({...editForm, target_industry: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label>Major / Organization</label>
+                  <input type="text" value={editForm.major} onChange={e => setEditForm({...editForm, major: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label>Education Level</label>
+                  <input type="text" value={editForm.education_level} onChange={e => setEditForm({...editForm, education_level: e.target.value})} />
+                </div>
+              </div>
+
+              <div className="form-group" style={{marginTop: '16px'}}>
+                <label>Occupation Goal (About)</label>
+                <textarea value={editForm.occupation_goal} onChange={e => setEditForm({...editForm, occupation_goal: e.target.value})} rows={2} />
+              </div>
+
+              <div className="form-group">
+                <label>Career Goal</label>
+                <textarea value={editForm.career_goal} onChange={e => setEditForm({...editForm, career_goal: e.target.value})} rows={2} />
+              </div>
+
+              <div className="form-group">
+                <label>Strengths (Comma separated)</label>
+                <input type="text" value={editForm.strengths} onChange={e => setEditForm({...editForm, strengths: e.target.value})} />
+              </div>
+
+              <div className="form-group">
+                <label>Develop Areas (Comma separated)</label>
+                <input type="text" value={editForm.develop_areas} onChange={e => setEditForm({...editForm, develop_areas: e.target.value})} />
+              </div>
+
+              <div className="admin-modal-actions">
+                <button type="button" className="admin-btn-secondary" onClick={() => setEditingProfile(null)}>Cancel</button>
+                <button type="submit" className="admin-btn-primary" disabled={isSubmittingEdit}>
+                  {isSubmittingEdit ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

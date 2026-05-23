@@ -182,6 +182,17 @@ export const api = {
     return data;
   },
 
+  updateAdminUser: async (userId, updateData) => {
+    const res = await fetch(`/api/admin/users/${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updateData)
+    });
+    const data = await safeParseJson(res);
+    if (!res.ok) throw new Error(data.error || 'Failed to update user');
+    return data;
+  },
+
   saveMentorHighlight: async (studentId, highlightComment) => {
     const res = await fetch('/api/mentor/highlights', {
       method: 'POST',

@@ -882,14 +882,11 @@
 .readiness-circle {
   width: 80px;
   height: 80px;
-  border-radius: 50%;
-  border: 6px solid #eff6ff;
-  border-top-color: var(--accent-blue);
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  animation: rotateCircle 1s ease-out;
 }
 
 .readiness-circle .num {

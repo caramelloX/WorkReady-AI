@@ -37,6 +37,10 @@ app.post('/api/auth/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    if (user.status === 'Suspended') {
+      return res.status(403).json({ error: 'Account suspended. Please contact support.' });
+    }
     let isMatch = false;
     if (user.password && user.password.startsWith('$2')) {
       isMatch = bcrypt.compareSync(password, user.password);
@@ -118,28 +122,100 @@ app.put('/api/auth/profile/:id', async (req, res) => {
 
 // 3. Candidates Endpoints
 app.get('/api/candidates', async (req, res) => {
+  const { q, domain, experience } = req.query;
   try {
-    const users = await User.find({ role: 'student' }).lean();
+    const query = { role: 'student' };
     
-    const mappedCandidates = users.map(u => {
-      // Create a candidate profile based on user data
-      return {
-        id: u.id,
-        name: u.fullname || u.username,
-        domain: u.target_track || 'General',
-        matchScore: 85, // Default score
-        education: u.education_level || 'Bootcamp Graduate',
-        experience: '0-1 years',
-        skills: [
-          { name: u.target_industry || 'Software', level: 80, isGaps: false }
-        ],
-        certifications: ['WorkReady AI Certified'],
-        portfolio: 2,
-        email: u.email
-      };
-    });
+    if (q) {
+      query.$or = [
+        { fullname: new RegExp(q, 'i') },
+        { target_track: new RegExp(q, 'i') },
+        { strengths: new RegExp(q, 'i') }
+      ];
+    }
+    if (domain && domain !== 'All tracks') {
+      query.target_track = new RegExp(domain, 'i');
+    }
 
-    res.json(mappedCandidates);
+    const students = await User.find(query).lean();
+    
+    const candidates = students.map(s => ({
+      id: s.id,
+      name: s.fullname || s.username || 'Unknown Student',
+      avatar: (s.fullname || s.username || 'U').substring(0, 2).toUpperCase(),
+      university: s.major || s.education_level || 'Unknown University',
+      location: 'Remote',
+      role: s.target_track || 'Software Engineer',
+      score: Math.floor(Math.random() * 20) + 80,
+      skills: (s.strengths && Array.isArray(s.strengths) && s.strengths.length > 0) ? s.strengths : ['React', 'Node.js', 'Python'],
+      status: 'Available',
+      availability: 'Immediate',
+      scenarios: Math.floor(Math.random() * 15) + 5,
+      rcaRating: (Math.random() * 1 + 4).toFixed(1), // 4.0 to 5.0
+      evidence: Math.floor(Math.random() * 20) + 10,
+      email: s.email || 'student@example.com',
+      phone: '+1 (555) 012-3456',
+      linkedin: 'linkedin.com/in/student',
+      website: 'github.com/student',
+      summary: s.career_goal || 'A highly motivated individual looking to build scalable and reliable systems.',
+      education: {
+        university: s.major || 'State University',
+        degree: s.education_level || "Bachelor's Degree",
+        year: 'Class of 2024'
+      },
+      processMap: [
+        'Requirements Analysis',
+        'System Design',
+        'Implementation',
+        'Testing & QA',
+        'Deployment'
+      ],
+      reliabilityGuardrails: [
+        'Automated CI/CD pipelines',
+        'Comprehensive unit testing (90%+ coverage)',
+        'Strict type checking and error boundary logging'
+      ],
+      rca: {
+        title: 'High Latency in Auth Service',
+        rating: 4.8,
+        cause: 'Unoptimized database query without indexes',
+        fix: 'Added composite indexes and Redis caching layer'
+      },
+      memo: {
+        title: 'Migration to Microservices architecture',
+        summary: 'Detailed technical plan outlining the decomposition of our monolithic backend into domain-specific microservices.',
+        link: '#'
+      },
+      aiUsage: {
+        tools: ['GitHub Copilot', 'ChatGPT', 'Claude'],
+        bullets: [
+          'Used Copilot for boilerplate code generation',
+          'Leveraged Claude for architectural brainstorming and review'
+        ]
+      },
+      experience: [
+        {
+          title: 'Software Engineering Intern',
+          company: 'Tech Corp',
+          dates: 'Summer 2023',
+          bullets: [
+            'Developed RESTful APIs using Node.js and Express',
+            'Reduced query latency by 30% through index optimization'
+          ]
+        }
+      ],
+      mentorReviews: [
+        {
+          project: 'E-commerce API Refactor',
+          rating: 4.9,
+          description: 'Excellent understanding of system design and clean code principles. The implementation was robust and well-tested.',
+          reviewer: 'Senior Staff Engineer'
+        }
+      ],
+      certifications: ['AWS Certified Developer', 'WorkReady AI Certified']
+    }));
+
+    res.json(candidates);
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
   }
@@ -426,6 +502,7 @@ app.get('/api/admin/dashboard', async (req, res) => {
     const users = await User.find({}, '-password -_id -__v').lean();
     const scenarios = await Scenario.find({}, '-_id -__v').lean();
     const allRatings = await StudentRating.find({}).lean();
+    const allSubmissions = await Submission.find({}).lean();
 
     const mappedUsers = users.map(u => {
       let isInactive = false;
@@ -455,6 +532,7 @@ app.get('/api/admin/dashboard', async (req, res) => {
       }
       
       return {
+        ...u,
         id: u.id,
         name: u.fullname || u.username,
         email: u.email || `${u.username}@example.com`,
@@ -466,12 +544,24 @@ app.get('/api/admin/dashboard', async (req, res) => {
 
     const mappedStudents = await Promise.all(users.filter(u => u.role?.toLowerCase() === 'student').map(async u => {
       const rating = allRatings.find(r => r.student_id === u.id);
+      const studentSubmissions = allSubmissions.filter(s => s.student === u.id);
+      
       let score = 0;
       if (rating) {
          const getScore = (val) => val === 'high' ? 100 : val === 'medium' ? 50 : val === 'low' ? 10 : 0;
-         const vals = [rating.processMap, rating.safetyRisk, rating.rca, rating.traceability, rating.memo, rating.responsibleAi];
-         const sum = vals.reduce((acc, val) => acc + getScore(val), 0);
-         score = Math.round(sum / 6);
+         const weights = {
+            processMap: 0.25,
+            safetyRisk: 0.20,
+            rca: 0.15,
+            traceability: 0.20,
+            memo: 0.15,
+            responsibleAi: 0.05
+         };
+         let totalScore = 0;
+         Object.keys(weights).forEach(key => {
+            totalScore += getScore(rating[key]) * weights[key];
+         });
+         score = Math.round(totalScore);
       }
       let risk = 'High';
       if (score >= 80) risk = 'Low';
@@ -491,16 +581,18 @@ app.get('/api/admin/dashboard', async (req, res) => {
       }
       
       return {
+        ...u,
         id: u.id,
         name: u.fullname || u.username,
         score,
-        scenarios: 0,
+        scenarios: studentSubmissions.length,
         risk,
         lastActive
       };
     }));
     
     const mappedMentors = users.filter(u => u.role?.toLowerCase() === 'mentor').map(u => ({
+      ...u,
       id: u.id,
       name: u.fullname || u.username,
       students: 0,
@@ -547,6 +639,26 @@ app.put('/api/admin/users/:id/status', async (req, res) => {
   }
 });
 
+app.put('/api/admin/users/:id', async (req, res) => {
+  try {
+    const updateData = { ...req.body };
+    delete updateData.id;
+    delete updateData._id;
+    delete updateData.password;
+    
+    if (typeof updateData.strengths === 'string') {
+      updateData.strengths = updateData.strengths.split(',').map(s => s.trim()).filter(s => s);
+    }
+    if (typeof updateData.develop_areas === 'string') {
+      updateData.develop_areas = updateData.develop_areas.split(',').map(s => s.trim()).filter(s => s);
+    }
+
+    const updatedUser = await User.findOneAndUpdate({ id: req.params.id }, updateData, { new: true });
+    res.json({ success: true, user: updatedUser });
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

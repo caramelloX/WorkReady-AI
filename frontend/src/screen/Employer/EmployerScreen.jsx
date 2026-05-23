@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './EmployerScreen.css';
 import { api } from '../../api.js';
+import { Briefcase, Search, LogOut, LayoutDashboard } from 'lucide-react';
 
 export default function EmployerScreen({ onNavigate }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,9 +66,7 @@ export default function EmployerScreen({ onNavigate }) {
       <div className="employer-sidebar">
         <div className="employer-sidebar-brand" onClick={() => onNavigate('landing')}>
           <div className="employer-brand-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="18" height="18">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
+            <LayoutDashboard size={18} />
           </div>
           <span>WorkReady AI</span>
         </div>
@@ -76,10 +75,7 @@ export default function EmployerScreen({ onNavigate }) {
 
         <nav className="employer-sidebar-nav">
           <button className="employer-nav-btn active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="employer-nav-icon" width="20" height="20">
-              <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-            </svg>
+            <Briefcase className="employer-nav-icon" />
             <span>Talent Search</span>
           </button>
         </nav>
@@ -93,6 +89,7 @@ export default function EmployerScreen({ onNavigate }) {
             </div>
           </div>
           <button className="employer-logout-btn" onClick={() => onNavigate('landing')}>
+            <LogOut size={14} style={{ display: 'inline', marginRight: '8px' }} />
             Back to Home
           </button>
         </div>
@@ -113,10 +110,7 @@ export default function EmployerScreen({ onNavigate }) {
           {/* 2. Search Component & Filters */}
           <div className="employer-search-filter-section">
             <div className="employer-search-bar-container">
-              <svg className="employer-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="18" height="18">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
+              <Search className="employer-search-icon" size={18} />
               <input
                 type="text"
                 placeholder="Search by name, university, or skill (e.g. Kubernetes)"

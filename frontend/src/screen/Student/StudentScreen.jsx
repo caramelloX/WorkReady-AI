@@ -10,7 +10,13 @@ import AiSkillQuizModal from './AiSkillQuizModal';
 import { api } from '../../api';
 
 export default function StudentScreen({ onNavigate }) {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem('studentActiveTab') || 'dashboard';
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem('studentActiveTab', activeTab);
+  }, [activeTab]);
   const [showSkillAssessment, setShowSkillAssessment] = useState(false);
   const [showAiQuiz, setShowAiQuiz] = useState(false);
   
@@ -72,21 +78,36 @@ export default function StudentScreen({ onNavigate }) {
     let strengths = 0;
     let gaps = 0;
     let totalScore = 0;
-    const vals = Object.values(aiRatings);
-    if (vals.length === 0) {
+
+    const weights = {
+      processMap: 0.25,
+      safetyRisk: 0.20,
+      rca: 0.15,
+      traceability: 0.20,
+      memo: 0.15,
+      responsibleAi: 0.05
+    };
+
+    if (Object.keys(aiRatings).length === 0) {
       setStrengthsCount(0);
       setGapsCount(0);
       setOverallReadiness(0);
       return;
     }
-    vals.forEach(val => {
-      if (val === 'high') { strengths++; totalScore += 100; }
-      else if (val === 'medium') { totalScore += 50; }
-      else if (val === 'low') { gaps++; totalScore += 10; }
+
+    Object.keys(weights).forEach(key => {
+      const val = aiRatings[key];
+      let score = 0;
+      if (val === 'high') { strengths++; score = 100; }
+      else if (val === 'medium') { score = 50; }
+      else if (val === 'low') { gaps++; score = 10; }
+      
+      totalScore += score * weights[key];
     });
+
     setStrengthsCount(strengths);
     setGapsCount(gaps);
-    setOverallReadiness(Math.round(totalScore / 6));
+    setOverallReadiness(Math.round(totalScore));
   }, [aiRatings]);
 
   useEffect(() => {
@@ -99,6 +120,7 @@ export default function StudentScreen({ onNavigate }) {
             const dbRatings = await api.getStudentRatings(user.id);
             if (dbRatings && Object.keys(dbRatings).length > 0) {
               setRatings(prev => ({ ...prev, ...dbRatings }));
+              setAiRatings(prev => ({ ...prev, ...dbRatings }));
             }
           }
         } catch (err) {
