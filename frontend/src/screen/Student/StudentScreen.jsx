@@ -6,11 +6,13 @@ import StudentSkillGap from './StudentSkillGap';
 import StudentScenarioSimulator from './StudentScenarioSimulator';
 import StudentEvidencePortfolio from './StudentEvidencePortfolio';
 import SkillAssessmentQuizModal from './SkillAssessmentQuizModal';
+import AiSkillQuizModal from './AiSkillQuizModal';
 import { api } from '../../api';
 
 export default function StudentScreen({ onNavigate }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showSkillAssessment, setShowSkillAssessment] = useState(false);
+  const [showAiQuiz, setShowAiQuiz] = useState(false);
   
   // User Profile State (from database / localStorage)
   const [firstName, setFirstName] = useState('');
@@ -59,17 +61,10 @@ export default function StudentScreen({ onNavigate }) {
     }
   }, []);
   
-  // Skill Gap State
-  const [ratings, setRatings] = useState({
-    processMap: 'medium',
-    safetyRisk: 'medium',
-    rca: 'medium',
-    traceability: 'medium',
-    memo: 'medium',
-    responsibleAi: 'medium'
-  });
+  const [ratings, setRatings] = useState({});
+  const [aiRatings, setAiRatings] = useState({});
 
-  const [overallReadiness, setOverallReadiness] = useState(50);
+  const [overallReadiness, setOverallReadiness] = useState(0);
   const [strengthsCount, setStrengthsCount] = useState(0);
   const [gapsCount, setGapsCount] = useState(0);
 
@@ -77,15 +72,22 @@ export default function StudentScreen({ onNavigate }) {
     let strengths = 0;
     let gaps = 0;
     let totalScore = 0;
-    Object.values(ratings).forEach(val => {
+    const vals = Object.values(aiRatings);
+    if (vals.length === 0) {
+      setStrengthsCount(0);
+      setGapsCount(0);
+      setOverallReadiness(0);
+      return;
+    }
+    vals.forEach(val => {
       if (val === 'high') { strengths++; totalScore += 100; }
       else if (val === 'medium') { totalScore += 50; }
-      else if (val === 'low') { gaps++; totalScore += 10; } // minimum 10 to not be zero
+      else if (val === 'low') { gaps++; totalScore += 10; }
     });
     setStrengthsCount(strengths);
     setGapsCount(gaps);
     setOverallReadiness(Math.round(totalScore / 6));
-  }, [ratings]);
+  }, [aiRatings]);
 
   useEffect(() => {
     const fetchRatings = async () => {
@@ -134,19 +136,27 @@ export default function StudentScreen({ onNavigate }) {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'skillgap') {
-      const storedUserStr = localStorage.getItem('currentUser');
-      if (storedUserStr) {
-        try {
-          const user = JSON.parse(storedUserStr);
-          const hasCompleted = localStorage.getItem(`hasCompletedSkillQuiz_${user.id}`);
-          if (!hasCompleted) {
-            setShowSkillAssessment(true);
-          }
-        } catch (e) {
-          console.error(e);
+    const storedUserStr = localStorage.getItem('currentUser');
+    if (!storedUserStr) return;
+
+    try {
+      const user = JSON.parse(storedUserStr);
+      
+      if (activeTab === 'skillgap') {
+        const hasCompletedSkill = localStorage.getItem(`hasCompletedSkillQuiz_${user.id}`);
+        if (!hasCompletedSkill) {
+          setShowSkillAssessment(true);
         }
       }
+
+      if (activeTab === 'simulator') {
+        const hasCompletedAiQuiz = localStorage.getItem(`hasCompletedAiQuiz_${user.id}`);
+        if (!hasCompletedAiQuiz) {
+          setShowAiQuiz(true);
+        }
+      }
+    } catch (e) {
+      console.error(e);
     }
   }, [activeTab]);
 
@@ -165,19 +175,35 @@ export default function StudentScreen({ onNavigate }) {
     setShowSkillAssessment(false);
   };
 
+  const handleAiQuizComplete = async (newRatings) => {
+    const updatedAiRatings = { ...aiRatings, ...newRatings };
+    setAiRatings(updatedAiRatings);
+    
+    // Auto-calculate new score (mock logic for demo)
+    const getScore = (val) => val === 'high' ? 100 : val === 'medium' ? 50 : val === 'low' ? 10 : 0;
+    const values = Object.values(updatedAiRatings).map(getScore);
+    const avg = values.length ? Math.round(values.reduce((a,b)=>a+b, 0) / values.length) : 0;
+    
+    setOverallReadiness(avg);
+    setShowAiQuiz(false);
+
+    try {
+      const storedUserStr = localStorage.getItem('currentUser');
+      if (storedUserStr) {
+        const user = JSON.parse(storedUserStr);
+        localStorage.setItem(`hasCompletedAiQuiz_${user.id}`, 'true');
+      }
+    } catch(e) {}
+  };
+
   const handleRate = (skill, level) => {
     setRatings(prev => ({ ...prev, [skill]: level }));
   };
 
   const handleResetRatings = () => {
-    setRatings({
-      processMap: 'medium',
-      safetyRisk: 'medium',
-      rca: 'medium',
-      traceability: 'medium',
-      memo: 'medium',
-      responsibleAi: 'medium'
-    });
+    setRatings({});
+    setAiRatings({});
+    setOverallReadiness(0);
     localStorage.removeItem('hasCompletedSkillAssessment');
   };
 
@@ -301,7 +327,7 @@ export default function StudentScreen({ onNavigate }) {
         
         {/* DASHBOARD TAB */}
         {activeTab === 'dashboard' && (
-          <StudentDashboard firstName={firstName} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} setActiveTab={setActiveTab} scenarios={scenarios} handleOpenScenario={handleOpenScenario} />
+          <StudentDashboard firstName={firstName} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} setActiveTab={setActiveTab} scenarios={scenarios} handleOpenScenario={handleOpenScenario} overallReadiness={overallReadiness} ratings={ratings} aiRatings={aiRatings} />
         )}
         
         {/* PROFILE TAB */}
@@ -343,6 +369,13 @@ export default function StudentScreen({ onNavigate }) {
         isOpen={showSkillAssessment} 
         onClose={() => setShowSkillAssessment(false)}
         onComplete={handleAssessmentComplete} 
+      />
+
+      <AiSkillQuizModal 
+        isOpen={showAiQuiz} 
+        onClose={() => setShowAiQuiz(false)}
+        onComplete={handleAiQuizComplete}
+        occupationGoal={occupationGoal}
       />
     </div>
   );

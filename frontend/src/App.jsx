@@ -12,8 +12,35 @@ import EmployerScreen from './screen/Employer/EmployerScreen'
 
 function App() {
   const [count, setCount] = useState(0)
-  const [currentScreen, setCurrentScreen] = useState('landing')
+  
+  // Initialize screen based on persistent login state
+  const [currentScreen, setCurrentScreen] = useState(() => {
+    const savedUserStr = localStorage.getItem('currentUser');
+    if (savedUserStr) {
+      try {
+        const savedUser = JSON.parse(savedUserStr);
+        if (savedUser && (savedUser.id || savedUser.username)) {
+          const role = savedUser.role || 'student';
+          if (role === 'mentor') return 'mentor';
+          if (role === 'admin' || role === 'employer') return 'employer';
+          return 'demo'; // defaults to student screen
+        }
+      } catch (e) {
+        console.error('Failed to parse persistent user state', e);
+      }
+    }
+    return 'landing';
+  });
+
   const [backendStatus, setBackendStatus] = useState('Checking...')
+
+  // Handle navigation and logout
+  const handleNavigate = (screen) => {
+    if (screen === 'landing') {
+      localStorage.removeItem('currentUser'); // Clear session on logout
+    }
+    setCurrentScreen(screen);
+  };
 
   useEffect(() => {
     fetch('/api/health')
@@ -27,33 +54,33 @@ function App() {
   }, [])
 
   if (currentScreen === 'landing') {
-    return <LandingScreen onNavigate={setCurrentScreen} />
+    return <LandingScreen onNavigate={handleNavigate} />
   }
 
   if (currentScreen === 'login') {
-    return <LoginScreen onNavigate={setCurrentScreen} />
+    return <LoginScreen onNavigate={handleNavigate} />
   }
 
   if (currentScreen === 'register') {
-    return <RegisterScreen onNavigate={setCurrentScreen} />
+    return <RegisterScreen onNavigate={handleNavigate} />
   }
 
   if (currentScreen === 'demo') {
-    return <StudentScreen onNavigate={setCurrentScreen} />
+    return <StudentScreen onNavigate={handleNavigate} />
   }
 
   if (currentScreen === 'mentor') {
-    return <MentorScreen onNavigate={setCurrentScreen} />
+    return <MentorScreen onNavigate={handleNavigate} />
   }
 
   if (currentScreen === 'employer' || currentScreen === 'admin') {
-    return <EmployerScreen onNavigate={setCurrentScreen} />
+    return <EmployerScreen onNavigate={handleNavigate} />
   }
 
   return (
     <>
       <div className="demo-header-banner">
-        <button className="back-btn" onClick={() => setCurrentScreen('landing')}>
+        <button className="back-btn" onClick={() => handleNavigate('landing')}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '4px' }}>
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>

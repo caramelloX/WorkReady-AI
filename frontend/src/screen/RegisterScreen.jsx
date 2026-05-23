@@ -5,27 +5,103 @@ import ProfileCompletionModal from '../components/ProfileCompletionModal';
 
 export default function RegisterScreen({ onNavigate }) {
   const [role, setRole] = useState('student'); // 'student' or 'mentor'
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [middleName, setMiddleName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [targetTrack, setTargetTrack] = useState('');
   const [targetIndustry, setTargetIndustry] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [errors, setErrors] = useState({});
   
   // Modal State
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState(null);
 
+  const isFieldValid = (field) => {
+    if (errors[field]) return false;
+    switch(field) {
+      case 'firstName': return firstName.trim().length > 0;
+      case 'lastName': return lastName.trim().length > 0;
+      case 'username': return username.length > 0 && /^[a-zA-Z]+$/.test(username);
+      case 'email': return email.length > 0 && email.includes('@');
+      case 'password': 
+        if (!password) return false;
+        return password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password) && /[\W_]/.test(password);
+      case 'confirmPassword': return confirmPassword.length > 0 && password === confirmPassword;
+      case 'middleName': return middleName.trim().length > 0;
+      default: return false;
+    }
+  };
+
+  const getFieldClass = (field) => {
+    if (errors[field]) return 'register-input-field error';
+    if (isFieldValid(field)) return 'register-input-field success';
+    return 'register-input-field';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
+    setErrors({});
+    
+    let newErrors = {};
+    let errMsg = '';
+
+    if (!firstName) newErrors.firstName = true;
+    if (!lastName) newErrors.lastName = true;
+    if (!username) newErrors.username = true;
+    if (!email) newErrors.email = true;
+    if (!password) newErrors.password = true;
+    if (!confirmPassword) newErrors.confirmPassword = true;
+
+    if (Object.keys(newErrors).length > 0) {
+      errMsg = 'กรุณากรอกข้อมูลให้ครบถ้วนในช่องสีแดง';
+    }
 
     if (!agreeTerms) {
-      setErrorMessage('You must agree to the Terms of Service and Privacy Policy.');
+      if (!errMsg) errMsg = 'กรุณายอมรับเงื่อนไขการให้บริการและนโยบายความเป็นส่วนตัว';
+    }
+
+    // Username validation: English only
+    if (username && !/^[a-zA-Z]+$/.test(username)) {
+      newErrors.username = true;
+      if (!errMsg) errMsg = 'Username ต้องเป็นภาษาอังกฤษเท่านั้น';
+    }
+
+    // Email validation
+    if (email && !email.includes('@')) {
+      newErrors.email = true;
+      if (!errMsg) errMsg = 'กรุณากรอก Email ให้ถูกต้อง (ต้องมี @)';
+    }
+
+    // Password validation
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasNonAlphas = /\W|_/.test(password);
+    if (password && (password.length < 8 || !hasUpperCase || !hasLowerCase || !hasNumbers || !hasNonAlphas)) {
+      newErrors.password = true;
+      if (!errMsg) errMsg = 'Password ต้องมีอย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวพิมพ์ใหญ่ พิมพ์เล็ก ตัวเลข และอักษรพิเศษ';
+    }
+
+    // Confirm password
+    if (confirmPassword && password !== confirmPassword) {
+      newErrors.confirmPassword = true;
+      if (!errMsg) errMsg = 'Password และ Confirm Password ไม่ตรงกัน';
+    }
+
+    if (Object.keys(newErrors).length > 0 || errMsg) {
+      setErrors(newErrors);
+      setErrorMessage(errMsg);
       return;
     }
+
+    const fullName = [firstName, middleName, lastName].filter(Boolean).join(' ');
 
     console.log('[DEBUG] Frontend submitting registration data:', { role, fullName, username, email, password, target_track: targetTrack, target_industry: targetIndustry });
 
@@ -130,18 +206,42 @@ export default function RegisterScreen({ onNavigate }) {
               </div>
             </div>
 
-            {/* Full Name & Username */}
+            {/* Name Fields */}
             <div className="register-form-row">
               <div className="register-form-group">
-                <label htmlFor="fullname" className="register-field-label">Full Name</label>
+                <label htmlFor="firstName" className="register-field-label">First Name</label>
                 <input
-                  id="fullname"
+                  id="firstName"
                   type="text"
-                  className="register-input-field"
-                  placeholder="e.g. Jane Doe"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
+                  className={getFieldClass('firstName')}
+                  placeholder="e.g. Jane"
+                  value={firstName}
+                  onChange={(e) => { setFirstName(e.target.value); setErrors({...errors, firstName: false}); }}
+                />
+              </div>
+              <div className="register-form-group">
+                <label htmlFor="middleName" className="register-field-label">Middle Name (Optional)</label>
+                <input
+                  id="middleName"
+                  type="text"
+                  className={getFieldClass('middleName')}
+                  placeholder="e.g. Ann"
+                  value={middleName}
+                  onChange={(e) => setMiddleName(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="register-form-row">
+              <div className="register-form-group">
+                <label htmlFor="lastName" className="register-field-label">Last Name</label>
+                <input
+                  id="lastName"
+                  type="text"
+                  className={getFieldClass('lastName')}
+                  placeholder="e.g. Doe"
+                  value={lastName}
+                  onChange={(e) => { setLastName(e.target.value); setErrors({...errors, lastName: false}); }}
                 />
               </div>
               <div className="register-form-group">
@@ -149,11 +249,10 @@ export default function RegisterScreen({ onNavigate }) {
                 <input
                   id="username"
                   type="text"
-                  className="register-input-field"
+                  className={getFieldClass('username')}
                   placeholder="e.g. janedoe"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
+                  onChange={(e) => { setUsername(e.target.value); setErrors({...errors, username: false}); }}
                 />
               </div>
             </div>
@@ -164,26 +263,37 @@ export default function RegisterScreen({ onNavigate }) {
               <input
                 id="email"
                 type="email"
-                className="register-input-field"
+                className={getFieldClass('email')}
                 placeholder="e.g. jane.doe@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                onChange={(e) => { setEmail(e.target.value); setErrors({...errors, email: false}); }}
               />
             </div>
 
             {/* Password */}
-            <div className="register-form-group">
-              <label htmlFor="password" className="register-field-label">Password</label>
-              <input
-                id="password"
-                type="password"
-                className="register-input-field"
-                placeholder="Choose a strong password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+            <div className="register-form-row">
+              <div className="register-form-group">
+                <label htmlFor="password" className="register-field-label">Password</label>
+                <input
+                  id="password"
+                  type="password"
+                  className={getFieldClass('password')}
+                  placeholder="Choose a strong password"
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setErrors({...errors, password: false}); }}
+                />
+              </div>
+              <div className="register-form-group">
+                <label htmlFor="confirmPassword" className="register-field-label">Confirm Password</label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  className={getFieldClass('confirmPassword')}
+                  placeholder="Re-enter your password"
+                  value={confirmPassword}
+                  onChange={(e) => { setConfirmPassword(e.target.value); setErrors({...errors, confirmPassword: false}); }}
+                />
+              </div>
             </div>
 
 

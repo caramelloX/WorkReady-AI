@@ -1,6 +1,47 @@
 import React from 'react';
 
-export default function StudentDashboard({ firstName, initials, fullName, targetTrack, major, educationLevel, occupationGoal, targetIndustry, setActiveTab, scenarios, handleOpenScenario }) {
+export default function StudentDashboard({ firstName, initials, fullName, targetTrack, major, educationLevel, occupationGoal, targetIndustry, setActiveTab, scenarios, handleOpenScenario, overallReadiness, ratings, aiRatings }) {
+  
+  const skillMapping = {
+    processMap: { title: 'System Design', weight: '25%' },
+    safetyRisk: { title: 'Cloud & DevOps (AWS/Docker)', weight: '20%' },
+    rca: { title: 'Git & Code Review', weight: '15%' },
+    traceability: { title: 'Data Structures & Algorithms', weight: '20%' },
+    memo: { title: 'Secure Coding (OWASP)', weight: '15%' },
+    responsibleAi: { title: 'Technical Writing', weight: '5%' }
+  };
+
+  const assessmentMapping = {
+    processMap: 'Process Map',
+    safetyRisk: 'Safety & Quality Risk Identification',
+    rca: 'Root Cause Analysis (RCA)',
+    traceability: 'Traceability',
+    memo: 'Technical Memo',
+    responsibleAi: 'Responsible AI Usage'
+  };
+
+  const getScore = (val) => val === 'high' ? 100 : val === 'medium' ? 50 : val === 'low' ? 10 : 0;
+  const getColor = (score) => score >= 80 ? 'green' : score >= 50 ? 'blue' : 'orange';
+
+  const mappedSkills = aiRatings && Object.keys(aiRatings).length > 0 ? Object.keys(skillMapping).map(key => {
+    const score = getScore(aiRatings[key]);
+    return { key, name: skillMapping[key].title, weight: skillMapping[key].weight, score: score, color: getColor(score) };
+  }) : Object.keys(skillMapping).map(key => ({
+    key, name: skillMapping[key].title, weight: skillMapping[key].weight, score: 0, color: 'orange'
+  }));
+
+  const assessmentSkills = ratings && Object.keys(ratings).length > 0 ? Object.keys(assessmentMapping).map(key => {
+    const score = getScore(ratings[key]);
+    return { key, name: assessmentMapping[key], score: score, color: getColor(score) };
+  }) : Object.keys(assessmentMapping).map(key => ({
+    key, name: assessmentMapping[key], score: 0, color: 'orange'
+  }));
+
+  const sortedSkills = [...assessmentSkills].sort((a, b) => a.score - b.score);
+  const topGaps = sortedSkills.slice(0, 4);
+  const biggestGap = [...mappedSkills].sort((a, b) => a.score - b.score)[0]?.name || '-';
+  const displayReadiness = overallReadiness || 0;
+
   return (
     <div className="student-tab-panel dashboard-container-updated">
             
@@ -136,7 +177,7 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                   </div>
                   <div className="student-sublink-info">
                     <h4 className="student-sublink-title">Check Readiness Score</h4>
-                    <p className="student-sublink-subtitle">74/100 against Backend Software Engineer</p>
+                    <p className="student-sublink-subtitle">{displayReadiness}/100 against {targetTrack || 'your track'}</p>
                   </div>
                 </div>
                 <svg className="student-sublink-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -154,8 +195,8 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                   <span className="student-stat-label">WORK-READY SCORE</span>
                   <span className="student-stat-dot blue"></span>
                 </div>
-                <h3 className="student-stat-value">74/100</h3>
-                <p className="student-stat-comparison">vs Backend Software Engineer</p>
+                <h3 className="student-stat-value">{displayReadiness}/100</h3>
+                <p className="student-stat-comparison">vs {targetTrack || 'your track'}</p>
               </div>
 
               {/* Card 2: Scenarios Completed */}
@@ -164,8 +205,8 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                   <span className="student-stat-label">SCENARIOS COMPLETED</span>
                   <span className="student-stat-dot teal"></span>
                 </div>
-                <h3 className="student-stat-value">14/24</h3>
-                <p className="student-stat-comparison">58% of cohort</p>
+                <h3 className="student-stat-value">-</h3>
+                <p className="student-stat-comparison">-</p>
               </div>
 
               {/* Card 3: RCA Coach Rating */}
@@ -174,8 +215,8 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                   <span className="student-stat-label">RCA COACH RATING</span>
                   <span className="student-stat-dot green"></span>
                 </div>
-                <h3 className="student-stat-value">4.2</h3>
-                <p className="student-stat-comparison">Across 11 sessions</p>
+                <h3 className="student-stat-value">-</h3>
+                <p className="student-stat-comparison">-</p>
               </div>
 
               {/* Card 4: Streak */}
@@ -184,8 +225,8 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                   <span className="student-stat-label">STREAK</span>
                   <span className="student-stat-dot orange"></span>
                 </div>
-                <h3 className="student-stat-value">18 days</h3>
-                <p className="student-stat-comparison">Personal best</p>
+                <h3 className="student-stat-value">-</h3>
+                <p className="student-stat-comparison">-</p>
               </div>
             </div>
 
@@ -207,82 +248,40 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                 </div>
                 
                 <div className="breakdown-score-badge">
-                  <div className="score-main">74<span className="score-max">/100</span></div>
-                  <div className="score-gap-label">Biggest gap: <span className="highlight-gap">Cloud & DevOps (AWS/Docker)</span></div>
+                  <div className="score-main">{displayReadiness}<span className="score-max">/100</span></div>
+                  <div className="score-gap-label">Biggest gap: <span className="highlight-gap">{biggestGap}</span></div>
                 </div>
               </div>
               
               <div className="breakdown-skills-grid">
                 {/* Left Column */}
                 <div className="skills-col">
-                  {/* Skill 1 */}
-                  <div className="skill-progress-item">
-                    <div className="skill-info-row">
-                      <span className="skill-name">System Design <span className="skill-weight">· w 25%</span></span>
-                      <span className="skill-score-details">42/75 <span className="skill-diff">+14.0</span></span>
+                  {mappedSkills.slice(0, 3).map(skill => (
+                    <div className="skill-progress-item" key={skill.key}>
+                      <div className="skill-info-row">
+                        <span className="skill-name">{skill.name} <span className="skill-weight">· w {skill.weight}</span></span>
+                        <span className="skill-score-details">{skill.score}/100</span>
+                      </div>
+                      <div className="skill-bar-outer">
+                        <div className={`skill-bar-inner ${skill.color}`} style={{ width: `${skill.score}%` }}></div>
+                      </div>
                     </div>
-                    <div className="skill-bar-outer">
-                      <div className="skill-bar-inner orange" style={{ width: '56%' }}></div>
-                    </div>
-                  </div>
-
-                  {/* Skill 2 */}
-                  <div className="skill-progress-item">
-                    <div className="skill-info-row">
-                      <span className="skill-name">Cloud & DevOps (AWS/Docker) <span className="skill-weight">· w 20%</span></span>
-                      <span className="skill-score-details">38/70 <span className="skill-diff">+10.9</span></span>
-                    </div>
-                    <div className="skill-bar-outer">
-                      <div className="skill-bar-inner orange" style={{ width: '54%' }}></div>
-                    </div>
-                  </div>
-
-                  {/* Skill 3 */}
-                  <div className="skill-progress-item">
-                    <div className="skill-info-row">
-                      <span className="skill-name">Git & Code Review <span className="skill-weight">· w 15%</span></span>
-                      <span className="skill-score-details">65/80 <span className="skill-diff">+12.2</span></span>
-                    </div>
-                    <div className="skill-bar-outer">
-                      <div className="skill-bar-inner blue" style={{ width: '81%' }}></div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
 
                 {/* Right Column */}
                 <div className="skills-col">
-                  {/* Skill 4 */}
-                  <div className="skill-progress-item">
-                    <div className="skill-info-row">
-                      <span className="skill-name">Data Structures & Algorithms <span className="skill-weight">· w 20%</span></span>
-                      <span className="skill-score-details">78/90 <span className="skill-diff">+17.3</span></span>
+                  {mappedSkills.slice(3, 6).map(skill => (
+                    <div className="skill-progress-item" key={skill.key}>
+                      <div className="skill-info-row">
+                        <span className="skill-name">{skill.name} <span className="skill-weight">· w {skill.weight}</span></span>
+                        <span className="skill-score-details">{skill.score}/100</span>
+                      </div>
+                      <div className="skill-bar-outer">
+                        <div className={`skill-bar-inner ${skill.color}`} style={{ width: `${skill.score}%` }}></div>
+                      </div>
                     </div>
-                    <div className="skill-bar-outer">
-                      <div className="skill-bar-inner green" style={{ width: '86%' }}></div>
-                    </div>
-                  </div>
-
-                  {/* Skill 5 */}
-                  <div className="skill-progress-item">
-                    <div className="skill-info-row">
-                      <span className="skill-name">Secure Coding (OWASP) <span className="skill-weight">· w 15%</span></span>
-                      <span className="skill-score-details">88/90 <span className="skill-diff">+14.7</span></span>
-                    </div>
-                    <div className="skill-bar-outer">
-                      <div className="skill-bar-inner green" style={{ width: '97%' }}></div>
-                    </div>
-                  </div>
-
-                  {/* Skill 6 */}
-                  <div className="skill-progress-item">
-                    <div className="skill-info-row">
-                      <span className="skill-name">Technical Writing <span className="skill-weight">· w 5%</span></span>
-                      <span className="skill-score-details">81/85 <span className="skill-diff">+4.8</span></span>
-                    </div>
-                    <div className="skill-bar-outer">
-                      <div className="skill-bar-inner green" style={{ width: '95%' }}></div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
               
@@ -335,49 +334,17 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                 </div>
                 
                 <div className="skillgaps-list">
-                  {/* Gap 1 */}
-                  <div className="gap-item">
-                    <div className="gap-info">
-                      <span className="gap-name">Data Structures & Algorithms</span>
-                      <span className="gap-score">78/90</span>
+                  {topGaps.map((gap, index) => (
+                    <div className="gap-item" key={index}>
+                      <div className="gap-info">
+                        <span className="gap-name">{gap.name}</span>
+                        <span className="gap-score">{gap.score}/100</span>
+                      </div>
+                      <div className="gap-bar-outer">
+                        <div className={`gap-bar-inner ${gap.color}`} style={{ width: `${gap.score}%` }}></div>
+                      </div>
                     </div>
-                    <div className="gap-bar-outer">
-                      <div className="gap-bar-inner green" style={{ width: '86%' }}></div>
-                    </div>
-                  </div>
-
-                  {/* Gap 2 */}
-                  <div className="gap-item">
-                    <div className="gap-info">
-                      <span className="gap-name">System Design</span>
-                      <span className="gap-score">42/75</span>
-                    </div>
-                    <div className="gap-bar-outer">
-                      <div className="gap-bar-inner orange" style={{ width: '56%' }}></div>
-                    </div>
-                  </div>
-
-                  {/* Gap 3 */}
-                  <div className="gap-item">
-                    <div className="gap-info">
-                      <span className="gap-name">Git & Code Review</span>
-                      <span className="gap-score">65/80</span>
-                    </div>
-                    <div className="gap-bar-outer">
-                      <div className="gap-bar-inner blue" style={{ width: '81%' }}></div>
-                    </div>
-                  </div>
-
-                  {/* Gap 4 */}
-                  <div className="gap-item">
-                    <div className="gap-info">
-                      <span className="gap-name">Technical Writing</span>
-                      <span className="gap-score">81/85</span>
-                    </div>
-                    <div className="gap-bar-outer">
-                      <div className="gap-bar-inner green" style={{ width: '95%' }}></div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
 
                 <button className="gaps-assessment-link" onClick={() => setActiveTab('skillgap')}>

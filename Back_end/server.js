@@ -1,7 +1,9 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({ override: true, quiet: true });
 import express from 'express';
 import cors from 'cors';
 import { connectDB } from './db.js';
+import bcrypt from 'bcryptjs';
 
 import User from './models/User.js';
 import Candidate from './models/Candidate.js';
@@ -31,10 +33,18 @@ app.get('/api/health', (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const user = await User.findOne({ username, password }, '-_id -__v -password -createdAt -updatedAt').lean();
+    const user = await User.findOne({ username }, '-_id -__v -createdAt -updatedAt').lean();
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+    
+    const isMatch = bcrypt.compareSync(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    delete user.password;
+    
     res.json({ success: true, token: 'fake-jwt-token-123', user });
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
@@ -50,8 +60,12 @@ app.post('/api/auth/register', async (req, res) => {
       console.log(`[DEBUG] Registration rejected: Username '${username}' is already taken.`);
       return res.status(400).json({ error: 'Username already exists' });
     }
+    
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
+    
     const id = 'usr-' + Math.floor(Math.random() * 10000);
-    const newUser = await User.create({ id, username, password, role, fullname: fullName, email, target_track, target_industry });
+    const newUser = await User.create({ id, username, password: hashedPassword, role, fullname: fullName, email, target_track, target_industry });
     console.log('[DEBUG] User successfully saved to MongoDB:', newUser);
     
     res.json({ 
@@ -182,6 +196,47 @@ app.post('/api/scenario/chat', async (req, res) => {
     console.error('[SCENARIO CHAT] Server error running simulation:', err);
     res.status(500).json({ error: 'Failed to run SRE simulation stage', details: err.message });
   }
+});
+
+app.post('/api/generate-quiz', async (req, res) => {
+  const { occupationGoal } = req.body;
+  // Simple fallback implementation to fix the 404
+  const mockQuiz = {
+    success: true,
+    questions: [
+      {
+        skill: "System Design",
+        question: `How would you design a scalable architecture for a ${occupationGoal || 'Software Engineer'}?`,
+        options: ["Microservices", "Monolith", "Serverless", "All of the above"],
+        correctIndex: 3
+      },
+      {
+        skill: "Cloud & DevOps (AWS/Docker)",
+        question: "Which AWS service is best for container orchestration?",
+        options: ["EC2", "S3", "EKS", "RDS"],
+        correctIndex: 2
+      },
+      {
+        skill: "Git & Code Review",
+        question: "What is the best way to resolve a merge conflict?",
+        options: ["Force push", "Delete branch", "Manually edit conflicting files", "Ignore it"],
+        correctIndex: 2
+      },
+      {
+        skill: "Data Structures & Algorithms",
+        question: "What is the time complexity of binary search?",
+        options: ["O(1)", "O(n)", "O(log n)", "O(n^2)"],
+        correctIndex: 2
+      },
+      {
+        skill: "Secure Coding (OWASP)",
+        question: "How do you prevent SQL Injection?",
+        options: ["Use parameterized queries", "Regex filtering", "Client-side validation", "Disable database"],
+        correctIndex: 0
+      }
+    ]
+  };
+  res.json(mockQuiz);
 });
 
 // 5. Portfolio
