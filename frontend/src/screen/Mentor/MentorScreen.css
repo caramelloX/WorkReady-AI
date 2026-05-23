@@ -377,9 +377,7 @@
 
 /* Student Row Cells */
 .student-cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  /* Content alignment is handled by the table cell itself */
 }
 
 .student-cell .avatar-placeholder {
