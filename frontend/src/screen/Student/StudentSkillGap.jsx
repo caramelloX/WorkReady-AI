@@ -1,6 +1,20 @@
 import React from 'react';
 
 export default function StudentSkillGap({ ratings, calculateRadarPoints, overallReadiness, strengthsCount, gapsCount }) {
+  const getRating = (key) => ratings && ratings[key] ? ratings[key].toUpperCase() : 'NON-GRADED';
+  const getBgColor = (key) => {
+    if (!ratings || !ratings[key]) return '#f3f4f6';
+    if (ratings[key] === 'high') return '#d1fae5';
+    if (ratings[key] === 'low') return '#fee2e2';
+    return '#fef3c7';
+  };
+  const getTextColor = (key) => {
+    if (!ratings || !ratings[key]) return '#6b7280';
+    if (ratings[key] === 'high') return '#065f46';
+    if (ratings[key] === 'low') return '#b91c1c';
+    return '#d97706';
+  };
+
   return (
     <div className="student-tab-panel">
             <div className="skillgap-header-row">
@@ -70,9 +84,9 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   <div className="skillgap-question-header">
                     <h5 className="skillgap-question-title">Process Map</h5>
                     <span className="skillgap-level-indicator" style={{
-                      backgroundColor: ratings.processMap === 'high' ? '#d1fae5' : ratings.processMap === 'low' ? '#fee2e2' : '#fef3c7',
-                      color: ratings.processMap === 'high' ? '#065f46' : ratings.processMap === 'low' ? '#b91c1c' : '#d97706',
-                    }}>{ratings.processMap}</span>
+                      backgroundColor: getBgColor('processMap'),
+                      color: getTextColor('processMap'),
+                    }}>{getRating('processMap')}</span>
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
@@ -86,9 +100,9 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   <div className="skillgap-question-header">
                     <h5 className="skillgap-question-title">Safety & Quality Risk Identification</h5>
                     <span className="skillgap-level-indicator" style={{
-                      backgroundColor: ratings.safetyRisk === 'high' ? '#d1fae5' : ratings.safetyRisk === 'low' ? '#fee2e2' : '#fef3c7',
-                      color: ratings.safetyRisk === 'high' ? '#065f46' : ratings.safetyRisk === 'low' ? '#b91c1c' : '#d97706',
-                    }}>{ratings.safetyRisk}</span>
+                      backgroundColor: getBgColor('safetyRisk'),
+                      color: getTextColor('safetyRisk'),
+                    }}>{getRating('safetyRisk')}</span>
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
@@ -102,9 +116,9 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   <div className="skillgap-question-header">
                     <h5 className="skillgap-question-title">Root Cause Analysis (RCA)</h5>
                     <span className="skillgap-level-indicator" style={{
-                      backgroundColor: ratings.rca === 'high' ? '#d1fae5' : ratings.rca === 'low' ? '#fee2e2' : '#fef3c7',
-                      color: ratings.rca === 'high' ? '#065f46' : ratings.rca === 'low' ? '#b91c1c' : '#d97706',
-                    }}>{ratings.rca}</span>
+                      backgroundColor: getBgColor('rca'),
+                      color: getTextColor('rca'),
+                    }}>{getRating('rca')}</span>
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
@@ -118,9 +132,9 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   <div className="skillgap-question-header">
                     <h5 className="skillgap-question-title">Traceability</h5>
                     <span className="skillgap-level-indicator" style={{
-                      backgroundColor: ratings.traceability === 'high' ? '#d1fae5' : ratings.traceability === 'low' ? '#fee2e2' : '#fef3c7',
-                      color: ratings.traceability === 'high' ? '#065f46' : ratings.traceability === 'low' ? '#b91c1c' : '#d97706',
-                    }}>{ratings.traceability}</span>
+                      backgroundColor: getBgColor('traceability'),
+                      color: getTextColor('traceability'),
+                    }}>{getRating('traceability')}</span>
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
@@ -134,9 +148,9 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   <div className="skillgap-question-header">
                     <h5 className="skillgap-question-title">Technical Memo</h5>
                     <span className="skillgap-level-indicator" style={{
-                      backgroundColor: ratings.memo === 'high' ? '#d1fae5' : ratings.memo === 'low' ? '#fee2e2' : '#fef3c7',
-                      color: ratings.memo === 'high' ? '#065f46' : ratings.memo === 'low' ? '#b91c1c' : '#d97706',
-                    }}>{ratings.memo}</span>
+                      backgroundColor: getBgColor('memo'),
+                      color: getTextColor('memo'),
+                    }}>{getRating('memo')}</span>
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
@@ -150,9 +164,9 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   <div className="skillgap-question-header">
                     <h5 className="skillgap-question-title">Responsible AI Usage</h5>
                     <span className="skillgap-level-indicator" style={{
-                      backgroundColor: ratings.responsibleAi === 'high' ? '#d1fae5' : ratings.responsibleAi === 'low' ? '#fee2e2' : '#fef3c7',
-                      color: ratings.responsibleAi === 'high' ? '#065f46' : ratings.responsibleAi === 'low' ? '#b91c1c' : '#d97706',
-                    }}>{ratings.responsibleAi}</span>
+                      backgroundColor: getBgColor('responsibleAi'),
+                      color: getTextColor('responsibleAi'),
+                    }}>{getRating('responsibleAi')}</span>
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">

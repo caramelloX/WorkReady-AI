@@ -28,7 +28,11 @@ export default function EmployerScreen({ onNavigate }) {
     const loadCandidates = async () => {
       try {
         setIsLoading(true);
-        const data = await api.getCandidates();
+        const data = await api.getCandidates({
+          q: debouncedQuery,
+          domain: domainFilter,
+          experience: experienceFilter
+        });
         setCandidates(data);
       } catch (err) {
         console.error('Failed to retrieve candidates from database:', err);
@@ -37,41 +41,10 @@ export default function EmployerScreen({ onNavigate }) {
       }
     };
     loadCandidates();
-  }, []);
+  }, [debouncedQuery, domainFilter, experienceFilter]);
 
 
-  // Search and Filter candidate selection logic
-  const filteredCandidates = candidates.filter(cand => {
-    // 1. Domain/Track filter
-    if (domainFilter !== 'All tracks') {
-      if (cand.role.toLowerCase() !== domainFilter.toLowerCase()) {
-        return false;
-      }
-    }
-
-    // 2. Experience level / score ranges
-    if (experienceFilter !== 'Any') {
-      // Foundational: < 80 score
-      // Developing: 80 - 85 score
-      // Competent: 86 - 90 score
-      // Job-ready: > 90 score
-      if (experienceFilter === 'Foundational' && cand.score >= 80) return false;
-      if (experienceFilter === 'Developing' && (cand.score < 80 || cand.score > 85)) return false;
-      if (experienceFilter === 'Competent' && (cand.score < 86 || cand.score > 90)) return false;
-      if (experienceFilter === 'Job-ready' && cand.score <= 90) return false;
-    }
-
-    // 3. Debounced search query
-    if (debouncedQuery.trim() !== '') {
-      const q = debouncedQuery.toLowerCase();
-      const matchesName = cand.name.toLowerCase().includes(q);
-      const matchesUniv = cand.university.toLowerCase().includes(q);
-      const matchesSkill = cand.skills.some(skill => skill.toLowerCase().includes(q));
-      return matchesName || matchesUniv || matchesSkill;
-    }
-
-    return true;
-  });
+  // Removed client-side filteredCandidates logic as search happens via backend
 
   // Check if we render the empty state
   const isEmptyState = searchQuery.trim() === '' && domainFilter === 'All tracks' && experienceFilter === 'Any';
@@ -219,7 +192,7 @@ export default function EmployerScreen({ onNavigate }) {
               {/* 3. Search Results Header */}
               <div className="employer-results-header">
                 <div className="employer-results-summary">
-                  Showing <strong>{filteredCandidates.length}</strong> of <strong>{candidates.length}</strong> candidates
+                  Showing <strong>{candidates.length}</strong> verified candidates
                 </div>
                 <div className="employer-results-badge">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14" className="badge-check-icon">
@@ -231,7 +204,7 @@ export default function EmployerScreen({ onNavigate }) {
               </div>
 
               {/* Grid Layout */}
-              {filteredCandidates.length === 0 ? (
+              {candidates.length === 0 ? (
                 <div className="employer-no-results-card">
                   <p>No candidates match your current search query <strong>"{debouncedQuery}"</strong>.</p>
                   <button className="employer-reset-btn" onClick={() => { setSearchQuery(''); setDomainFilter('All tracks'); setExperienceFilter('Any'); }}>
@@ -240,7 +213,7 @@ export default function EmployerScreen({ onNavigate }) {
                 </div>
               ) : (
                 <div className="employer-candidate-grid">
-                  {filteredCandidates.map((cand) => (
+                  {candidates.map((cand) => (
                     /* 4. Candidate Card Anatomy */
                     <div key={cand.id} className="employer-candidate-card" onClick={() => handleOpenPanel(cand)}>
                       

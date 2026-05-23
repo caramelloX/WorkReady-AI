@@ -4,7 +4,7 @@ import { api } from '../api.js';
 
 export default function ProfileCompletionModal({ user, onComplete }) {
   const [obMajor, setObMajor] = useState('');
-  const [obEducationLevel, setObEducationLevel] = useState("Bachelor's (Final year)");
+  const [obEducationLevel, setObEducationLevel] = useState('Bootcamp Graduate');
   const [obTargetIndustry, setObTargetIndustry] = useState('');
   const [obOccupationGoal, setObOccupationGoal] = useState('');
   const [obCareerGoal, setObCareerGoal] = useState('');
@@ -117,12 +117,8 @@ export default function ProfileCompletionModal({ user, onComplete }) {
               <div className="form-group">
                 <label>Education Level</label>
                 <select value={obEducationLevel} onChange={e => setObEducationLevel(e.target.value)}>
-                  <option value="Bachelor's (1st/2nd year)">Bachelor's (1st/2nd year)</option>
-                  <option value="Bachelor's (3rd year)">Bachelor's (3rd year)</option>
                   <option value="Bachelor's (Final year)">Bachelor's (Final year)</option>
-                  <option value="Master's Student">Master's Student</option>
                   <option value="Bootcamp Graduate">Bootcamp Graduate</option>
-                  <option value="Self-Taught">Self-Taught</option>
                 </select>
               </div>
             </div>

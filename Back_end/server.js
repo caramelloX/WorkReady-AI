@@ -37,13 +37,22 @@ app.post('/api/auth/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    
-    const isMatch = bcrypt.compareSync(password, user.password);
+    let isMatch = false;
+    if (user.password && user.password.startsWith('$2')) {
+      isMatch = bcrypt.compareSync(password, user.password);
+    } else {
+      // Fallback for old plain-text passwords
+      isMatch = (password === user.password);
+    }
+
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
     delete user.password;
+    
+    // Update the last activity timestamp so the admin dashboard shows them as 'Active'
+    await User.updateOne({ username }, { $set: { updatedAt: new Date() } });
     
     res.json({ success: true, token: 'fake-jwt-token-123', user });
   } catch (err) {
@@ -110,8 +119,27 @@ app.put('/api/auth/profile/:id', async (req, res) => {
 // 3. Candidates Endpoints
 app.get('/api/candidates', async (req, res) => {
   try {
-    const rows = await Candidate.find({}, '-_id -__v').lean();
-    res.json(rows);
+    const users = await User.find({ role: 'student' }).lean();
+    
+    const mappedCandidates = users.map(u => {
+      // Create a candidate profile based on user data
+      return {
+        id: u.id,
+        name: u.fullname || u.username,
+        domain: u.target_track || 'General',
+        matchScore: 85, // Default score
+        education: u.education_level || 'Bootcamp Graduate',
+        experience: '0-1 years',
+        skills: [
+          { name: u.target_industry || 'Software', level: 80, isGaps: false }
+        ],
+        certifications: ['WorkReady AI Certified'],
+        portfolio: 2,
+        email: u.email
+      };
+    });
+
+    res.json(mappedCandidates);
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
   }
@@ -252,8 +280,50 @@ app.get('/api/portfolio', async (req, res) => {
 // 6. Mentor Students
 app.get('/api/mentor/students', async (req, res) => {
   try {
-    const rows = await MentorStudent.find({}, '-_id -__v').lean();
-    res.json(rows);
+    const users = await User.find({ role: 'student' }).lean();
+    const allRatings = await StudentRating.find({}).lean();
+    
+    const mappedStudents = users.map(u => {
+      const rating = allRatings.find(r => r.student_id === u.id);
+      let score = 0;
+      if (rating) {
+         const getScore = (val) => val === 'high' ? 100 : val === 'medium' ? 50 : val === 'low' ? 10 : 0;
+         const vals = [rating.processMap, rating.safetyRisk, rating.rca, rating.traceability, rating.memo, rating.responsibleAi];
+         const sum = vals.reduce((acc, val) => acc + getScore(val), 0);
+         score = Math.round(sum / 6);
+      }
+      
+      let risk = 'High';
+      if (score >= 80) risk = 'Low';
+      else if (score >= 50) risk = 'Medium';
+
+      let lastActive = 'Never logged in';
+      if (u.updatedAt) {
+        const diffMs = new Date() - new Date(u.updatedAt);
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        
+        if (diffMins < 1) lastActive = 'Just now';
+        else if (diffHours < 1) lastActive = `${diffMins} mins ago`;
+        else if (diffDays < 1) lastActive = `${diffHours} hours ago`;
+        else lastActive = `${diffDays} days ago`;
+      }
+
+      return {
+        id: u.id,
+        name: u.fullname || u.username,
+        readiness: score || 35, // Default visual readiness
+        scenarios: '0/5', // MUST be a string, not an object! React crashes otherwise.
+        risk: risk,
+        lastActive,
+        targetIndustry: u.target_industry || 'General',
+        level: u.education_level || 'Junior',
+        evidence: score > 0 ? ['Completed Assessment'] : ['No assessment data']
+      };
+    });
+
+    res.json(mappedStudents);
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
   }
@@ -344,6 +414,133 @@ app.post('/api/student/ratings', async (req, res) => {
     } else {
       await StudentRating.create({ student_id: studentId, processMap, safetyRisk, rca, traceability, memo, responsibleAi });
     }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// 9. Admin Endpoints
+app.get('/api/admin/dashboard', async (req, res) => {
+  try {
+    const users = await User.find({}, '-password -_id -__v').lean();
+    const scenarios = await Scenario.find({}, '-_id -__v').lean();
+    const allRatings = await StudentRating.find({}).lean();
+
+    const mappedUsers = users.map(u => {
+      let isInactive = false;
+      let lastActivity = 'Never logged in';
+      
+      if (u.updatedAt) {
+        const diffMs = new Date() - new Date(u.updatedAt);
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        
+        if (diffMins < 1) lastActivity = 'Just now';
+        else if (diffHours < 1) lastActivity = `${diffMins} mins ago`;
+        else if (diffDays < 1) lastActivity = `${diffHours} hours ago`;
+        else lastActivity = `${diffDays} days ago`;
+        
+        if (lastActivity !== 'Just now') {
+          isInactive = true;
+        }
+      }
+      
+      let finalStatus = 'Active';
+      if (u.status === 'Suspended') {
+        finalStatus = 'Suspended';
+      } else if (isInactive) {
+        finalStatus = 'Inactive';
+      }
+      
+      return {
+        id: u.id,
+        name: u.fullname || u.username,
+        email: u.email || `${u.username}@example.com`,
+        role: u.role === 'admin' ? 'Admin' : u.role === 'mentor' ? 'Mentor' : 'Student',
+        status: finalStatus,
+        lastActivity
+      };
+    });
+
+    const mappedStudents = await Promise.all(users.filter(u => u.role?.toLowerCase() === 'student').map(async u => {
+      const rating = allRatings.find(r => r.student_id === u.id);
+      let score = 0;
+      if (rating) {
+         const getScore = (val) => val === 'high' ? 100 : val === 'medium' ? 50 : val === 'low' ? 10 : 0;
+         const vals = [rating.processMap, rating.safetyRisk, rating.rca, rating.traceability, rating.memo, rating.responsibleAi];
+         const sum = vals.reduce((acc, val) => acc + getScore(val), 0);
+         score = Math.round(sum / 6);
+      }
+      let risk = 'High';
+      if (score >= 80) risk = 'Low';
+      else if (score >= 50) risk = 'Medium';
+      let lastActive = 'Never logged in';
+      
+      if (u.updatedAt) {
+        const diffMs = new Date() - new Date(u.updatedAt);
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        
+        if (diffMins < 1) lastActive = 'Just now';
+        else if (diffHours < 1) lastActive = `${diffMins} mins ago`;
+        else if (diffDays < 1) lastActive = `${diffHours} hours ago`;
+        else lastActive = `${diffDays} days ago`;
+      }
+      
+      return {
+        id: u.id,
+        name: u.fullname || u.username,
+        score,
+        scenarios: 0,
+        risk,
+        lastActive
+      };
+    }));
+    
+    const mappedMentors = users.filter(u => u.role?.toLowerCase() === 'mentor').map(u => ({
+      id: u.id,
+      name: u.fullname || u.username,
+      students: 0,
+      reviews: 0,
+      rating: 5.0
+    }));
+
+    res.json({
+      users: mappedUsers,
+      students: mappedStudents,
+      mentors: mappedMentors,
+      scenarios,
+      stats: {
+        totalStudents: mappedStudents.length,
+        totalMentors: mappedMentors.length,
+        totalScenarios: scenarios.length
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/admin/users', async (req, res) => {
+  const { fullname, email, username, password, role } = req.body;
+  try {
+    const id = 'usr-' + Math.floor(Math.random() * 10000);
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
+    const newUser = await User.create({ id, username, password: hashedPassword, role: role.toLowerCase(), fullname, email });
+    res.json({ success: true, user: newUser });
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.put('/api/admin/users/:id/status', async (req, res) => {
+  const { status } = req.body;
+  try {
+    await User.updateOne({ id: req.params.id }, { status });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Database error' });

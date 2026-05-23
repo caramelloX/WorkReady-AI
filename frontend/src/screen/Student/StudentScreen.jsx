@@ -253,12 +253,13 @@ export default function StudentScreen({ onNavigate }) {
     <div className="student-workspace">
       {/* Sidebar */}
       <div className="student-sidebar">
-        <div className="student-sidebar-header">
-          <div className="student-sidebar-avatar">{initials}</div>
-          <div>
-            <h2 className="student-sidebar-name">{fullName}</h2>
-            <p className="student-sidebar-role">{targetTrack}</p>
+        <div className="student-sidebar-brand" onClick={() => onNavigate('landing')}>
+          <div className="student-brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
           </div>
+          <span>WorkReady AI</span>
         </div>
 
         <nav className="student-nav">

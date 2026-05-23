@@ -47,15 +47,39 @@
   top: 0;
 }
 
-.student-sidebar-header {
+.student-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-family: var(--font-heading);
-  font-size: 11px;
+  font-size: 22px;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #94a3b8;
+  cursor: pointer;
+  color: var(--primary-color);
   padding-left: 16px;
   margin-bottom: 24px;
+  width: fit-content;
+  transition: opacity 0.2s ease;
+}
+
+.student-sidebar-brand:hover {
+  opacity: 0.9;
+}
+
+.student-brand-icon {
+  width: 32px;
+  height: 32px;
+  background-color: var(--primary-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.student-brand-icon svg {
+  width: 20px;
+  height: 20px;
+  color: #ffffff;
 }
 
 .student-nav {
@@ -2926,4 +2950,71 @@
   border-radius: 4px;
   font-weight: 500;
 }
+
+/* Text Size Accessibility Widget */
+.student-accessibility-widget {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 1000;
+}
+
+.accessibility-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #a0aec0;
+  letter-spacing: 1px;
+}
+
+.accessibility-controls {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.text-size-btn {
+  background: none;
+  border: none;
+  color: #000;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  text-shadow: 2px 2px 0px rgba(0, 112, 243, 0.4);
+  transition: transform 0.1s;
+}
+
+.text-size-btn:hover {
+  transform: scale(1.1);
+}
+
+.text-size-btn.active {
+  color: var(--accent-blue);
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+}
+
+.text-size-btn { font-size: 16px; }
+.text-size-btn.medium-a { font-size: 20px; }
+.text-size-btn.large-a { font-size: 24px; }
+
+/* Text Size Variations for workspace */
+.student-workspace.text-size-large {
+  font-size: 1.1em;
+}
+
+.student-workspace.text-size-large h1 { font-size: 1.1em; }
+.student-workspace.text-size-large p { font-size: 1.1em; }
+.student-workspace.text-size-large .student-nav-btn { font-size: 16px; }
+
+.student-workspace.text-size-xlarge {
+  font-size: 1.25em;
+}
+
+.student-workspace.text-size-xlarge h1 { font-size: 1.25em; }
+.student-workspace.text-size-xlarge p { font-size: 1.25em; }
+.student-workspace.text-size-xlarge .student-nav-btn { font-size: 18px; }
 

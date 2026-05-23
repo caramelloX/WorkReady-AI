@@ -80,20 +80,11 @@ export default function LoginScreen({ onNavigate }) {
   };
 
   const handleSavedAccountClick = (account) => {
-    localStorage.setItem('currentUser', JSON.stringify(account));
-    const role = account.role;
-    if (role === 'mentor') {
-      if (onNavigate) onNavigate('mentor');
-    } else if (role === 'admin' || role === 'employer') {
-      if (onNavigate) onNavigate('admin');
-    } else {
-      if (account.profile_completed) {
-        if (onNavigate) onNavigate('demo');
-      } else {
-        setLoggedInUser(account);
-        setShowProfileModal(true);
-      }
-    }
+    // Instead of auto-login, pre-fill the username and show the password form
+    setUsername(account.username);
+    setPassword('');
+    setShowSavedAccounts(false);
+    // Focus the password input automatically if possible, otherwise they just type it
   };
 
   return (

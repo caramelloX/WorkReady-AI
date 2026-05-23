@@ -3,12 +3,12 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
-import LandingScreen from './screen/LandingScreen'
 import LoginScreen from './screen/LoginScreen'
 import StudentScreen from './screen/Student/StudentScreen'
 import RegisterScreen from './screen/RegisterScreen'
 import MentorScreen from './screen/Mentor/MentorScreen'
 import EmployerScreen from './screen/Employer/EmployerScreen'
+import AdminScreen from './screen/Admin/AdminScreen'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -22,21 +22,22 @@ function App() {
         if (savedUser && (savedUser.id || savedUser.username)) {
           const role = savedUser.role || 'student';
           if (role === 'mentor') return 'mentor';
-          if (role === 'admin' || role === 'employer') return 'employer';
+          if (role === 'admin') return 'admin';
+          if (role === 'employer') return 'employer';
           return 'demo'; // defaults to student screen
         }
       } catch (e) {
         console.error('Failed to parse persistent user state', e);
       }
     }
-    return 'landing';
+    return 'login';
   });
 
   const [backendStatus, setBackendStatus] = useState('Checking...')
 
   // Handle navigation and logout
   const handleNavigate = (screen) => {
-    if (screen === 'landing') {
+    if (screen === 'landing' || screen === 'login') {
       localStorage.removeItem('currentUser'); // Clear session on logout
     }
     setCurrentScreen(screen);
@@ -53,11 +54,7 @@ function App() {
       .catch(() => setBackendStatus('Backend Not Reachable ❌'))
   }, [])
 
-  if (currentScreen === 'landing') {
-    return <LandingScreen onNavigate={handleNavigate} />
-  }
-
-  if (currentScreen === 'login') {
+  if (currentScreen === 'login' || currentScreen === 'landing') {
     return <LoginScreen onNavigate={handleNavigate} />
   }
 
@@ -73,8 +70,12 @@ function App() {
     return <MentorScreen onNavigate={handleNavigate} />
   }
 
-  if (currentScreen === 'employer' || currentScreen === 'admin') {
+  if (currentScreen === 'employer') {
     return <EmployerScreen onNavigate={handleNavigate} />
+  }
+
+  if (currentScreen === 'admin') {
+    return <AdminScreen onNavigate={handleNavigate} />
   }
 
   return (

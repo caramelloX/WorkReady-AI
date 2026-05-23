@@ -28,6 +28,7 @@
   width: 100%;
   max-width: 900px;
   min-height: 550px;
+  max-height: 90vh; /* Added to fit on screen */
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
   overflow: hidden;
   animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -46,6 +47,7 @@
   width: 40%;
   display: flex;
   flex-direction: column;
+  overflow-y: auto; /* Handle overflow */
 }
 
 .profile-modal-brand {
@@ -119,6 +121,7 @@
   width: 60%;
   display: flex;
   flex-direction: column;
+  overflow-y: auto; /* Handle overflow */
 }
 
 .profile-modal-right h3 {
@@ -126,6 +129,7 @@
   color: var(--text-primary, #f4f4f5);
   margin-bottom: 2rem;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .profile-modal-error {
@@ -136,6 +140,7 @@
   border: 1px solid rgba(239, 68, 68, 0.2);
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 .profile-modal-form {
@@ -145,23 +150,24 @@
   flex: 1;
 }
 
-.form-row {
+.profile-modal-form .form-row {
   display: flex;
   gap: 1.25rem;
 }
 
-.form-group {
+.profile-modal-form .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
   flex: 1;
+  min-width: 0;
 }
 
-.form-group.full-width {
+.profile-modal-form .form-group.full-width {
   width: 100%;
 }
 
-.form-group label {
+.profile-modal-form .form-group label {
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-secondary, #a1a1aa);
@@ -169,12 +175,14 @@
   letter-spacing: 0.5px;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
-  background-color: var(--background, #09090b);
+.profile-modal-form .form-group input,
+.profile-modal-form .form-group select,
+.profile-modal-form .form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--background, #09090b) !important;
   border: 1px solid var(--border, #27272a);
-  color: var(--text-primary, #f4f4f5);
+  color: var(--text-primary, #f4f4f5) !important;
   padding: 0.75rem 1rem;
   border-radius: 8px;
   font-family: inherit;
@@ -182,13 +190,29 @@
   transition: all 0.2s ease;
 }
 
-.form-group textarea {
+.profile-modal-form .form-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23a1a1aa%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
+}
+
+.profile-modal-form .form-group select option {
+  background-color: var(--background, #09090b);
+  color: var(--text-primary, #f4f4f5);
+}
+
+.profile-modal-form .form-group textarea {
   resize: vertical;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.profile-modal-form .form-group input:focus,
+.profile-modal-form .form-group select:focus,
+.profile-modal-form .form-group textarea:focus {
   outline: none;
   border-color: var(--accent-blue, #3b82f6);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);

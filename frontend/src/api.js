@@ -73,8 +73,9 @@ export const api = {
   },
 
   // 2. Candidates Catalog
-  getCandidates: async () => {
-    const res = await fetch('/api/candidates');
+  getCandidates: async (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    const res = await fetch(`/api/candidates?${query}`);
     const data = await safeParseJson(res);
     if (!res.ok) throw new Error(data.error || 'Failed to fetch candidates');
     return data;
@@ -144,6 +145,43 @@ export const api = {
     return data;
   },
 
+  // 6. Admin API
+  getAdminDashboardData: async () => {
+    const res = await fetch('/api/admin/dashboard');
+    const data = await safeParseJson(res);
+    if (!res.ok) throw new Error(data.error || 'Failed to fetch admin data');
+    return data;
+  },
+
+  getMentorHighlights: async () => {
+    const res = await fetch('/api/mentor/highlights');
+    const data = await safeParseJson(res);
+    if (!res.ok) throw new Error(data.error || 'Failed to fetch highlights');
+    return data;
+  },
+
+  addAdminUser: async (userData) => {
+    const res = await fetch('/api/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    });
+    const data = await safeParseJson(res);
+    if (!res.ok) throw new Error(data.error || 'Failed to add user');
+    return data;
+  },
+
+  updateUserStatus: async (userId, newStatus) => {
+    const res = await fetch(`/api/admin/users/${userId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    const data = await safeParseJson(res);
+    if (!res.ok) throw new Error(data.error || 'Failed to update status');
+    return data;
+  },
+
   saveMentorHighlight: async (studentId, highlightComment) => {
     const res = await fetch('/api/mentor/highlights', {
       method: 'POST',
@@ -155,6 +193,7 @@ export const api = {
     return data;
   },
 
+  // 4. Scenarios
   getScenarios: async () => {
     const res = await fetch('/api/scenarios');
     const data = await safeParseJson(res);
@@ -164,23 +203,51 @@ export const api = {
 
   regenerateScenarios: async () => {
     const res = await fetch('/api/scenarios/regenerate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      method: 'POST'
     });
     const data = await safeParseJson(res);
     if (!res.ok) throw new Error(data.error || 'Failed to regenerate scenarios');
     return data;
   },
 
-
-  sendScenarioAction: async (scenarioId, scenarioTitle, message, chatHistory) => {
+  chatWithScenario: async (scenarioId, scenarioTitle, message, chatHistory) => {
     const res = await fetch('/api/scenario/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ scenarioId, scenarioTitle, message, chatHistory })
     });
     const data = await safeParseJson(res);
-    if (!res.ok) throw new Error(data.error || 'Failed to send scenario action');
+    if (!res.ok) throw new Error(data.error || 'Failed to simulate step');
+    return data;
+  },
+
+  // 9. Admin Endpoints
+  getAdminDashboardData: async () => {
+    const res = await fetch('/api/admin/dashboard');
+    const data = await safeParseJson(res);
+    if (!res.ok) throw new Error(data.error || 'Failed to fetch admin dashboard');
+    return data;
+  },
+
+  addAdminUser: async (userData) => {
+    const res = await fetch('/api/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    });
+    const data = await safeParseJson(res);
+    if (!res.ok) throw new Error(data.error || 'Failed to add user');
+    return data;
+  },
+
+  updateUserStatus: async (userId, status) => {
+    const res = await fetch(`/api/admin/users/${userId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    const data = await safeParseJson(res);
+    if (!res.ok) throw new Error(data.error || 'Failed to update user status');
     return data;
   },
 

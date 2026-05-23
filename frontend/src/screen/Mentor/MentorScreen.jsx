@@ -20,28 +20,46 @@ export default function MentorScreen({ onNavigate }) {
 
   const [students, setStudents] = useState([]);
 
-  // Load submissions and highlights on mount
-  useEffect(() => {
-    const loadMentorData = async () => {
-      try {
-        setIsLoading(true);
-        const subs = await api.getSubmissions();
-        setSubmissions(subs || []);
-        
-        const highlights = await api.getMentorHighlights();
-        if (highlights) {
-          setMentorHighlights(highlights);
-        }
+  // Retrieve current user from localStorage
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('currentUser');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      return null;
+    }
+  });
 
-        const stData = await api.getMentorStudents();
-        setStudents(stData || []);
-      } catch (err) {
-        console.error('Failed to load mentor workspace data from database:', err);
-      } finally {
-        setIsLoading(false);
+  const mentorName = currentUser?.fullname || currentUser?.username || 'Alex Carter';
+  const mentorInitials = mentorName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  const mentorRole = currentUser?.role === 'mentor' ? 'Mentor' : 'Admin';
+
+  // Load submissions and highlights on mount
+  const loadMentorData = async (silent = false) => {
+    try {
+      if (!silent) setIsLoading(true);
+      const subs = await api.getSubmissions();
+      setSubmissions(subs || []);
+      
+      const highlights = await api.getMentorHighlights();
+      if (highlights) {
+        setMentorHighlights(highlights);
       }
-    };
+
+      const stData = await api.getMentorStudents();
+      setStudents(stData || []);
+    } catch (err) {
+      console.error('Failed to load mentor workspace data from database:', err);
+    } finally {
+      if (!silent) setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadMentorData();
+    // Poll every 5 seconds for real-time updates
+    const interval = setInterval(() => loadMentorData(true), 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const currentStudent = students.find(s => s.id === selectedStudentId) || students[0] || null;
@@ -154,10 +172,10 @@ export default function MentorScreen({ onNavigate }) {
 
         <div className="mentor-sidebar-footer">
           <div className="mentor-user-card">
-            <div className="mentor-avatar">AC</div>
+            <div className="mentor-avatar">{mentorInitials}</div>
             <div className="mentor-user-info">
-              <span className="mentor-user-name">Alex Carter</span>
-              <span className="mentor-user-role">Lead Staff Coach</span>
+              <span className="mentor-user-name">{mentorName}</span>
+              <span className="mentor-user-role">{mentorRole}</span>
             </div>
           </div>
           <button className="mentor-logout-btn" onClick={() => onNavigate('landing')}>

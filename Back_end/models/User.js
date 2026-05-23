@@ -15,7 +15,8 @@ const userSchema = new mongoose.Schema({
   career_goal: String,
   strengths: [String],
   develop_areas: [String],
-  profile_completed: { type: Boolean, default: false }
+  profile_completed: { type: Boolean, default: false },
+  status: { type: String, default: 'Active' }
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);

@@ -252,3 +252,89 @@ Generate the JSON response representing the emulator shell and SRE coach respons
     };
   }
 }
+
+export async function generateOccupationQuiz(apiKey, occupationGoal) {
+  try {
+    if (!apiKey) {
+      throw new Error('Missing API Key for Quiz Generation');
+    }
+
+    const systemInstruction = `You are an expert technical interviewer and SRE manager.
+Generate a JSON object containing a 50-question technical quiz tailored for a candidate aiming to become a "${occupationGoal || 'Software Engineer'}".
+The quiz MUST evaluate proficiency across these 6 core skills:
+1. "System Design"
+2. "Cloud & DevOps (AWS/Docker)"
+3. "Git & Code Review"
+4. "Data Structures & Algorithms"
+5. "Secure Coding (OWASP)"
+6. "Technical Writing"
+
+The output MUST be a valid JSON object with a single key "questions" containing an array of 50 objects.
+Each object in the array MUST strictly match this JSON schema:
+{
+  "skill": "One of the 6 core skills listed above",
+  "question": "A challenging, scenario-based multiple-choice question",
+  "options": [
+    "Option 1",
+    "Option 2",
+    "Option 3",
+    "Option 4"
+  ],
+  "correctIndex": 0 // The integer index (0-3) of the correct option
+}
+
+Ensure the questions are highly relevant to ${occupationGoal || 'Software Engineer'}, practically grounded, and evenly distributed among the 6 skills.
+Return ONLY valid JSON.`;
+
+    const response = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [
+          { role: 'system', content: systemInstruction }
+        ],
+        response_format: { type: 'json_object' }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Groq API returned status ${response.status}`);
+    }
+
+    const data = await response.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) {
+      throw new Error('Empty response from Groq API');
+    }
+
+    let parsed = JSON.parse(text.trim());
+    if (parsed.questions && Array.isArray(parsed.questions)) {
+      return parsed.questions;
+    } else if (Array.isArray(parsed)) {
+      return parsed;
+    }
+    
+    throw new Error('Response is not a valid JSON array of questions');
+  } catch (err) {
+    console.error('[GENERATE QUIZ] Groq failed, using fallback...', err);
+    // Return a small fallback set if AI fails
+    return [
+      {
+        skill: "System Design",
+        question: "You are designing a high-throughput URL shortener. Which database characteristic is most critical for the reads?",
+        options: ["Strong ACID compliance", "High read availability and low latency", "Complex join performance", "Graph relationship traversal"],
+        correctIndex: 1
+      },
+      {
+        skill: "Cloud & DevOps (AWS/Docker)",
+        question: "A Docker container keeps crashing with OOMKilled. What is the first step to diagnose this?",
+        options: ["Increase the instance CPU", "Check docker stats and memory limits", "Rebuild the image with Alpine", "Switch to Kubernetes"],
+        correctIndex: 1
+      }
+    ];
+  }
+}
