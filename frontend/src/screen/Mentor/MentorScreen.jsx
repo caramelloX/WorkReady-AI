@@ -503,71 +503,77 @@ export default function MentorScreen({ onNavigate }) {
             </div>
 
             {/* Right Main Panel detailed view */}
-            <div className="portfolio-detail-panel">
-              <div className="detail-panel-header">
-                <div>
-                  <h2 className="detail-student-name">{currentStudent.name}</h2>
-                  <p className="detail-student-meta">Target Industry: {currentStudent.targetIndustry} | Current Level: {currentStudent.level}</p>
-                </div>
-              </div>
-
-              <div className="detail-panel-body">
-                {/* Readiness Progress Indicator */}
-                <div className="detail-section-card">
-                  <h4 className="section-card-title">Job Readiness Index</h4>
-                  <div className="readiness-big-display">
-                    <div className="readiness-circle">
-                      <span className="num">{currentStudent.readiness}%</span>
-                    </div>
-                    <div className="readiness-scale-info">
-                      <div className="scale-bar-container">
-                        <div className="scale-bar-fill" style={{ width: `${currentStudent.readiness}%` }}></div>
-                      </div>
-                      <p className="description">Candidate has solved {currentStudent.scenarios} incident modules and met Stripe diagnostic standard benchmarks.</p>
-                    </div>
+            {currentStudent ? (
+              <div className="portfolio-detail-panel">
+                <div className="detail-panel-header">
+                  <div>
+                    <h2 className="detail-student-name">{currentStudent.name}</h2>
+                    <p className="detail-student-meta">Target Industry: {currentStudent.targetIndustry} | Current Level: {currentStudent.level}</p>
                   </div>
                 </div>
 
-                {/* Mentor Highlights (Review Comments) */}
-                <div className="detail-section-card">
-                  <h4 className="section-card-title">Mentor Highlights</h4>
-                  <p className="highlight-text">{mentorHighlights[currentStudent.id] || 'No custom highlights provided yet.'}</p>
-                  
-                  <form onSubmit={handleSaveHighlight} className="highlight-edit-form">
-                    <textarea 
-                      className="highlight-textarea"
-                      rows="2"
-                      placeholder="Write structural observations or commendations for this candidate portfolio..."
-                      value={editingHighlight}
-                      onChange={(e) => setEditingHighlight(e.target.value)}
-                    ></textarea>
-                    <button type="submit" className="save-highlight-btn">
-                      Update Highlights
-                    </button>
-                  </form>
-                </div>
-
-                {/* Evidence List */}
-                <div className="detail-section-card">
-                  <h4 className="section-card-title">Evidence Artifact Folder</h4>
-                  <div className="evidence-list-widget">
-                    {currentStudent.evidence.map((ev, idx) => (
-                      <div key={idx} className="evidence-item-row">
-                        <div className="evidence-info">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" className="doc-icon">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                          </svg>
-                          <span className="name">{ev.name}</span>
+                <div className="detail-panel-body">
+                  {/* Readiness Progress Indicator */}
+                  <div className="detail-section-card">
+                    <h4 className="section-card-title">Job Readiness Index</h4>
+                    <div className="readiness-big-display">
+                      <div className="readiness-circle">
+                        <span className="num">{currentStudent.readiness}%</span>
+                      </div>
+                      <div className="readiness-scale-info">
+                        <div className="scale-bar-container">
+                          <div className="scale-bar-fill" style={{ width: `${currentStudent.readiness}%` }}></div>
                         </div>
-                        <span className="score-pill">{ev.points} / 100 pts</span>
+                        <p className="description">Candidate has solved {currentStudent.scenarios} incident modules and met Stripe diagnostic standard benchmarks.</p>
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </div>
 
+                  {/* Mentor Highlights (Review Comments) */}
+                  <div className="detail-section-card">
+                    <h4 className="section-card-title">Mentor Highlights</h4>
+                    <p className="highlight-text">{mentorHighlights[currentStudent.id] || 'No custom highlights provided yet.'}</p>
+                    
+                    <form onSubmit={handleSaveHighlight} className="highlight-edit-form">
+                      <textarea 
+                        className="highlight-textarea"
+                        rows="2"
+                        placeholder="Write structural observations or commendations for this candidate portfolio..."
+                        value={editingHighlight}
+                        onChange={(e) => setEditingHighlight(e.target.value)}
+                      ></textarea>
+                      <button type="submit" className="save-highlight-btn">
+                        Update Highlights
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Evidence List */}
+                  <div className="detail-section-card">
+                    <h4 className="section-card-title">Evidence Artifact Folder</h4>
+                    <div className="evidence-list-widget">
+                      {currentStudent.evidence && currentStudent.evidence.map((ev, idx) => (
+                        <div key={idx} className="evidence-item-row">
+                          <div className="evidence-info">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" className="doc-icon">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                              <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            <span className="name">{ev.name}</span>
+                          </div>
+                          <span className="score-pill">{ev.points} / 100 pts</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="portfolio-detail-panel" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                <p>Loading candidate portfolio...</p>
+              </div>
+            )}
 
           </div>
         )}

@@ -2839,3 +2839,91 @@
     justify-content: center;
   }
 }
+
+/* Premium Gemini SRE Coach typing indicator animation */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+}
+
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  background-color: var(--neutral-heading);
+  border-radius: 50%;
+  opacity: 0.4;
+  animation: typing-dots 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing-dots {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Premium glassmorphic warning banner when Gemini key is missing */
+.gemini-key-missing-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.06) 0%, rgba(245, 158, 11, 0.02) 100%);
+  border: 1.5px solid rgba(245, 158, 11, 0.25);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.gemini-key-missing-banner:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.08);
+}
+
+.gemini-banner-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--accent-yellow);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.gemini-key-missing-banner span {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #78350f;
+  font-family: var(--font-body);
+}
+
+.gemini-key-missing-banner code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background-color: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+

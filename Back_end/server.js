@@ -1,6 +1,6 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { connectDB } from './db.js';
 
 import User from './models/User.js';
@@ -10,8 +10,8 @@ import PortfolioItem from './models/PortfolioItem.js';
 import MentorStudent from './models/MentorStudent.js';
 import Submission from './models/Submission.js';
 import StudentRating from './models/StudentRating.js';
-
-dotenv.config();
+import MentorHighlight from './models/MentorHighlight.js';
+import { runScenarioFallback, runScenarioAI, generateScenariosWithAI } from './scenarioEngine.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -116,10 +116,71 @@ app.get('/api/candidates/:id', async (req, res) => {
 // 4. Scenarios
 app.get('/api/scenarios', async (req, res) => {
   try {
-    const rows = await Scenario.find({}, '-_id -__v').lean();
+    let rows = await Scenario.find({}, '-_id -__v').lean();
+    
+    // If no scenarios exist, generate them dynamically using Gemini!
+    if (rows.length === 0) {
+      const apiKey = process.env.GROQ_API_KEY;
+      const hasApiKey = !!(apiKey && apiKey.trim().length > 0 && !apiKey.startsWith('#'));
+      
+      console.log('[SCENARIOS] No scenarios found. Generating new ones using AI...');
+      const generated = await generateScenariosWithAI(hasApiKey ? apiKey : null);
+      
+      // Save to MongoDB
+      await Scenario.insertMany(generated);
+      rows = await Scenario.find({}, '-_id -__v').lean();
+    }
+    
     res.json(rows);
   } catch (err) {
+    console.error('[SCENARIOS] Fetch/generation error:', err);
     res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/scenarios/regenerate', async (req, res) => {
+  const apiKey = process.env.GROQ_API_KEY;
+  const hasApiKey = !!(apiKey && apiKey.trim().length > 0 && !apiKey.startsWith('#'));
+  
+  try {
+    console.log('[SCENARIOS] Regenerating scenarios with AI...');
+    const generated = await generateScenariosWithAI(hasApiKey ? apiKey : null);
+    
+    // Clear and insert
+    await Scenario.deleteMany({});
+    await Scenario.insertMany(generated);
+    
+    const rows = await Scenario.find({}, '-_id -__v').lean();
+    res.json({ success: true, scenarios: rows });
+  } catch (err) {
+    console.error('[SCENARIOS] Regeneration error:', err);
+    res.status(500).json({ error: 'Failed to regenerate scenarios', details: err.message });
+  }
+});
+
+app.post('/api/scenario/chat', async (req, res) => {
+  const { scenarioId, scenarioTitle, message, chatHistory } = req.body;
+  const apiKey = process.env.GROQ_API_KEY;
+  const hasApiKey = !!(apiKey && apiKey.trim().length > 0 && !apiKey.startsWith('#'));
+
+  try {
+    let result;
+    if (hasApiKey) {
+      console.log(`[SCENARIO CHAT] AI API Key found. Routing SRE action for scenario ${scenarioId} using Groq AI...`);
+      result = await runScenarioAI(scenarioId, scenarioTitle, message, chatHistory || [], apiKey);
+    } else {
+      console.log(`[SCENARIO CHAT] No AI API Key in .env. Falling back to dynamic mock engine for scenario ${scenarioId}...`);
+      result = runScenarioFallback(scenarioId, message, chatHistory || []);
+    }
+    
+    res.json({
+      success: true,
+      hasApiKey,
+      ...result
+    });
+  } catch (err) {
+    console.error('[SCENARIO CHAT] Server error running simulation:', err);
+    res.status(500).json({ error: 'Failed to run SRE simulation stage', details: err.message });
   }
 });
 
@@ -171,6 +232,35 @@ app.post('/api/submissions/review', async (req, res) => {
   const { id, status, feedback } = req.body;
   try {
     await Submission.updateOne({ id }, { status, feedback });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// 7.5. Mentor Highlights
+app.get('/api/mentor/highlights', async (req, res) => {
+  try {
+    const list = await MentorHighlight.find({}).lean();
+    const highlights = {};
+    list.forEach(item => {
+      highlights[item.student_id] = item.highlight_comment;
+    });
+    res.json(highlights);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/mentor/highlights', async (req, res) => {
+  const { studentId, highlightComment } = req.body;
+  try {
+    const existing = await MentorHighlight.findOne({ student_id: studentId });
+    if (existing) {
+      await MentorHighlight.updateOne({ student_id: studentId }, { highlight_comment: highlightComment });
+    } else {
+      await MentorHighlight.create({ student_id: studentId, highlight_comment: highlightComment });
+    }
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Database error' });

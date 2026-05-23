@@ -17,7 +17,11 @@ function App() {
 
   useEffect(() => {
     fetch('/api/health')
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) throw new Error('Not OK');
+        const text = await res.text();
+        return text ? JSON.parse(text) : {};
+      })
       .then(data => setBackendStatus(data.status === 'OK' ? 'Connected to Backend ✅' : 'Backend Error ❌'))
       .catch(() => setBackendStatus('Backend Not Reachable ❌'))
   }, [])

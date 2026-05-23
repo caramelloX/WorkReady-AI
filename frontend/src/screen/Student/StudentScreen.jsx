@@ -204,9 +204,30 @@ export default function StudentScreen({ onNavigate }) {
   const [activeScenario, setActiveScenario] = useState(null);
   const [terminalLogs, setTerminalLogs] = useState([]);
   const [chatMessages, setChatMessages] = useState([]);
-  const [stepIndex, setStepIndex] = useState(0);
   const [inputVal, setInputVal] = useState('');
   const [simCompleted, setSimCompleted] = useState(false);
+  const [dynamicChoices, setDynamicChoices] = useState([]);
+  const [isCoachTyping, setIsCoachTyping] = useState(false);
+  const [hasGeminiKey, setHasGeminiKey] = useState(false);
+  const [isGeneratingScenarios, setIsGeneratingScenarios] = useState(false);
+
+  const handleRegenerateScenarios = async () => {
+    if (isGeneratingScenarios) return;
+    setIsGeneratingScenarios(true);
+    try {
+      const res = await api.regenerateScenarios();
+      if (res.success) {
+        setScenarios(res.scenarios || []);
+        alert('✨ Successfully regenerated 3 custom SRE scenarios using Gemini AI!');
+      }
+    } catch (err) {
+      console.error('Failed to regenerate scenarios:', err);
+      alert('Failed to regenerate scenarios with AI: ' + err.message);
+    } finally {
+      setIsGeneratingScenarios(false);
+    }
+  };
+
 
 
   // Radar Chart Dynamic coordinate calculation for SVG
@@ -246,190 +267,103 @@ export default function StudentScreen({ onNavigate }) {
     }
   };
 
-  // Launch simulated scenario
-  const handleLaunchScenario = (sc) => {
+  // Launch simulated scenario dynamically with real-time SRE engine
+  const handleLaunchScenario = async (sc) => {
     setActiveScenario(sc);
     setSimCompleted(false);
-    setStepIndex(0);
-    
-    // Initial terminal logs
-    setTerminalLogs(sc.initialLogs || []);
+    setTerminalLogs([]);
+    setChatMessages([]);
+    setDynamicChoices([]);
+    setIsCoachTyping(true);
 
-    // Initial AI Coach chats
-    setChatMessages(sc.initialChat || []);
+    try {
+      const res = await api.sendScenarioAction(sc.id, sc.title, '__START__', []);
+      setHasGeminiKey(res.hasApiKey);
+      if (res.success) {
+        setTerminalLogs(res.terminalLogs || []);
+        if (res.coachReply) {
+          setChatMessages([{ sender: 'coach', text: res.coachReply }]);
+        }
+        setDynamicChoices(res.choices || []);
+        setSimCompleted(!!res.completed);
+      }
+    } catch (err) {
+      console.error('Failed to launch dynamic scenario:', err);
+      // Resilient fallback configuration
+      setTerminalLogs(sc.initialLogs || []);
+      setChatMessages(sc.initialChat || []);
+    } finally {
+      setIsCoachTyping(false);
+    }
   };
 
-  // Simulation Choices Flow
-  const choicesForStep = [
-    // Step 0 choices
-    [
-      {
-        text: 'Check active database connection telemetry and list unreleased connection routes.',
-        action: () => {
-          setTerminalLogs((prev) => [
-            ...prev,
-            `$ wr-telemetry db-connections --show-active --limit 10`,
-            `Active: 100, Idle: 0, Waiting: 89`,
-            `Query Source Trace:`,
-            `  -> 82 connections opened by route /v1/checkout/apply-coupon (status: idle in transaction)`,
-            `  -> 10 connections opened by route /v1/cart (status: active)`,
-            `  -> 8 connections opened by system worker threads (status: idle)`,
-            `[SUCCESS] telemetry fetched. Massive leak detected on Coupon Application service!`
-          ]);
-          setChatMessages((prev) => [
-            ...prev,
-            { sender: 'student', text: 'Let\'s run database connections telemetry to trace which routes are reserving slots.' },
-            { sender: 'coach', text: 'Brilliant choice! The telemetry shows that 82 of the 100 active connections are sitting in an "idle in transaction" state, originating from the Coupon Application service route. What is our next debugging step?' }
-          ]);
-          setStepIndex(1);
-        }
-      },
-      {
-        text: 'Restart the PostgreSQL database cluster to clear all active connection sockets.',
-        action: () => {
-          setTerminalLogs((prev) => [
-            ...prev,
-            `$ pg_ctl restart -D /var/lib/postgresql/data`,
-            `[SYSTEM] Database cluster restarted. Clearing active tables...`,
-            `[SYSTEM] Active connections reset to 0. Checkout response times returning to normal.`,
-            `[WARN] 20 seconds elapsed. Pool starts swelling...`,
-            `[ERR] Pool exhausted! active=100 idle=0 waiting=72. Timeout errors reappear.`,
-            `[ERR] Restart was a band-aid! The leak is ongoing.`
-          ]);
-          setChatMessages((prev) => [
-            ...prev,
-            { sender: 'student', text: 'Let\'s restart the PostgreSQL cluster to wipe active connections immediately.' },
-            { sender: 'coach', text: 'That cleared connections momentarily, but because the leak remains active, the database connection pool bloated again to 100% within 20 seconds. Restarting did not solve the root cause. Try to run database telemetry to isolate where the leaks are coming from.' }
-          ]);
-        }
-      },
-      {
-        text: 'Vertically scale up the database connection pool limits from 100 to 500 in pg_hba.conf.',
-        action: () => {
-          setTerminalLogs((prev) => [
-            ...prev,
-            `$ nano /etc/postgresql/16/main/postgresql.conf`,
-            `Changing max_connections from 100 to 500...`,
-            `Applying configurations changes...`,
-            `[ERR] Fatal memory threshold exceeded on Database: pg_mem_alloc failed! Database server crashed!`,
-            `[ERR] Vertically scaling connections without allocating RAM caused an out-of-memory crash.`
-          ]);
-          setChatMessages((prev) => [
-            ...prev,
-            { sender: 'student', text: 'Let\'s edit configuration files to expand maximum database connection limits.' },
-            { sender: 'coach', text: 'Whoops! Scaling connections without diagnosing why they leak caused the server to run out of RAM and crash entirely. We should keep limits safe and run active connection telemetry instead.' }
-          ]);
-        }
-      }
-    ],
-    // Step 1 choices
-    [
-      {
-        text: 'Inspect the coupon verification try/catch codebase for unreleased database clients.',
-        action: () => {
-          setTerminalLogs((prev) => [
-            ...prev,
-            `$ cat src/services/coupon.js`,
-            `Lines 142-159:`,
-            `  async function verifyCoupon(code) {`,
-            `    const client = await db.connect(); // Opens postgres client from pool`,
-            `    try {`,
-            `      const result = await client.query('SELECT * FROM coupons WHERE code = $1', [code]);`,
-            `      return result.rows[0];`,
-            `      // MISSING: client.release() in early returns!`,
-            `    } catch (err) {`,
-            `      logger.error(err);`,
-            `      client.release();`,
-            `    }`,
-            `  }`,
-            `[SUCCESS] Root-cause bug located! DB connection client is never released back on successful queries!`
-          ]);
-          setChatMessages((prev) => [
-            ...prev,
-            { sender: 'student', text: 'Let\'s look at coupon.js source code to trace connection pool acquisitions.' },
-            { sender: 'coach', text: 'Bingo! You located the root-cause bug. In `verifyCoupon`, when a coupon is successfully verified, the function performs an early return but forgets to call `client.release()`. The connection stays locked forever. How should we write the fix?' }
-          ]);
-          setStepIndex(2);
-        }
-      },
-      {
-        text: 'Check if index optimization on the coupons table is missing, causing queries to hang.',
-        action: () => {
-          setTerminalLogs((prev) => [
-            ...prev,
-            `$ psql -c "EXPLAIN ANALYZE SELECT * FROM coupons WHERE code = 'SAVE10'"`,
-            `Index Scan using idx_coupons_code on coupons  (cost=0.15..8.17 rows=1 width=64) (actual time=0.041..0.042 rows=1 loops=1)`,
-            `Planning Time: 0.088 ms`,
-            `Execution Time: 0.065 ms`,
-            `[INFO] Index is present, and query runs in less than 1ms. Query speed is not the issue.`
-          ]);
-          setChatMessages((prev) => [
-            ...prev,
-            { sender: 'student', text: 'Let\'s inspect if missing indexing is slowing queries down, causing pool bloat.' },
-            { sender: 'coach', text: 'Good thought, but the database query execution planner shows we have a highly efficient index and coupon searches resolve in less than 1ms. The issue is structural — the connections are not being released. Let\'s review the codebase files.' }
-          ]);
-        }
-      }
-    ],
-    // Step 2 choices
-    [
-      {
-        text: 'Implement a finally{} block wrapping the return, ensuring client.release() triggers unconditionally.',
-        action: () => {
-          setTerminalLogs((prev) => [
-            ...prev,
-            `$ git diff src/services/coupon.js`,
-            `@@ -142,12 +142,10 @@`,
-            `   async function verifyCoupon(code) {`,
-            `     const client = await db.connect();`,
-            `     try {`,
-            `       const result = await client.query('SELECT * FROM coupons WHERE code = $1', [code]);`,
-            `       return result.rows[0];`,
-            `-    } catch (err) {`,
-            `-      logger.error(err);`,
-            `-      client.release();`,
-            `+    } finally {`,
-            `+      client.release(); // Releases connections unconditionally`,
-            `     }`,
-            `   }`,
-            `$ npm run test:integration`,
-            `[PASS] integration_test_checkout_concurrency.js`,
-            `[SUCCESS] 2026-05-22T14:10:12Z - Fix deployed! DB connections remain stable at 12 active/100.`
-          ]);
-          setChatMessages((prev) => [
-            ...prev,
-            { sender: 'student', text: 'Let\'s refactor code to use a finally block, ensuring client.release() runs on both success and error paths.' },
-            { sender: 'coach', text: 'Absolutely correct! Adding a finally block guarantees the database connection is returned to the pool regardless of whether query operations succeed or crash. The checkout system is now completely healthy and connections stabilized! Excellent job!' }
-          ]);
-          setSimCompleted(true);
-        }
-      }
-    ]
-  ];
+  // Handle student clicking on a diagnostic option
+  const handleSelectChoice = async (choiceText) => {
+    if (isCoachTyping || simCompleted) return;
 
-  // Send student chat text
-  const handleSendChat = (e) => {
+    // Append student choice as active chat item
+    setChatMessages(prev => [...prev, { sender: 'student', text: choiceText }]);
+    setIsCoachTyping(true);
+
+    const history = [...chatMessages, { sender: 'student', text: choiceText }].map(c => ({
+      sender: c.sender,
+      text: c.text
+    }));
+
+    try {
+      const res = await api.sendScenarioAction(activeScenario.id, activeScenario.title, choiceText, history);
+      setHasGeminiKey(res.hasApiKey);
+      if (res.success) {
+        if (res.terminalLogs && res.terminalLogs.length > 0) {
+          setTerminalLogs(prev => [...prev, ...res.terminalLogs]);
+        }
+        if (res.coachReply) {
+          setChatMessages(prev => [...prev, { sender: 'coach', text: res.coachReply }]);
+        }
+        setDynamicChoices(res.choices || []);
+        setSimCompleted(!!res.completed);
+      }
+    } catch (err) {
+      console.error('Failed to execute diagnostic strategy:', err);
+    } finally {
+      setIsCoachTyping(false);
+    }
+  };
+
+  // Send student chat text to AI Coach dynamically
+  const handleSendChat = async (e) => {
     e.preventDefault();
-    if (!inputVal.trim()) return;
+    if (!inputVal.trim() || isCoachTyping || simCompleted) return;
 
     const text = inputVal;
     setInputVal('');
 
-    setChatMessages((prev) => [
-      ...prev,
-      { sender: 'student', text }
-    ]);
+    setChatMessages(prev => [...prev, { sender: 'student', text }]);
+    setIsCoachTyping(true);
 
-    // Simulated general response
-    setTimeout(() => {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          sender: 'coach',
-          text: `Great thoughts! But to progress through the simulation, please select one of the core strategic choices displayed below the terminal console.`
+    const history = [...chatMessages, { sender: 'student', text }].map(c => ({
+      sender: c.sender,
+      text: c.text
+    }));
+
+    try {
+      const res = await api.sendScenarioAction(activeScenario.id, activeScenario.title, text, history);
+      setHasGeminiKey(res.hasApiKey);
+      if (res.success) {
+        if (res.terminalLogs && res.terminalLogs.length > 0) {
+          setTerminalLogs(prev => [...prev, ...res.terminalLogs]);
         }
-      ]);
-    }, 800);
+        if (res.coachReply) {
+          setChatMessages(prev => [...prev, { sender: 'coach', text: res.coachReply }]);
+        }
+        setDynamicChoices(res.choices || []);
+        setSimCompleted(!!res.completed);
+      }
+    } catch (err) {
+      console.error('Failed to send SRE command:', err);
+    } finally {
+      setIsCoachTyping(false);
+    }
   };
 
 
@@ -1450,11 +1384,40 @@ export default function StudentScreen({ onNavigate }) {
         {/* SCENARIO SIMULATOR TAB */}
         {activeTab === 'simulator' && (
           <div className="student-tab-panel">
-            <div className="student-page-header">
+            <div className="student-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="student-page-title-area">
                 <h1 className="student-page-title">Scenario Simulator</h1>
                 <p className="student-page-subtitle">Test your triage skills under fire in isolated staging pods.</p>
               </div>
+              {!activeScenario && (
+                <button 
+                  className="regenerate-scenarios-btn" 
+                  onClick={handleRegenerateScenarios}
+                  disabled={isGeneratingScenarios}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 16px',
+                    background: 'linear-gradient(135deg, var(--primary-color, #3b82f6), var(--secondary-color, #1d4ed8))',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontFamily: 'var(--font-heading)',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)',
+                    transition: 'all 0.2s ease',
+                    opacity: isGeneratingScenarios ? 0.7 : 1
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16" style={{ animation: isGeneratingScenarios ? 'spin 1s linear infinite' : 'none' }}>
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                  </svg>
+                  <span>{isGeneratingScenarios ? 'Generating with AI...' : 'Regenerate Scenarios with AI'}</span>
+                </button>
+              )}
             </div>
 
             {/* If no scenario is running, show selector cards */}
@@ -1481,6 +1444,19 @@ export default function StudentScreen({ onNavigate }) {
             ) : (
               // Active simulation console panel
               <div className="simulator-layout">
+                {!hasGeminiKey && (
+                  <div className="gemini-key-missing-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="gemini-banner-icon">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    <span>
+                      <strong>High-fidelity simulation mode active:</strong> To connect your live Gemini SRE Coach, uncomment and set <code>GEMINI_API_KEY=your_key</code> in <code>Back_end/.env</code> and restart the server.
+                    </span>
+                  </div>
+                )}
+                
                 <div className="simulator-console">
                   
                   {/* Left Column: Staging Pod Terminal */}
@@ -1515,11 +1491,12 @@ export default function StudentScreen({ onNavigate }) {
                       <span className="simulator-choice-title">Select Diagnostic Strategy:</span>
                       
                       {!simCompleted ? (
-                        choicesForStep[stepIndex] && choicesForStep[stepIndex].map((ch, idx) => (
+                        dynamicChoices && dynamicChoices.map((ch, idx) => (
                           <button
                             className="simulator-choice-btn"
                             key={idx}
-                            onClick={ch.action}
+                            onClick={() => handleSelectChoice(ch.text)}
+                            disabled={isCoachTyping}
                           >
                             {ch.text}
                           </button>
@@ -1561,6 +1538,15 @@ export default function StudentScreen({ onNavigate }) {
                             <p>{msg.text}</p>
                           </div>
                         ))}
+                        {isCoachTyping && (
+                          <div className="simulator-chat-bubble coach typing">
+                            <div className="typing-indicator">
+                              <span></span>
+                              <span></span>
+                              <span></span>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <div className="simulator-chat-footer">
