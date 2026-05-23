@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import './LoginScreen.css';
 import { api } from '../api.js';
+import ProfileCompletionModal from '../components/ProfileCompletionModal';
 
 export default function LoginScreen({ onNavigate }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  
+  // Modal State
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState(null);
 
   const handleLogoClick = (e) => {
     e.preventDefault();
@@ -28,7 +33,13 @@ export default function LoginScreen({ onNavigate }) {
         } else if (role === 'admin' || role === 'employer') {
           if (onNavigate) onNavigate('admin');
         } else {
-          if (onNavigate) onNavigate('demo');
+          // If Student
+          if (resData.user.profile_completed) {
+            if (onNavigate) onNavigate('demo');
+          } else {
+            setLoggedInUser(resData.user);
+            setShowProfileModal(true);
+          }
         }
       } else {
         setErrorMessage('Failed to sign in. Please try again.');
@@ -166,6 +177,16 @@ export default function LoginScreen({ onNavigate }) {
           </div>
         </div>
       </div>
+      
+      {showProfileModal && loggedInUser && (
+        <ProfileCompletionModal 
+          user={loggedInUser} 
+          onComplete={(updatedUser) => {
+            setShowProfileModal(false);
+            if (onNavigate) onNavigate('demo');
+          }} 
+        />
+      )}
     </div>
   );
 }

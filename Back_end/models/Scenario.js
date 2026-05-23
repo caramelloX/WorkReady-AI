@@ -5,8 +5,15 @@ const scenarioSchema = new mongoose.Schema({
   title: String,
   desc: String,
   difficulty: String,
-  initialLogs: { type: mongoose.Schema.Types.Mixed, default: [] }, // Was TEXT (JSON)
-  initialChat: { type: mongoose.Schema.Types.Mixed, default: [] } // Was TEXT (JSON)
+  category: String,
+  tags: [String],
+  estimatedTime: String,
+  briefing: String,
+  objectives: [String],
+  evaluationCriteria: [String],
+  quiz: { type: mongoose.Schema.Types.Mixed, default: [] },
+  initialLogs: { type: mongoose.Schema.Types.Mixed, default: [] },
+  initialChat: { type: mongoose.Schema.Types.Mixed, default: [] }
 }, { timestamps: true });
 
 export default mongoose.model('Scenario', scenarioSchema);

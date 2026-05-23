@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './RegisterScreen.css';
 import { api } from '../api.js';
+import ProfileCompletionModal from '../components/ProfileCompletionModal';
 
 export default function RegisterScreen({ onNavigate }) {
   const [role, setRole] = useState('student'); // 'student' or 'mentor'
@@ -12,6 +13,10 @@ export default function RegisterScreen({ onNavigate }) {
   const [targetIndustry, setTargetIndustry] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  
+  // Modal State
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,7 +37,8 @@ export default function RegisterScreen({ onNavigate }) {
         alert(`Account created successfully! Welcome, ${fullName}.`);
         
         if (role === 'student') {
-          onNavigate('demo'); // Renders the Student Screen workspace
+          setLoggedInUser(resData.user);
+          setShowProfileModal(true);
         } else {
           onNavigate('mentor'); // Renders the Mentor Workspace
         }
@@ -261,6 +267,16 @@ export default function RegisterScreen({ onNavigate }) {
 
         </div>
       </div>
+
+      {showProfileModal && loggedInUser && (
+        <ProfileCompletionModal 
+          user={loggedInUser} 
+          onComplete={(updatedUser) => {
+            setShowProfileModal(false);
+            if (onNavigate) onNavigate('demo');
+          }} 
+        />
+      )}
     </div>
   );
 }
