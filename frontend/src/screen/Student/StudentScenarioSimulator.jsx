@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import './StudentScenarioSimulator.css';
 import QuizModal from './QuizModal';
 
-export default function StudentScenarioSimulator({ scenarios, activeScenario, handleOpenScenario, handleLaunchScenario, simCompleted, stepIndex, terminalLogs, chatMessages, inputVal, setInputVal, handleSendChat, choicesForStep }) {
+export default function StudentScenarioSimulator({ scenarios, activeScenario, handleOpenScenario, handleLaunchScenario, simCompleted, stepIndex, terminalLogs, chatMessages, inputVal, setInputVal, handleSendChat, choicesForStep, onRegenerate }) {
   const [selectedScenarioId, setSelectedScenarioId] = useState(null);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Default selection
   useEffect(() => {
@@ -14,6 +15,14 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
   }, [scenarios, selectedScenarioId]);
 
   const selectedScenario = scenarios?.find(s => s.id === selectedScenarioId) || scenarios?.[0];
+
+  const handleAiGenerate = async () => {
+    if (onRegenerate) {
+      setIsGenerating(true);
+      await onRegenerate();
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="student-tab-panel scenario-simulator-root">
@@ -29,7 +38,25 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
         <div className="scenario-simulator-layout">
           {/* Left Column: Scenario Library */}
           <div className="scenario-library-column">
-            <h3 className="scenario-library-title">Scenario library</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 className="scenario-library-title" style={{ marginBottom: 0 }}>Scenario library</h3>
+              <button 
+                onClick={handleAiGenerate}
+                disabled={isGenerating}
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: 'var(--accent-teal)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: isGenerating ? 'wait' : 'pointer',
+                  fontWeight: '600',
+                  opacity: isGenerating ? 0.7 : 1
+                }}
+              >
+                {isGenerating ? 'Generating AI...' : '✨ AI Generate'}
+              </button>
+            </div>
             <div className="scenario-lib-list">
               {scenarios.map((sc) => {
                 const isActive = sc.id === selectedScenarioId;

@@ -1,14 +1,13 @@
 import React from 'react';
 
-export default function StudentSkillGap({ ratings, handleRate, handleResetRatings, calculateRadarPoints, overallReadiness, strengthsCount, gapsCount }) {
+export default function StudentSkillGap({ ratings, calculateRadarPoints, overallReadiness, strengthsCount, gapsCount }) {
   return (
     <div className="student-tab-panel">
             <div className="skillgap-header-row">
               <div className="student-page-title-area">
                 <h1 className="student-page-title">Skill Gap Assessment</h1>
-                <p className="student-page-subtitle">Self-rate each competency. We'll build your strengths, gaps, and a training plan.</p>
+                <p className="student-page-subtitle">View your competencies based on your initial assessment.</p>
               </div>
-              <button className="skillgap-reset-btn" onClick={handleResetRatings}>Reset answers</button>
             </div>
 
             {/* Assessment mini cards */}
@@ -78,11 +77,6 @@ export default function StudentSkillGap({ ratings, handleRate, handleResetRating
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
                       <span className="skillgap-item-text">I can draw an end-to-end process map for an unfamiliar workflow.</span>
-                      <div className="skillgap-btn-group">
-                        <button className={`skillgap-rate-btn ${ratings.processMap === 'low' ? 'active' : ''}`} onClick={() => handleRate('processMap', 'low')}>Low</button>
-                        <button className={`skillgap-rate-btn ${ratings.processMap === 'medium' ? 'active' : ''}`} onClick={() => handleRate('processMap', 'medium')}>Medium</button>
-                        <button className={`skillgap-rate-btn ${ratings.processMap === 'high' ? 'active' : ''}`} onClick={() => handleRate('processMap', 'high')}>High</button>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -98,12 +92,7 @@ export default function StudentSkillGap({ ratings, handleRate, handleResetRating
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
-                      <span className="skillgap-item-text">I can classify quality and security risks in a system by severity and impact likelihood.</span>
-                      <div className="skillgap-btn-group">
-                        <button className={`skillgap-rate-btn ${ratings.safetyRisk === 'low' ? 'active' : ''}`} onClick={() => handleRate('safetyRisk', 'low')}>Low</button>
-                        <button className={`skillgap-rate-btn ${ratings.safetyRisk === 'medium' ? 'active' : ''}`} onClick={() => handleRate('safetyRisk', 'medium')}>Medium</button>
-                        <button className={`skillgap-rate-btn ${ratings.safetyRisk === 'high' ? 'active' : ''}`} onClick={() => handleRate('safetyRisk', 'high')}>High</button>
-                      </div>
+                      <span className="skillgap-item-text">I can independently spot edge-case safety or quality regressions in existing systems.</span>
                     </div>
                   </div>
                 </div>
@@ -119,12 +108,7 @@ export default function StudentSkillGap({ ratings, handleRate, handleResetRating
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
-                      <span className="skillgap-item-text">I can run structured 5-Why and fishbone reviews to trace back production incident bugs.</span>
-                      <div className="skillgap-btn-group">
-                        <button className={`skillgap-rate-btn ${ratings.rca === 'low' ? 'active' : ''}`} onClick={() => handleRate('rca', 'low')}>Low</button>
-                        <button className={`skillgap-rate-btn ${ratings.rca === 'medium' ? 'active' : ''}`} onClick={() => handleRate('rca', 'medium')}>Medium</button>
-                        <button className={`skillgap-rate-btn ${ratings.rca === 'high' ? 'active' : ''}`} onClick={() => handleRate('rca', 'high')}>High</button>
-                      </div>
+                      <span className="skillgap-item-text">I know how to run a structured 5-Whys or fishbone analysis to find true root causes.</span>
                     </div>
                   </div>
                 </div>
@@ -140,12 +124,7 @@ export default function StudentSkillGap({ ratings, handleRate, handleResetRating
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
-                      <span className="skillgap-item-text">I keep clean linkage matrices connecting requirements, code commits, and testing.</span>
-                      <div className="skillgap-btn-group">
-                        <button className={`skillgap-rate-btn ${ratings.traceability === 'low' ? 'active' : ''}`} onClick={() => handleRate('traceability', 'low')}>Low</button>
-                        <button className={`skillgap-rate-btn ${ratings.traceability === 'medium' ? 'active' : ''}`} onClick={() => handleRate('traceability', 'medium')}>Medium</button>
-                        <button className={`skillgap-rate-btn ${ratings.traceability === 'high' ? 'active' : ''}`} onClick={() => handleRate('traceability', 'high')}>High</button>
-                      </div>
+                      <span className="skillgap-item-text">I can trace logs, metrics, or artifacts back to their source without getting lost.</span>
                     </div>
                   </div>
                 </div>
@@ -161,12 +140,7 @@ export default function StudentSkillGap({ ratings, handleRate, handleResetRating
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
-                      <span className="skillgap-item-text">I can write a structured, data-driven post-mortem or incident report RFC.</span>
-                      <div className="skillgap-btn-group">
-                        <button className={`skillgap-rate-btn ${ratings.memo === 'low' ? 'active' : ''}`} onClick={() => handleRate('memo', 'low')}>Low</button>
-                        <button className={`skillgap-rate-btn ${ratings.memo === 'medium' ? 'active' : ''}`} onClick={() => handleRate('memo', 'medium')}>Medium</button>
-                        <button className={`skillgap-rate-btn ${ratings.memo === 'high' ? 'active' : ''}`} onClick={() => handleRate('memo', 'high')}>High</button>
-                      </div>
+                      <span className="skillgap-item-text">I can write a crisp 1-page technical memo outlining an incident, root cause, and next steps.</span>
                     </div>
                   </div>
                 </div>
@@ -182,12 +156,7 @@ export default function StudentSkillGap({ ratings, handleRate, handleResetRating
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
-                      <span className="skillgap-item-text">I audit all generated code outputs and avoid sharing sensitive API environment variables.</span>
-                      <div className="skillgap-btn-group">
-                        <button className={`skillgap-rate-btn ${ratings.responsibleAi === 'low' ? 'active' : ''}`} onClick={() => handleRate('responsibleAi', 'low')}>Low</button>
-                        <button className={`skillgap-rate-btn ${ratings.responsibleAi === 'medium' ? 'active' : ''}`} onClick={() => handleRate('responsibleAi', 'medium')}>Medium</button>
-                        <button className={`skillgap-rate-btn ${ratings.responsibleAi === 'high' ? 'active' : ''}`} onClick={() => handleRate('responsibleAi', 'high')}>High</button>
-                      </div>
+                      <span className="skillgap-item-text">I understand how to design and evaluate features to avoid bias and ensure fairness.</span>
                     </div>
                   </div>
                 </div>

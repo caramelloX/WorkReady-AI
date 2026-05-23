@@ -32,16 +32,8 @@ export default function RegisterScreen({ onNavigate }) {
     try {
       const resData = await api.register(role, fullName, username, email, password, targetTrack, targetIndustry);
       if (resData.success && resData.user) {
-        // Save the logged-in user session
-        localStorage.setItem('currentUser', JSON.stringify(resData.user));
-        alert(`Account created successfully! Welcome, ${fullName}.`);
-        
-        if (role === 'student') {
-          setLoggedInUser(resData.user);
-          setShowProfileModal(true);
-        } else {
-          onNavigate('mentor'); // Renders the Mentor Workspace
-        }
+        alert(`Account created successfully! Please sign in to continue.`);
+        onNavigate('login');
       } else {
         setErrorMessage('Failed to create account. Please try again.');
       }
@@ -194,36 +186,6 @@ export default function RegisterScreen({ onNavigate }) {
               />
             </div>
 
-            {/* Target Track & Industry (Student only) */}
-            {role === 'student' && (
-              <div className="register-form-row">
-                <div className="register-form-group">
-                  <label htmlFor="targetTrack" className="register-field-label">Target Track (Optional)</label>
-                  <select
-                    id="targetTrack"
-                    className="register-input-field"
-                    value={targetTrack}
-                    onChange={(e) => setTargetTrack(e.target.value)}
-                  >
-                    <option value="">Select a track</option>
-                    <option value="Software Engineer">Software Engineer</option>
-                    <option value="Data Scientist">Data Scientist</option>
-                    <option value="Product Manager">Product Manager</option>
-                  </select>
-                </div>
-                <div className="register-form-group">
-                  <label htmlFor="targetIndustry" className="register-field-label">Target Industry (Optional)</label>
-                  <input
-                    id="targetIndustry"
-                    type="text"
-                    className="register-input-field"
-                    placeholder="e.g. Fintech, Healthtech"
-                    value={targetIndustry}
-                    onChange={(e) => setTargetIndustry(e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
 
             {/* Terms of Service Checkbox */}
             <div className="register-checkbox-group">
@@ -268,15 +230,6 @@ export default function RegisterScreen({ onNavigate }) {
         </div>
       </div>
 
-      {showProfileModal && loggedInUser && (
-        <ProfileCompletionModal 
-          user={loggedInUser} 
-          onComplete={(updatedUser) => {
-            setShowProfileModal(false);
-            if (onNavigate) onNavigate('demo');
-          }} 
-        />
-      )}
     </div>
   );
 }
