@@ -18,8 +18,9 @@ import { runScenarioFallback, runScenarioAI, generateScenariosWithAI } from './s
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cors());
-app.use(express.json());
 
 // Initialize DB on startup
 connectDB();
@@ -190,6 +191,7 @@ app.get('/api/candidates', async (req, res) => {
       id: s.id,
       name: s.fullname || s.username || 'Unknown Student',
       avatar: (s.fullname || s.username || 'U').substring(0, 2).toUpperCase(),
+      avatar_base64: s.avatar_base64,
       university: s.major || s.education_level || 'Unknown University',
       location: 'Remote',
       role: s.target_track || 'Software Engineer',
@@ -676,7 +678,7 @@ app.post('/api/admin/users', async (req, res) => {
   }
 });
 
-app.put('/api/admin/users/:id/status', async (req, res) => {
+app.patch('/api/admin/users/:id/status', async (req, res) => {
   const { status } = req.body;
   try {
     await User.updateOne({ id: req.params.id }, { status });

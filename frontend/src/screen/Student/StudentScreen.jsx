@@ -406,12 +406,12 @@ export default function StudentScreen({ onNavigate }) {
         
         {/* DASHBOARD TAB */}
         {activeTab === 'dashboard' && (
-          <StudentDashboard firstName={firstName} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} setActiveTab={setActiveTab} scenarios={scenarios} handleOpenScenario={handleOpenScenario} overallReadiness={overallReadiness} ratings={ratings} aiRatings={aiRatings} />
+          <StudentDashboard avatarBase64={currentUser?.avatar_base64} firstName={firstName} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} setActiveTab={setActiveTab} scenarios={scenarios} handleOpenScenario={handleOpenScenario} overallReadiness={overallReadiness} ratings={ratings} aiRatings={aiRatings} />
         )}
         
         {/* PROFILE TAB */}
         {activeTab === 'profile' && (
-          <StudentProfile initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} email={email} careerGoal={careerGoal} strengthsList={strengthsList} developAreasList={developAreasList} />
+          <StudentProfile avatarBase64={currentUser?.avatar_base64} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} email={email} careerGoal={careerGoal} strengthsList={strengthsList} developAreasList={developAreasList} />
         )}
 
         {/* SETTINGS TAB */}

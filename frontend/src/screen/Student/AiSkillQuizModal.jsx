@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { createPortal } from 'react-dom';
 import './QuizModal.css';
+import Swal from 'sweetalert2';
 
 export default function AiSkillQuizModal({ isOpen, onClose, onComplete, occupationGoal }) {
   const { t } = useLanguage();
@@ -136,6 +137,23 @@ export default function AiSkillQuizModal({ isOpen, onClose, onComplete, occupati
     }
   };
 
+  const handleCloseConfirm = () => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Your progress will be lost if you close this assessment.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#062b50',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, close it',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        onClose();
+      }
+    });
+  };
+
   const currentSelection = selectedOptions[currentStep - 1];
   const isNextDisabled = currentSelection === undefined || isSubmitting;
 
@@ -149,8 +167,14 @@ export default function AiSkillQuizModal({ isOpen, onClose, onComplete, occupati
             <span className="quiz-modal-header-icon">&gt;_</span>
             <h2 className="quiz-modal-title">{t('aiquiz.title')}</h2>
           </div>
-          <div className="quiz-modal-header-right">
+          <div className="quiz-modal-header-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{color: '#64ffda', fontSize: '12px'}}>[ {currentQuizItem.skill} ]</span>
+            <button className="quiz-modal-close-btn" onClick={handleCloseConfirm} aria-label="Close">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
         </div>
 

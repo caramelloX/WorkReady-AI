@@ -41,6 +41,11 @@ export default function MentorScreen({ onNavigate }) {
     }
   });
 
+  const handleProfileUpdate = (updatedUser) => {
+    setCurrentUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+  };
+
   const mentorName = currentUser?.fullname || currentUser?.username || 'Alex Carter';
   const mentorInitials = mentorName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   const mentorRole = currentUser?.role === 'mentor' ? 'Mentor' : 'Admin';
@@ -292,7 +297,11 @@ export default function MentorScreen({ onNavigate }) {
                         {students.map((st) => (
                           <tr key={st.id}>
                             <td className="student-cell">
-                              <span className="avatar-placeholder">{st.name.split(' ').map(n => n[0]).join('')}</span>
+                              {st.avatar_base64 ? (
+                                <img src={st.avatar_base64} alt={st.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                              ) : (
+                                <span className="avatar-placeholder">{st.name.split(' ').map(n => n[0] || '').join('')}</span>
+                              )}
                               <span className="name">{st.name}</span>
                             </td>
                             <td>
@@ -412,7 +421,16 @@ export default function MentorScreen({ onNavigate }) {
                     <tbody>
                       {students.map((st) => (
                         <tr key={st.id}>
-                          <td className="student-cell font-medium">{st.name}</td>
+                          <td className="student-cell font-medium">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              {st.avatar_base64 ? (
+                                <img src={st.avatar_base64} alt={st.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                              ) : (
+                                <span className="avatar-placeholder" style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--brand-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>{st.name.split(' ').map(n => n[0] || '').join('')}</span>
+                              )}
+                              {st.name}
+                            </div>
+                          </td>
                           <td>{st.targetIndustry}</td>
                           <td>
                             <span className={`level-pill ${st.level.toLowerCase().replace(' ', '-')}`}>
@@ -482,7 +500,18 @@ export default function MentorScreen({ onNavigate }) {
                     <tbody>
                       {filteredSubmissions.map((sub) => (
                         <tr key={sub.id}>
-                          <td className="student-cell font-medium">{sub.student}</td>
+                          <td className="student-cell font-medium">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              {(() => {
+                                const matched = students.find(s => s.name === sub.student);
+                                if (matched?.avatar_base64) {
+                                  return <img src={matched.avatar_base64} alt={sub.student} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />;
+                                }
+                                return <span className="avatar-placeholder" style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--brand-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>{sub.student.split(' ').map(n => n[0] || '').join('')}</span>;
+                              })()}
+                              {sub.student}
+                            </div>
+                          </td>
                           <td>
                             <span className="type-tag">{sub.type}</span>
                           </td>
@@ -552,7 +581,12 @@ export default function MentorScreen({ onNavigate }) {
                     className={`master-student-item ${selectedStudentId === st.id ? 'active' : ''}`}
                     onClick={() => { setSelectedStudentId(st.id); setEditingHighlight(''); }}
                   >
-                    <span className="name">{st.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {st.avatar_base64 ? (
+                        <img src={st.avatar_base64} alt={st.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : null}
+                      <span className="name">{st.name}</span>
+                    </div>
                     <span className="readiness-score">{st.readiness}% {t('mentor.ready')}</span>
                   </div>
                 ))}
@@ -563,9 +597,14 @@ export default function MentorScreen({ onNavigate }) {
             {currentStudent ? (
               <div className="portfolio-detail-panel">
                 <div className="detail-panel-header">
-                  <div>
-                    <h2 className="detail-student-name">{currentStudent.name}</h2>
-                    <p className="detail-student-meta">Target Industry: {currentStudent.targetIndustry} | Current Level: {currentStudent.level}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    {currentStudent.avatar_base64 ? (
+                      <img src={currentStudent.avatar_base64} alt={currentStudent.name} style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : null}
+                    <div>
+                      <h2 className="detail-student-name">{currentStudent.name}</h2>
+                      <p className="detail-student-meta">Target Industry: {currentStudent.targetIndustry} | Current Level: {currentStudent.level}</p>
+                    </div>
                   </div>
                 </div>
 
@@ -652,7 +691,7 @@ export default function MentorScreen({ onNavigate }) {
         )}
 
         {activeTab === 'settings' && (
-          <StudentSettings currentUser={currentUser} />
+          <StudentSettings currentUser={currentUser} onProfileUpdate={handleProfileUpdate} />
         )}
 
       </div>

@@ -3,6 +3,7 @@ import './StudentSettings.css';
 import { api } from '../../api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import Swal from 'sweetalert2';
 
 export default function StudentSettings({ currentUser, onProfileUpdate, initials, fullName, email, targetIndustry, major }) {
   const { t, language, changeLanguage } = useLanguage();
@@ -59,7 +60,12 @@ export default function StudentSettings({ currentUser, onProfileUpdate, initials
 
   const handleSave = async () => {
     if (!currentUser || !currentUser.id) {
-      alert('Unable to save: user ID not found.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Unable to save: user ID not found.',
+        icon: 'error',
+        confirmButtonColor: '#003057'
+      });
       return;
     }
     
@@ -68,11 +74,21 @@ export default function StudentSettings({ currentUser, onProfileUpdate, initials
       const result = await api.updateProfile(currentUser.id, formData);
       if (result.success && onProfileUpdate) {
         onProfileUpdate(result.user);
-        alert('Settings saved successfully!');
+        Swal.fire({
+          title: 'Success',
+          text: 'Saved successfully!',
+          icon: 'success',
+          confirmButtonColor: '#003057'
+        });
       }
     } catch (error) {
       console.error(error);
-      alert('Error saving settings: ' + error.message);
+      Swal.fire({
+        title: 'Error',
+        text: 'Error saving settings: ' + error.message,
+        icon: 'error',
+        confirmButtonColor: '#003057'
+      });
     } finally {
       setIsSaving(false);
     }
@@ -117,7 +133,12 @@ export default function StudentSettings({ currentUser, onProfileUpdate, initials
     try {
       const result = await api.changePassword(currentUser.id, currentPassword, newPassword);
       if (result.success) {
-        alert('Password updated successfully!');
+        Swal.fire({
+          title: 'Success',
+          text: 'Password updated successfully!',
+          icon: 'success',
+          confirmButtonColor: '#003057'
+        });
         setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       }
     } catch (error) {

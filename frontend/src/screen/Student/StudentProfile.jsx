@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-export default function StudentProfile({ initials, fullName, targetTrack, major, educationLevel, occupationGoal, targetIndustry, email, careerGoal, strengthsList, developAreasList }) {
+export default function StudentProfile({ avatarBase64, initials, fullName, targetTrack, major, educationLevel, occupationGoal, targetIndustry, email, careerGoal, strengthsList, developAreasList }) {
   const { t } = useLanguage();
   return (
     <div className="student-tab-panel">
@@ -16,7 +16,11 @@ export default function StudentProfile({ initials, fullName, targetTrack, major,
               
               {/* Profile Left Details Card */}
               <div className="student-card profile-left-card">
-                <div className="profile-avatar-circle">{initials}</div>
+                {avatarBase64 ? (
+                  <img src={avatarBase64} alt="Avatar" className="profile-avatar-circle" style={{ objectFit: 'cover', display: 'flex' }} />
+                ) : (
+                  <div className="profile-avatar-circle">{initials}</div>
+                )}
                 <h3 className="profile-name">{fullName}</h3>
                 <p className="profile-cohort">{t('dashboard.cohortPrefix')}{targetTrack}{t('dashboard.cohortSuffix')}</p>
 

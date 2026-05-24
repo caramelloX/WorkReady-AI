@@ -66,6 +66,24 @@ export default function EmployerScreen({ onNavigate }) {
 
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
+  // Retrieve current user from localStorage
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('currentUser');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const handleProfileUpdate = (updatedUser) => {
+    setCurrentUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+  };
+
+  const employerName = currentUser?.fullname || currentUser?.username || t('employer.guestRecruiter');
+  const employerInitials = employerName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
   return (
     <div className="employer-workspace">
       {/* 1. Sidebar Navigation */}
@@ -89,9 +107,13 @@ export default function EmployerScreen({ onNavigate }) {
         <div className="employer-sidebar-footer">
           <div className="employer-profile-dropdown-container">
             <button className="employer-profile-btn" onClick={() => setShowProfileDropdown(!showProfileDropdown)}>
-              <div className="employer-profile-avatar">EP</div>
+              {currentUser && currentUser.avatar_base64 ? (
+                <img src={currentUser.avatar_base64} alt="Avatar" className="employer-profile-avatar" style={{ objectFit: 'cover' }} />
+              ) : (
+                <div className="employer-profile-avatar">{employerInitials}</div>
+              )}
               <div className="employer-profile-info">
-                <span className="employer-profile-name">{t('employer.guestRecruiter')}</span>
+                <span className="employer-profile-name">{employerName}</span>
                 <span className="employer-profile-role">{t('employer.publicPreview')}</span>
               </div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`dropdown-icon ${showProfileDropdown ? 'open' : ''}`}>
@@ -241,7 +263,11 @@ export default function EmployerScreen({ onNavigate }) {
                       {/* Top Row (Profile Summary) */}
                       <div className="card-top-row">
                         <div className="avatar-circle">
-                          {cand.avatar}
+                          {cand.avatar_base64 ? (
+                            <img src={cand.avatar_base64} alt={cand.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                          ) : (
+                            cand.avatar
+                          )}
                         </div>
                         <div className="identity-box">
                           <h3 className="name">{cand.name}</h3>
@@ -311,7 +337,7 @@ export default function EmployerScreen({ onNavigate }) {
         </main>
         </>)}
         {activeTab === 'settings' && (
-          <StudentSettings currentUser={{ role: 'employer', fullname: 'Guest Recruiter' }} />
+          <StudentSettings currentUser={currentUser || { role: 'employer', fullname: 'Guest Recruiter' }} onProfileUpdate={handleProfileUpdate} />
         )}
       </div>
 

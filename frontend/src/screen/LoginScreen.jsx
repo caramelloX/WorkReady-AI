@@ -3,11 +3,13 @@ import './LoginScreen.css';
 import { api } from '../api.js';
 import ProfileCompletionModal from '../components/ProfileCompletionModal';
 import { useLanguage } from '../contexts/LanguageContext';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginScreen({ onNavigate }) {
   const { t } = useLanguage();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   
   // Modal State
@@ -207,15 +209,26 @@ export default function LoginScreen({ onNavigate }) {
                     <label htmlFor="password" className="login-field-label">{t('login.password')}</label>
                     <a href="#forgot" className="login-forgot-link" onClick={(e) => e.preventDefault()}>{t('login.forgot')}</a>
                   </div>
-                  <input
-                    id="password"
-                    type="password"
-                    className="login-input-field"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t('login.passwordPlaceholder')}
-                    required
-                  />
+                  <div className="password-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      className="login-input-field"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={t('login.passwordPlaceholder')}
+                      required
+                      style={{ paddingRight: '44px' }}
+                    />
+                    <button 
+                      type="button" 
+                      className="password-toggle-icon" 
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{ position: 'absolute', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex' }}
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Submit Button */}

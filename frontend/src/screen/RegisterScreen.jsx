@@ -3,6 +3,7 @@ import './RegisterScreen.css';
 import { api } from '../api.js';
 import ProfileCompletionModal from '../components/ProfileCompletionModal';
 import { useLanguage } from '../contexts/LanguageContext';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterScreen({ onNavigate }) {
   const { t } = useLanguage();
@@ -14,6 +15,8 @@ export default function RegisterScreen({ onNavigate }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [targetTrack, setTargetTrack] = useState('');
   const [targetIndustry, setTargetIndustry] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -282,25 +285,45 @@ export default function RegisterScreen({ onNavigate }) {
             <div className="register-form-row">
               <div className="register-form-group">
                 <label htmlFor="password" className="register-field-label">{t('reg.password')}</label>
-                <input
-                  id="password"
-                  type="password"
-                  className={getFieldClass('password')}
-                  placeholder="Choose a strong password"
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); setErrors({...errors, password: false}); }}
-                />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    className={getFieldClass('password')}
+                    placeholder="Choose a strong password"
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setErrors({...errors, password: false}); }}
+                    style={{ paddingRight: '44px', width: '100%' }}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ position: 'absolute', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex' }}
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
               <div className="register-form-group">
                 <label htmlFor="confirmPassword" className="register-field-label">{t('reg.confirmPassword')}</label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  className={getFieldClass('confirmPassword')}
-                  placeholder="Re-enter your password"
-                  value={confirmPassword}
-                  onChange={(e) => { setConfirmPassword(e.target.value); setErrors({...errors, confirmPassword: false}); }}
-                />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    className={getFieldClass('confirmPassword')}
+                    placeholder="Re-enter your password"
+                    value={confirmPassword}
+                    onChange={(e) => { setConfirmPassword(e.target.value); setErrors({...errors, confirmPassword: false}); }}
+                    style={{ paddingRight: '44px', width: '100%' }}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{ position: 'absolute', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex' }}
+                  >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
             </div>
 

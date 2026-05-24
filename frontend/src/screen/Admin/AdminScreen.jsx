@@ -96,6 +96,24 @@ export default function AdminScreen({ onNavigate }) {
     return () => clearInterval(intervalId);
   }, []);
 
+  // Retrieve current user from localStorage
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('currentUser');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const handleProfileUpdate = (updatedUser) => {
+    setCurrentUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+  };
+
+  const adminName = currentUser?.fullname || currentUser?.username || 'System Admin';
+  const adminInitials = adminName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
   // Add User Modal State
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -242,10 +260,14 @@ export default function AdminScreen({ onNavigate }) {
         <div className="admin-sidebar-footer">
           <div className="admin-profile-dropdown-container">
             <button className="admin-profile-btn" onClick={() => setShowProfileDropdown(!showProfileDropdown)}>
-              <div className="admin-profile-avatar">AD</div>
+              {currentUser && currentUser.avatar_base64 ? (
+                <img src={currentUser.avatar_base64} alt="Avatar" className="admin-profile-avatar" style={{ objectFit: 'cover' }} />
+              ) : (
+                <div className="admin-profile-avatar">{adminInitials}</div>
+              )}
               <div className="admin-profile-info">
-                <span className="admin-profile-name">System Admin</span>
-                <span className="admin-profile-role">{t('admin.profile.role')}</span>
+                <span className="admin-profile-name">{adminName}</span>
+                <span className="admin-profile-role">{t('admin.profile.role') || 'Admin'}</span>
               </div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`dropdown-icon ${showProfileDropdown ? 'open' : ''}`}>
                 <polyline points="6 9 12 15 18 9" />
@@ -465,9 +487,16 @@ export default function AdminScreen({ onNavigate }) {
                       {usersData.filter(u => u.role !== 'Admin').map(u => (
                         <tr key={u.id}>
                           <td>
-                            <div className="user-name-cell">
-                              <span className="name">{u.name}</span>
-                              <span className="email">{u.email}</span>
+                            <div className="user-name-cell" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              {u.avatar_base64 ? (
+                                <img src={u.avatar_base64} alt={u.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                              ) : (
+                                <span className="avatar-placeholder" style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--brand-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>{u.name.split(' ').map(n => n[0] || '').join('')}</span>
+                              )}
+                              <div>
+                                <span className="name" style={{ display: 'block' }}>{u.name}</span>
+                                <span className="email" style={{ display: 'block' }}>{u.email}</span>
+                              </div>
                             </div>
                           </td>
                           <td><StatusBadge variant={u.role === 'Admin' ? 'danger' : u.role === 'Mentor' ? 'warning' : 'info'}>{u.role}</StatusBadge></td>
@@ -527,7 +556,16 @@ export default function AdminScreen({ onNavigate }) {
                     <tbody>
                       {studentsData.map(st => (
                         <tr key={st.id}>
-                          <td style={{fontWeight: 500}}>{st.name}</td>
+                          <td style={{fontWeight: 500}}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              {st.avatar_base64 ? (
+                                <img src={st.avatar_base64} alt={st.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                              ) : (
+                                <span className="avatar-placeholder" style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--brand-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>{st.name.split(' ').map(n => n[0] || '').join('')}</span>
+                              )}
+                              {st.name}
+                            </div>
+                          </td>
                           <td>{st.score}%</td>
                           <td>{st.scenarios}</td>
                           <td><StatusBadge variant={getRiskBadge(st.risk)}>{st.risk}</StatusBadge></td>
@@ -578,7 +616,16 @@ export default function AdminScreen({ onNavigate }) {
                     <tbody>
                       {mentorsData.map(m => (
                         <tr key={m.id}>
-                          <td style={{fontWeight: 500}}>{m.name}</td>
+                          <td style={{fontWeight: 500}}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              {m.avatar_base64 ? (
+                                <img src={m.avatar_base64} alt={m.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                              ) : (
+                                <span className="avatar-placeholder" style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--brand-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>{m.name.split(' ').map(n => n[0] || '').join('')}</span>
+                              )}
+                              {m.name}
+                            </div>
+                          </td>
                           <td>{m.org}</td>
                           <td>{m.mentees}</td>
                           <td>{m.rating} ★</td>
@@ -827,7 +874,7 @@ export default function AdminScreen({ onNavigate }) {
           </>
         )}
         {activeTab === 'settings' && (
-          <StudentSettings currentUser={{ role: 'admin', fullname: 'System Admin' }} />
+          <StudentSettings currentUser={currentUser || { role: 'admin', fullname: 'System Admin' }} onProfileUpdate={handleProfileUpdate} />
         )}
 
       </main>

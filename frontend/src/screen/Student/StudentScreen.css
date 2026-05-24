@@ -32,6 +32,21 @@
   text-align: left;
 }
 
+:root.dark .student-workspace {
+  --primary-color: #c084fc;
+  --primary-hover: #a855f7;
+  --border-color: #2e303a;
+  --neutral-bg: #16171d;
+  --neutral-card: #1f2028;
+  --neutral-heading: #f3f4f6;
+  --neutral-text: #9ca3af;
+}
+
+:root.dark .student-sidebar {
+  background-color: var(--neutral-card);
+}
+
+
 /* Sidebar Styling */
 .student-sidebar {
   width: 260px;

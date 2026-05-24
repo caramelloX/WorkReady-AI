@@ -16,11 +16,15 @@ const seedAdmin = async () => {
       process.exit(0);
     }
 
+    const bcrypt = await import('bcryptjs');
+    const salt = bcrypt.default.genSaltSync(10);
+    const hashedPassword = bcrypt.default.hashSync('adminpassword', salt);
+
     const id = 'usr-' + Math.floor(Math.random() * 10000);
     const newAdmin = await User.create({
       id,
       username: 'admin',
-      password: 'adminpassword',
+      password: hashedPassword,
       role: 'admin',
       fullname: 'System Administrator',
       email: 'admin@workready.ai',
