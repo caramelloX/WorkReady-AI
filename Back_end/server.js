@@ -93,20 +93,34 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 app.put('/api/auth/profile/:id', async (req, res) => {
-  const { major, education_level, career_goal, occupation_goal, strengths, develop_areas, target_industry } = req.body;
+  const { 
+    fullname, username, email, phone, location, bio, avatar_base64,
+    major, education_level, career_goal, occupation_goal, strengths, develop_areas, target_industry 
+  } = req.body;
+  
   try {
+    const updateFields = {
+      profile_completed: true
+    };
+    if (fullname !== undefined) updateFields.fullname = fullname;
+    if (username !== undefined) updateFields.username = username;
+    if (email !== undefined) updateFields.email = email;
+    if (phone !== undefined) updateFields.phone = phone;
+    if (location !== undefined) updateFields.location = location;
+    if (bio !== undefined) updateFields.bio = bio;
+    if (avatar_base64 !== undefined) updateFields.avatar_base64 = avatar_base64;
+    
+    if (major !== undefined) updateFields.major = major;
+    if (education_level !== undefined) updateFields.education_level = education_level;
+    if (career_goal !== undefined) updateFields.career_goal = career_goal;
+    if (occupation_goal !== undefined) updateFields.occupation_goal = occupation_goal;
+    if (strengths !== undefined) updateFields.strengths = strengths;
+    if (develop_areas !== undefined) updateFields.develop_areas = develop_areas;
+    if (target_industry !== undefined) updateFields.target_industry = target_industry;
+
     const updatedUser = await User.findOneAndUpdate(
       { id: req.params.id },
-      { 
-        major, 
-        education_level, 
-        career_goal, 
-        occupation_goal,
-        strengths, 
-        develop_areas, 
-        target_industry,
-        profile_completed: true 
-      },
+      { $set: updateFields },
       { new: true, select: '-_id -__v -password -createdAt -updatedAt' }
     ).lean();
     
@@ -116,6 +130,39 @@ app.put('/api/auth/profile/:id', async (req, res) => {
     res.json({ success: true, user: updatedUser });
   } catch (err) {
     console.error('[DEBUG] Profile update error:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// Password change endpoint
+app.put('/api/auth/password/:id', async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  try {
+    const user = await User.findOne({ id: req.params.id });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    let isMatch = false;
+    if (user.password && user.password.startsWith('$2')) {
+      isMatch = bcrypt.compareSync(currentPassword, user.password);
+    } else {
+      isMatch = (currentPassword === user.password);
+    }
+
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Incorrect current password' });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(newPassword, salt);
+    
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[DEBUG] Password change error:', err);
     res.status(500).json({ error: 'Database error', details: err.message });
   }
 });

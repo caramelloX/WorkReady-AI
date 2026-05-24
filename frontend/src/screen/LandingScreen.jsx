@@ -1,7 +1,31 @@
 import React from 'react';
 import './LandingScreen.css';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function LandingScreen({ onNavigate }) {
+  const { t } = useLanguage();
+  const [currentUser, setCurrentUser] = React.useState(null);
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem('currentUser');
+    if (saved) {
+      try {
+        setCurrentUser(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse currentUser', e);
+      }
+    }
+  }, []);
+
+  const handleContinue = () => {
+    if (currentUser && currentUser.role) {
+      const target = currentUser.role === 'student' ? 'demo' : currentUser.role;
+      onNavigate(target);
+    } else {
+      onNavigate('demo'); // fallback
+    }
+  };
+
   return (
     <div className="landing-container">
       {/* Navbar */}
@@ -12,11 +36,22 @@ export default function LandingScreen({ onNavigate }) {
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
           </div>
-          <span>WorkReady AI</span>
+          <span>{t('landing.brand')}</span>
         </div>
         <div className="landing-nav-actions">
-          <button className="landing-btn-login" onClick={() => onNavigate('login')}>Sign In</button>
-          <button className="landing-btn-register" onClick={() => onNavigate('register')}>Get Started</button>
+          {currentUser ? (
+            <>
+              <button className="landing-btn-login" onClick={() => onNavigate('login')}>{t('landing.nav.login')}</button>
+              <button className="landing-btn-register" onClick={handleContinue}>
+                Continue as {currentUser.username || 'User'}
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="landing-btn-login" onClick={() => onNavigate('login')}>{t('landing.nav.login')}</button>
+              <button className="landing-btn-register" onClick={() => onNavigate('register')}>{t('landing.nav.register')}</button>
+            </>
+          )}
         </div>
       </nav>
 
@@ -25,19 +60,32 @@ export default function LandingScreen({ onNavigate }) {
         <div className="landing-hero-glow"></div>
         <div className="landing-hero-content">
           <h1 className="landing-headline">
-            Experience Production.<br />
-            <span className="landing-headline-highlight">Before Day One.</span>
+            {t('landing.hero.title1')}<br />
+            <span className="landing-headline-highlight">{t('landing.hero.title2')}</span>
           </h1>
           <p className="landing-subheadline">
-            Step into live-replica engineering environments. Resolve database incidents, debug APIs, and build a mentor-verified portfolio that proves you are job-ready.
+            {t('landing.hero.subtitle')}
           </p>
           <div className="landing-hero-actions">
-            <button className="landing-btn-primary" onClick={() => onNavigate('register')}>
-              Start Training Now
-            </button>
-            <button className="landing-btn-secondary" onClick={() => onNavigate('login')}>
-              Returning User
-            </button>
+            {currentUser ? (
+              <>
+                <button className="landing-btn-primary" onClick={handleContinue}>
+                  Continue as {currentUser.username || 'User'}
+                </button>
+                <button className="landing-btn-secondary" onClick={() => onNavigate('login')}>
+                  {t('landing.hero.btnSecondary')}
+                </button>
+              </>
+            ) : (
+              <>
+                <button className="landing-btn-primary" onClick={() => onNavigate('register')}>
+                  {t('landing.hero.btnPrimary')}
+                </button>
+                <button className="landing-btn-secondary" onClick={() => onNavigate('login')}>
+                  {t('landing.hero.btnSecondary')}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -52,8 +100,8 @@ export default function LandingScreen({ onNavigate }) {
               <line x1="12" y1="17" x2="12" y2="21" />
             </svg>
           </div>
-          <h3>Live Simulators</h3>
-          <p>Tackle real-world scenarios in a sandboxed, risk-free environment. No generic coding puzzles.</p>
+          <h3>{t('landing.feature1.title')}</h3>
+          <p>{t('landing.feature1.desc')}</p>
         </div>
 
         <div className="landing-feature-card">
@@ -65,8 +113,8 @@ export default function LandingScreen({ onNavigate }) {
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
           </div>
-          <h3>Mentor Verified</h3>
-          <p>Get your solutions reviewed by industry experts and build a verified engineering portfolio.</p>
+          <h3>{t('landing.feature2.title')}</h3>
+          <p>{t('landing.feature2.desc')}</p>
         </div>
 
         <div className="landing-feature-card">
@@ -75,14 +123,14 @@ export default function LandingScreen({ onNavigate }) {
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
             </svg>
           </div>
-          <h3>Employer Matching</h3>
-          <p>Companies hire directly from the platform based on your demonstrated competence.</p>
+          <h3>{t('landing.feature3.title')}</h3>
+          <p>{t('landing.feature3.desc')}</p>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="landing-footer">
-        <p>© 2026 WorkReady AI Inc. Powered by advanced agentic simulators.</p>
+        <p>{t('landing.footer')}</p>
       </footer>
     </div>
   );

@@ -7,6 +7,8 @@ import RegisterScreen from './screen/RegisterScreen'
 import MentorScreen from './screen/Mentor/MentorScreen'
 import EmployerScreen from './screen/Employer/EmployerScreen'
 import AdminScreen from './screen/Admin/AdminScreen'
+import { LanguageProvider } from './contexts/LanguageContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 function App() {
   
@@ -27,13 +29,18 @@ function App() {
         console.error('Failed to parse persistent user state', e);
       }
     }
-    return 'login';
+    return 'landing';
   });
 
   // Handle navigation and logout
   const handleNavigate = (screen) => {
-    if (screen === 'landing' || screen === 'login') {
+    if (screen === 'logout') {
       localStorage.removeItem('currentUser'); // Clear session on logout
+      sessionStorage.removeItem('studentActiveTab');
+      sessionStorage.removeItem('mentorActiveTab');
+      sessionStorage.removeItem('adminActiveTab');
+      setCurrentScreen('landing');
+      return;
     }
     setCurrentScreen(screen);
   };
@@ -48,37 +55,26 @@ function App() {
       .catch((e) => console.error('Backend Not Reachable', e))
   }, [])
 
-  if (currentScreen === 'login') {
-    return <LoginScreen onNavigate={handleNavigate} />
-  }
-
-  if (currentScreen === 'landing') {
+  const renderScreen = () => {
+    if (currentScreen === 'login') return <LoginScreen onNavigate={handleNavigate} />
+    if (currentScreen === 'landing') return <LandingScreen onNavigate={handleNavigate} />
+    if (currentScreen === 'register') return <RegisterScreen onNavigate={handleNavigate} />
+    if (currentScreen === 'demo') return <StudentScreen onNavigate={handleNavigate} />
+    if (currentScreen === 'mentor') return <MentorScreen onNavigate={handleNavigate} />
+    if (currentScreen === 'employer') return <EmployerScreen onNavigate={handleNavigate} />
+    if (currentScreen === 'admin') return <AdminScreen onNavigate={handleNavigate} />
     return <LandingScreen onNavigate={handleNavigate} />
-  }
+  };
 
-  if (currentScreen === 'register') {
-    return <RegisterScreen onNavigate={handleNavigate} />
-  }
-
-  if (currentScreen === 'demo') {
-    return <StudentScreen onNavigate={handleNavigate} />
-  }
-
-  if (currentScreen === 'mentor') {
-    return <MentorScreen onNavigate={handleNavigate} />
-  }
-
-  if (currentScreen === 'employer') {
-    return <EmployerScreen onNavigate={handleNavigate} />
-  }
-
-  if (currentScreen === 'admin') {
-    return <AdminScreen onNavigate={handleNavigate} />
-  }
-
-  // Fallback
-  return <LandingScreen onNavigate={handleNavigate} />
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <div className="app-container">
+          {renderScreen()}
+        </div>
+      </LanguageProvider>
+    </ThemeProvider>
+  )
 }
 
 export default App
-

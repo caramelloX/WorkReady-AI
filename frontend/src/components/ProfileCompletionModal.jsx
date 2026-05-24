@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import './ProfileCompletionModal.css';
 import { api } from '../api.js';
 
 export default function ProfileCompletionModal({ user, onComplete }) {
+  const { t } = useLanguage();
   const [obMajor, setObMajor] = useState('');
   const [obEducationLevel, setObEducationLevel] = useState('Bootcamp Graduate');
   const [obTargetIndustry, setObTargetIndustry] = useState('');
@@ -52,7 +54,7 @@ export default function ProfileCompletionModal({ user, onComplete }) {
           onComplete(res.user);
         }, 50);
       } else {
-        setError('Failed to update profile.');
+        setError(t('profileModal.error'));
         console.error("Profile update failed:", res);
       }
     } catch (err) {
@@ -76,106 +78,105 @@ export default function ProfileCompletionModal({ user, onComplete }) {
             </svg>
             <span>WorkReady AI</span>
           </div>
-          <h2>Almost there, {user?.fullname?.split(' ')[0] || 'Student'}!</h2>
+          <h2>{t('profileModal.almost')}{user?.fullname?.split(' ')[0] || 'Student'}!</h2>
           <p>
-            Complete your profile to personalize your training dashboard. 
-            We use this data to tailor your simulations and pair you with relevant mentors.
+            {t('profileModal.desc')}
           </p>
           <div className="profile-modal-steps">
             <div className="step-item active">
               <div className="step-dot"></div>
-              <span>Academic Background</span>
+              <span>{t('profileModal.step1')}</span>
             </div>
             <div className="step-item active">
               <div className="step-dot"></div>
-              <span>Career Ambitions</span>
+              <span>{t('profileModal.step2')}</span>
             </div>
             <div className="step-item active">
               <div className="step-dot"></div>
-              <span>Skills Assessment</span>
+              <span>{t('profileModal.step3')}</span>
             </div>
           </div>
         </div>
 
         <div className="profile-modal-right">
-          <h3>Profile Details</h3>
+          <h3>{t('profileModal.details')}</h3>
           {error && <div className="profile-modal-error">{error}</div>}
           
           <form onSubmit={handleSubmit} className="profile-modal-form">
             
             <div className="form-row">
               <div className="form-group">
-                <label>Major / Degree Focus</label>
+                <label>{t('profileModal.major')}</label>
                 <input 
                   type="text" 
                   value={obMajor} 
                   onChange={e => setObMajor(e.target.value)} 
                   required 
-                  placeholder="e.g. Computer Science" 
+                  placeholder={t('profileModal.majorPh')} 
                 />
               </div>
               <div className="form-group">
-                <label>Education Level</label>
+                <label>{t('profileModal.education')}</label>
                 <select value={obEducationLevel} onChange={e => setObEducationLevel(e.target.value)}>
-                  <option value="Bachelor's (Final year)">Bachelor's (Final year)</option>
-                  <option value="Bootcamp Graduate">Bootcamp Graduate</option>
+                  <option value="Bachelor's (Final year)">{t('profileModal.bachelor')}</option>
+                  <option value="Bootcamp Graduate">{t('profileModal.bootcamp')}</option>
                 </select>
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label>Target Industry</label>
+                <label>{t('profileModal.industry')}</label>
                 <input 
                   type="text" 
                   value={obTargetIndustry} 
                   onChange={e => setObTargetIndustry(e.target.value)} 
                   required 
-                  placeholder="e.g. Fintech" 
+                  placeholder={t('profileModal.industryPh')} 
                 />
               </div>
               <div className="form-group">
-                <label>Occupation Goal</label>
+                <label>{t('profileModal.occupation')}</label>
                 <input 
                   type="text" 
                   value={obOccupationGoal} 
                   onChange={e => setObOccupationGoal(e.target.value)} 
                   required 
-                  placeholder="e.g. Backend Engineer" 
+                  placeholder={t('profileModal.occupationPh')} 
                 />
               </div>
             </div>
 
             <div className="form-group full-width">
-              <label>Career Goal Description</label>
+              <label>{t('profileModal.career')}</label>
               <textarea 
                 value={obCareerGoal} 
                 onChange={e => setObCareerGoal(e.target.value)} 
                 required 
                 rows={2} 
-                placeholder="e.g. Land a backend role at a Series B+ startup" 
+                placeholder={t('profileModal.careerPh')} 
               />
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label>Key Strengths (comma separated)</label>
+                <label>{t('profileModal.strengths')}</label>
                 <input 
                   type="text" 
                   value={obStrengths} 
                   onChange={e => setObStrengths(e.target.value)} 
                   required 
-                  placeholder="e.g. System design, Python" 
+                  placeholder={t('profileModal.strengthsPh')} 
                 />
               </div>
               <div className="form-group">
-                <label>Areas to Develop (comma separated)</label>
+                <label>{t('profileModal.develop')}</label>
                 <input 
                   type="text" 
                   value={obDevelopAreas} 
                   onChange={e => setObDevelopAreas(e.target.value)} 
                   required 
-                  placeholder="e.g. Cloud architecture, CI/CD" 
+                  placeholder={t('profileModal.developPh')} 
                 />
               </div>
             </div>
@@ -184,7 +185,7 @@ export default function ProfileCompletionModal({ user, onComplete }) {
               <button type="submit" className="btn-submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <span className="loader"></span>
-                ) : 'Complete Profile'}
+                ) : t('profileModal.complete')}
                 {!isSubmitting && (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="5" y1="12" x2="19" y2="12" />

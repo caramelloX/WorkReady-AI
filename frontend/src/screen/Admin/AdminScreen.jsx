@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import './AdminScreen.css';
 import { api } from '../../api.js';
+import StudentSettings from '../Student/StudentSettings';
 import { 
   LayoutDashboard, 
   Users, 
@@ -44,6 +46,7 @@ const StatusBadge = ({ variant, children }) => {
 };
 
 export default function AdminScreen({ onNavigate }) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState(() => {
     return sessionStorage.getItem('adminActiveTab') || 'dashboard';
   });
@@ -75,8 +78,8 @@ export default function AdminScreen({ onNavigate }) {
       
       // Modules and Submissions don't have backend data yet, keep empty or mocked
       setModulesData([
-        { id: 1, title: 'Backend Fundamentals', status: 'Published', meta: '24 scenarios · 312 students' },
-        { id: 2, title: 'Cloud Infrastructure', status: 'Published', meta: '18 scenarios · 205 students' }
+        { id: 1, title: t('admin.mock.module1'), status: t('admin.mock.statusPub'), meta: t('admin.mock.meta1') },
+        { id: 2, title: t('admin.mock.module2'), status: t('admin.mock.statusPub'), meta: t('admin.mock.meta2') }
       ]);
       setSubmissionsData([]);
     } catch (err) {
@@ -94,6 +97,7 @@ export default function AdminScreen({ onNavigate }) {
   }, []);
 
   // Add User Modal State
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [addUserForm, setAddUserForm] = useState({
     fullname: '',
@@ -177,14 +181,14 @@ export default function AdminScreen({ onNavigate }) {
   };
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'users', label: 'User Management', icon: Users },
-    { id: 'students', label: 'Students', icon: GraduationCap },
-    { id: 'mentors', label: 'Mentors', icon: Briefcase },
-    { id: 'scenarios', label: 'Scenarios', icon: BookOpen },
-    { id: 'modules', label: 'Modules', icon: Layers },
-    { id: 'submissions', label: 'Submissions', icon: Inbox },
-    { id: 'reports', label: 'Reports', icon: BarChart3 },
+    { id: 'dashboard', label: t('admin.sidebar.dashboard') || 'Dashboard', icon: LayoutDashboard },
+    { id: 'users', label: t('admin.sidebar.users') || 'User Management', icon: Users },
+    { id: 'students', label: t('admin.sidebar.students') || 'Students', icon: GraduationCap },
+    { id: 'mentors', label: t('admin.sidebar.mentors') || 'Mentors', icon: Briefcase },
+    { id: 'scenarios', label: t('admin.sidebar.scenarios') || 'Scenarios', icon: BookOpen },
+    { id: 'modules', label: t('admin.sidebar.modules') || 'Modules', icon: Layers },
+    { id: 'submissions', label: t('admin.sidebar.submissions') || 'Submissions', icon: Inbox },
+    { id: 'reports', label: t('admin.sidebar.reports') || 'Reports', icon: BarChart3 },
   ];
 
   const getRiskBadge = (risk) => {
@@ -214,10 +218,10 @@ export default function AdminScreen({ onNavigate }) {
           <div className="admin-brand-icon">
             <LayoutDashboard size={18} />
           </div>
-          <span>WorkReady Admin</span>
+          <span>{t('admin.brand')}</span>
         </div>
 
-        <div className="admin-sidebar-header">Admin</div>
+        <div className="admin-sidebar-header">{t('admin.sidebar.header').toUpperCase()}</div>
         
         <nav className="admin-sidebar-nav">
           {navItems.map(item => {
@@ -236,10 +240,37 @@ export default function AdminScreen({ onNavigate }) {
         </nav>
 
         <div className="admin-sidebar-footer">
-          <button className="admin-logout-btn" onClick={() => onNavigate('landing')}>
-            <LogOut size={14} style={{ display: 'inline', marginRight: '8px' }} />
-            Sign out
-          </button>
+          <div className="admin-profile-dropdown-container">
+            <button className="admin-profile-btn" onClick={() => setShowProfileDropdown(!showProfileDropdown)}>
+              <div className="admin-profile-avatar">AD</div>
+              <div className="admin-profile-info">
+                <span className="admin-profile-name">System Admin</span>
+                <span className="admin-profile-role">{t('admin.profile.role')}</span>
+              </div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`dropdown-icon ${showProfileDropdown ? 'open' : ''}`}>
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            {showProfileDropdown && (
+              <div className="admin-profile-dropdown-menu">
+                <button className="dropdown-item" onClick={() => { setShowProfileDropdown(false); setActiveTab('settings'); }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="dropdown-item-icon">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                  {t('sidebar.settings') || 'Settings'}
+                </button>
+                <button className="dropdown-item logout" onClick={() => onNavigate('logout')}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="dropdown-item-icon">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                  {t('mentor.signOut')}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </aside>
 
@@ -409,7 +440,7 @@ export default function AdminScreen({ onNavigate }) {
           <>
             <header className="admin-header">
               <div>
-                <h1 className="admin-page-title">User Management</h1>
+                <h1 className="admin-page-title">{t('admin.users.title')}</h1>
               </div>
               <div className="admin-header-actions">
                 <button className="admin-btn-primary" onClick={() => setShowAddUserModal(true)}>
@@ -716,12 +747,12 @@ export default function AdminScreen({ onNavigate }) {
           <>
             <header className="admin-header">
               <div>
-                <h1 className="admin-page-title">Reports</h1>
+                <h1 className="admin-page-title">{t('admin.reports.title')}</h1>
               </div>
             </header>
             <div className="admin-content">
               <div className="admin-stats-grid">
-                <StatCard label="AVG. READINESS" value="68%" />
+                <StatCard label={t('admin.dashboard.avgReadiness')} value="68%" />
                 <StatCard label="SCENARIOS RUN" value="8,920" />
                 <StatCard label="COMPLETION RATE" value="63%" />
                 <StatCard label="EVIDENCE ITEMS" value="920" />
@@ -729,18 +760,18 @@ export default function AdminScreen({ onNavigate }) {
 
               <div className="admin-grid-2col">
                 <div className="admin-card">
-                  <h3 className="admin-card-header">Cohort completion</h3>
+                  <h3 className="admin-card-header">{t('admin.reports.cohortCompletion')}</h3>
                   <table className="admin-table" style={{marginTop: '16px'}}>
                     <thead>
                       <tr>
-                        <th>COHORT</th>
-                        <th>AVG SCORE</th>
-                        <th>COMPLETION</th>
+                        <th>{t('admin.reports.cohort')}</th>
+                        <th>{t('admin.reports.avgScore')}</th>
+                        <th>{t('admin.reports.completion')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td>Spring 2026 Alpha</td>
+                        <td>{t('admin.reports.c1')}</td>
                         <td>82%</td>
                         <td style={{width: '200px'}}>
                           <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
@@ -750,7 +781,7 @@ export default function AdminScreen({ onNavigate }) {
                         </td>
                       </tr>
                       <tr>
-                        <td>Spring 2026 Beta</td>
+                        <td>{t('admin.reports.c2')}</td>
                         <td>64%</td>
                         <td>
                           <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
@@ -765,28 +796,28 @@ export default function AdminScreen({ onNavigate }) {
 
                 <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
                   <div className="admin-card">
-                    <h3 className="admin-card-header">Top scenarios</h3>
+                    <h3 className="admin-card-header">{t('admin.reports.topScenarios')}</h3>
                     <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
                       <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '14px'}}>
-                        <span style={{fontWeight: 500}}>Database Outage RCA</span><span style={{color: '#64748B'}}>1,204 runs</span>
+                        <span style={{fontWeight: 500}}>{t('admin.reports.s1')}</span><span style={{color: '#64748B'}}>1,204 {t('admin.reports.runs')}</span>
                       </div>
                       <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '14px'}}>
-                        <span style={{fontWeight: 500}}>Memory Leak Debugging</span><span style={{color: '#64748B'}}>984 runs</span>
+                        <span style={{fontWeight: 500}}>{t('admin.reports.s2')}</span><span style={{color: '#64748B'}}>984 {t('admin.reports.runs')}</span>
                       </div>
                       <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '14px'}}>
-                        <span style={{fontWeight: 500}}>API Rate Limiting</span><span style={{color: '#64748B'}}>842 runs</span>
+                        <span style={{fontWeight: 500}}>{t('admin.reports.s3')}</span><span style={{color: '#64748B'}}>842 {t('admin.reports.runs')}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="admin-card">
-                    <h3 className="admin-card-header">Engagement</h3>
+                    <h3 className="admin-card-header">{t('admin.reports.engagement')}</h3>
                     <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
                       <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '14px'}}>
-                        <span style={{fontWeight: 500, color: '#64748B'}}>Daily Active Users (DAU)</span><span style={{fontWeight: 600}}>845</span>
+                        <span style={{fontWeight: 500, color: '#64748B'}}>{t('admin.reports.dau')}</span><span style={{fontWeight: 600}}>845</span>
                       </div>
                       <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '14px'}}>
-                        <span style={{fontWeight: 500, color: '#64748B'}}>Avg Session Length</span><span style={{fontWeight: 600}}>42m 15s</span>
+                        <span style={{fontWeight: 500, color: '#64748B'}}>{t('admin.reports.avgSession')}</span><span style={{fontWeight: 600}}>42m 15s</span>
                       </div>
                     </div>
                   </div>
@@ -795,6 +826,9 @@ export default function AdminScreen({ onNavigate }) {
             </div>
           </>
         )}
+        {activeTab === 'settings' && (
+          <StudentSettings currentUser={{ role: 'admin', fullname: 'System Admin' }} />
+        )}
 
       </main>
 
@@ -802,10 +836,10 @@ export default function AdminScreen({ onNavigate }) {
       {showAddUserModal && (
         <div className="admin-modal-overlay">
           <div className="admin-modal-content glass-panel">
-            <h2 className="admin-modal-title">Add New User</h2>
+            <h2 className="admin-modal-title">{t('admin.modal.addUser')}</h2>
             <form onSubmit={handleAddUserSubmit} className="admin-modal-form">
               <div className="form-group">
-                <label>Full Name</label>
+                <label>{t('admin.edit.fullName')}</label>
                 <input 
                   type="text" 
                   value={addUserForm.fullname} 
@@ -814,7 +848,7 @@ export default function AdminScreen({ onNavigate }) {
                 />
               </div>
               <div className="form-group">
-                <label>Email</label>
+                <label>{t('admin.edit.email')}</label>
                 <input 
                   type="email" 
                   value={addUserForm.email} 
@@ -823,7 +857,7 @@ export default function AdminScreen({ onNavigate }) {
                 />
               </div>
               <div className="form-group">
-                <label>Username</label>
+                <label>{t('admin.edit.username')}</label>
                 <input 
                   type="text" 
                   value={addUserForm.username} 
@@ -841,17 +875,17 @@ export default function AdminScreen({ onNavigate }) {
                 />
               </div>
               <div className="form-group">
-                <label>Role</label>
+                <label>{t('admin.edit.role')}</label>
                 <select 
                   value={addUserForm.role} 
                   onChange={e => setAddUserForm({...addUserForm, role: e.target.value})}
                 >
-                  <option value="Student">Student</option>
-                  <option value="Mentor">Mentor</option>
+                  <option value="Student">{t('admin.roles.student')}</option>
+                  <option value="Mentor">{t('admin.roles.mentor')}</option>
                 </select>
               </div>
               <div className="admin-modal-actions">
-                <button type="button" className="admin-btn-secondary" onClick={() => setShowAddUserModal(false)}>Cancel</button>
+                <button type="button" className="admin-btn-secondary" onClick={() => setShowAddUserModal(false)}>{t('admin.modal.cancel')}</button>
                 <button type="submit" className="admin-btn-primary" disabled={isAddingUser}>
                   {isAddingUser ? 'Adding...' : 'Add User'}
                 </button>
@@ -989,7 +1023,7 @@ export default function AdminScreen({ onNavigate }) {
             </div>
 
             <div className="admin-modal-actions" style={{marginTop: '24px'}}>
-              <button type="button" className="admin-btn-secondary" onClick={() => setSelectedProfile(null)}>Close</button>
+              <button type="button" className="admin-btn-secondary" onClick={() => setSelectedProfile(null)}>{t('admin.modal.close')}</button>
             </div>
           </div>
         </div>
@@ -999,71 +1033,71 @@ export default function AdminScreen({ onNavigate }) {
       {editingProfile && (
         <div className="admin-modal-overlay">
           <div className="admin-modal-content glass-panel" style={{ maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2 className="admin-modal-title">Edit User Profile</h2>
+            <h2 className="admin-modal-title">{t('admin.modal.editUser')}</h2>
             <form onSubmit={handleEditSubmit} className="admin-modal-form">
               <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px'}}>
                 <div className="form-group">
-                  <label>Full Name</label>
+                  <label>{t('admin.edit.fullName')}</label>
                   <input type="text" value={editForm.fullname} onChange={e => setEditForm({...editForm, fullname: e.target.value})} required />
                 </div>
                 <div className="form-group">
-                  <label>Email</label>
+                  <label>{t('admin.edit.email')}</label>
                   <input type="email" value={editForm.email} onChange={e => setEditForm({...editForm, email: e.target.value})} required />
                 </div>
                 <div className="form-group">
-                  <label>Username</label>
+                  <label>{t('admin.edit.username')}</label>
                   <input type="text" value={editForm.username} onChange={e => setEditForm({...editForm, username: e.target.value})} required />
                 </div>
                 <div className="form-group">
-                  <label>Role</label>
+                  <label>{t('admin.edit.role')}</label>
                   <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})}>
-                    <option value="Student">Student</option>
-                    <option value="Mentor">Mentor</option>
-                    <option value="Admin">Admin</option>
+                    <option value="Student">{t('admin.roles.student')}</option>
+                    <option value="Mentor">{t('admin.roles.mentor')}</option>
+                    <option value="Admin">{t('admin.roles.admin')}</option>
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Target Track</label>
+                  <label>{t('admin.edit.track')}</label>
                   <input type="text" value={editForm.target_track} onChange={e => setEditForm({...editForm, target_track: e.target.value})} />
                 </div>
                 <div className="form-group">
-                  <label>Target Industry</label>
+                  <label>{t('admin.edit.industry')}</label>
                   <input type="text" value={editForm.target_industry} onChange={e => setEditForm({...editForm, target_industry: e.target.value})} />
                 </div>
                 <div className="form-group">
-                  <label>Major / Organization</label>
+                  <label>{t('admin.edit.major')}</label>
                   <input type="text" value={editForm.major} onChange={e => setEditForm({...editForm, major: e.target.value})} />
                 </div>
                 <div className="form-group">
-                  <label>Education Level</label>
+                  <label>{t('admin.edit.eduLevel')}</label>
                   <input type="text" value={editForm.education_level} onChange={e => setEditForm({...editForm, education_level: e.target.value})} />
                 </div>
               </div>
 
               <div className="form-group" style={{marginTop: '16px'}}>
-                <label>Occupation Goal (About)</label>
+                <label>{t('admin.edit.occupation')}</label>
                 <textarea value={editForm.occupation_goal} onChange={e => setEditForm({...editForm, occupation_goal: e.target.value})} rows={2} />
               </div>
 
               <div className="form-group">
-                <label>Career Goal</label>
+                <label>{t('admin.edit.careerGoal')}</label>
                 <textarea value={editForm.career_goal} onChange={e => setEditForm({...editForm, career_goal: e.target.value})} rows={2} />
               </div>
 
               <div className="form-group">
-                <label>Strengths (Comma separated)</label>
+                <label>{t('admin.edit.strengths')}</label>
                 <input type="text" value={editForm.strengths} onChange={e => setEditForm({...editForm, strengths: e.target.value})} />
               </div>
 
               <div className="form-group">
-                <label>Develop Areas (Comma separated)</label>
+                <label>{t('admin.edit.develop')}</label>
                 <input type="text" value={editForm.develop_areas} onChange={e => setEditForm({...editForm, develop_areas: e.target.value})} />
               </div>
 
               <div className="admin-modal-actions">
-                <button type="button" className="admin-btn-secondary" onClick={() => setEditingProfile(null)}>Cancel</button>
+                <button type="button" className="admin-btn-secondary" onClick={() => setEditingProfile(null)}>{t('admin.modal.cancel')}</button>
                 <button type="submit" className="admin-btn-primary" disabled={isSubmittingEdit}>
-                  {isSubmittingEdit ? 'Saving...' : 'Save Changes'}
+                  {isSubmittingEdit ? t('admin.edit.saving') : 'Save Changes'}
                 </button>
               </div>
             </form>

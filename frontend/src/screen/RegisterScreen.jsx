@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import './RegisterScreen.css';
 import { api } from '../api.js';
 import ProfileCompletionModal from '../components/ProfileCompletionModal';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function RegisterScreen({ onNavigate }) {
+  const { t } = useLanguage();
   const [role, setRole] = useState('student'); // 'student' or 'mentor'
   const [firstName, setFirstName] = useState('');
   const [middleName, setMiddleName] = useState('');
@@ -60,23 +62,23 @@ export default function RegisterScreen({ onNavigate }) {
     if (!confirmPassword) newErrors.confirmPassword = true;
 
     if (Object.keys(newErrors).length > 0) {
-      errMsg = 'กรุณากรอกข้อมูลให้ครบถ้วนในช่องสีแดง';
+      errMsg = t('reg.err.missing');
     }
 
     if (!agreeTerms) {
-      if (!errMsg) errMsg = 'กรุณายอมรับเงื่อนไขการให้บริการและนโยบายความเป็นส่วนตัว';
+      if (!errMsg) errMsg = t('reg.err.terms');
     }
 
     // Username validation: English only
     if (username && !/^[a-zA-Z]+$/.test(username)) {
       newErrors.username = true;
-      if (!errMsg) errMsg = 'Username ต้องเป็นภาษาอังกฤษเท่านั้น';
+      if (!errMsg) errMsg = t('reg.err.username');
     }
 
     // Email validation
     if (email && !email.includes('@')) {
       newErrors.email = true;
-      if (!errMsg) errMsg = 'กรุณากรอก Email ให้ถูกต้อง (ต้องมี @)';
+      if (!errMsg) errMsg = t('reg.err.email');
     }
 
     // Password validation
@@ -86,13 +88,13 @@ export default function RegisterScreen({ onNavigate }) {
     const hasNonAlphas = /\W|_/.test(password);
     if (password && (password.length < 8 || !hasUpperCase || !hasLowerCase || !hasNumbers || !hasNonAlphas)) {
       newErrors.password = true;
-      if (!errMsg) errMsg = 'Password ต้องมีอย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวพิมพ์ใหญ่ พิมพ์เล็ก ตัวเลข และอักษรพิเศษ';
+      if (!errMsg) errMsg = t('reg.err.password');
     }
 
     // Confirm password
     if (confirmPassword && password !== confirmPassword) {
       newErrors.confirmPassword = true;
-      if (!errMsg) errMsg = 'Password และ Confirm Password ไม่ตรงกัน';
+      if (!errMsg) errMsg = t('reg.err.confirm');
     }
 
     if (Object.keys(newErrors).length > 0 || errMsg) {
@@ -117,10 +119,10 @@ export default function RegisterScreen({ onNavigate }) {
           onNavigate('login');
         }
       } else {
-        setErrorMessage('Failed to create account. Please try again.');
+        setErrorMessage(t('reg.err.fail'));
       }
     } catch (err) {
-      setErrorMessage(err.message || 'Failed to create account.');
+      setErrorMessage(err.message || t('reg.err.fail'));
     }
   };
 
@@ -142,26 +144,26 @@ export default function RegisterScreen({ onNavigate }) {
 
         {/* Left Main Content */}
         <div className="register-left-content">
-          <h1 className="register-left-title">Build Job-Ready Competence.</h1>
+          <h1 className="register-left-title">{t('reg.title')}</h1>
           <p className="register-left-subtitle">
-            Join the elite simulator platform where software engineers resolve production incidents and compile stellar diagnostic evidence portfolios.
+            {t('reg.subtitle')}
           </p>
           <ul className="register-feature-list">
             <li>
-              <span className="bullet-dot">✓</span> Live-replica transaction database incidents
+              <span className="bullet-dot">✓</span> {t('reg.feat1')}
             </li>
             <li>
-              <span className="bullet-dot">✓</span> Direct assessment & highlights from expert mentors
+              <span className="bullet-dot">✓</span> {t('reg.feat2')}
             </li>
             <li>
-              <span className="bullet-dot">✓</span> Direct matching opportunities with target recruiters
+              <span className="bullet-dot">✓</span> {t('reg.feat3')}
             </li>
           </ul>
         </div>
 
         {/* Left Footer */}
         <div className="register-left-footer">
-          © 2026 WorkReady AI Inc. Powered by advanced agentic simulators.
+          {t('landing.footer')}
         </div>
       </div>
 
@@ -170,8 +172,8 @@ export default function RegisterScreen({ onNavigate }) {
         <div className="register-form-container">
           
           <div className="register-form-header">
-            <h2 className="register-form-title">Create your account</h2>
-            <p className="register-form-subtitle">Choose your pathway and start training today.</p>
+            <h2 className="register-form-title">{t('reg.formTitle')}</h2>
+            <p className="register-form-subtitle">{t('reg.formSubtitle')}</p>
           </div>
 
           {errorMessage && (
@@ -183,7 +185,7 @@ export default function RegisterScreen({ onNavigate }) {
           <form onSubmit={handleSubmit}>
             {/* Role Selector Pills */}
             <div className="register-form-group">
-              <label className="register-field-label">I want to register as a</label>
+              <label className="register-field-label">{t('reg.roleLabel')}</label>
               <div className="register-role-selector">
                 <button
                   type="button"
@@ -194,7 +196,7 @@ export default function RegisterScreen({ onNavigate }) {
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                     <circle cx="9" cy="7" r="4" />
                   </svg>
-                  <span>Student</span>
+                  <span>{t('reg.student')}</span>
                 </button>
                 <button
                   type="button"
@@ -207,7 +209,7 @@ export default function RegisterScreen({ onNavigate }) {
                     <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                   </svg>
-                  <span>Mentor</span>
+                  <span>{t('reg.mentor')}</span>
                 </button>
               </div>
             </div>
@@ -215,7 +217,7 @@ export default function RegisterScreen({ onNavigate }) {
             {/* Name Fields */}
             <div className="register-form-row">
               <div className="register-form-group">
-                <label htmlFor="firstName" className="register-field-label">First Name</label>
+                <label htmlFor="firstName" className="register-field-label">{t('reg.firstName')}</label>
                 <input
                   id="firstName"
                   type="text"
@@ -226,7 +228,7 @@ export default function RegisterScreen({ onNavigate }) {
                 />
               </div>
               <div className="register-form-group">
-                <label htmlFor="middleName" className="register-field-label">Middle Name (Optional)</label>
+                <label htmlFor="middleName" className="register-field-label">{t('reg.middleName')}</label>
                 <input
                   id="middleName"
                   type="text"
@@ -240,7 +242,7 @@ export default function RegisterScreen({ onNavigate }) {
 
             <div className="register-form-row">
               <div className="register-form-group">
-                <label htmlFor="lastName" className="register-field-label">Last Name</label>
+                <label htmlFor="lastName" className="register-field-label">{t('reg.lastName')}</label>
                 <input
                   id="lastName"
                   type="text"
@@ -251,7 +253,7 @@ export default function RegisterScreen({ onNavigate }) {
                 />
               </div>
               <div className="register-form-group">
-                <label htmlFor="username" className="register-field-label">Username</label>
+                <label htmlFor="username" className="register-field-label">{t('login.username')}</label>
                 <input
                   id="username"
                   type="text"
@@ -265,7 +267,7 @@ export default function RegisterScreen({ onNavigate }) {
 
             {/* Email Address */}
             <div className="register-form-group">
-              <label htmlFor="email" className="register-field-label">Email Address</label>
+              <label htmlFor="email" className="register-field-label">{t('reg.email')}</label>
               <input
                 id="email"
                 type="email"
@@ -279,7 +281,7 @@ export default function RegisterScreen({ onNavigate }) {
             {/* Password */}
             <div className="register-form-row">
               <div className="register-form-group">
-                <label htmlFor="password" className="register-field-label">Password</label>
+                <label htmlFor="password" className="register-field-label">{t('reg.password')}</label>
                 <input
                   id="password"
                   type="password"
@@ -290,7 +292,7 @@ export default function RegisterScreen({ onNavigate }) {
                 />
               </div>
               <div className="register-form-group">
-                <label htmlFor="confirmPassword" className="register-field-label">Confirm Password</label>
+                <label htmlFor="confirmPassword" className="register-field-label">{t('reg.confirmPassword')}</label>
                 <input
                   id="confirmPassword"
                   type="password"
@@ -314,13 +316,13 @@ export default function RegisterScreen({ onNavigate }) {
                 required
               />
               <label htmlFor="terms" className="register-checkbox-label">
-                I agree to the <a href="#terms" onClick={(e) => e.preventDefault()}>Terms of Service</a> and <a href="#privacy" onClick={(e) => e.preventDefault()}>Privacy Policy</a>, and consent to diagnostic simulator metrics sharing.
+                {t('reg.termsPrefix')} <a href="#terms" onClick={(e) => e.preventDefault()}>{t('reg.terms')}</a> {t('reg.and')} <a href="#privacy" onClick={(e) => e.preventDefault()}>{t('reg.privacy')}</a>{t('reg.termsSuffix')}
               </label>
             </div>
 
             {/* Create Account Button */}
             <button type="submit" className="register-btn-primary">
-              <span>Create Account</span>
+              <span>{t('reg.btnCreate')}</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
@@ -330,7 +332,7 @@ export default function RegisterScreen({ onNavigate }) {
 
           {/* Form Footer */}
           <div className="register-form-footer">
-            Already have an account?
+            {t('reg.alreadyHave')} 
             <a
               href="#"
               className="register-signin-link"
@@ -339,7 +341,7 @@ export default function RegisterScreen({ onNavigate }) {
                 onNavigate('login');
               }}
             >
-              Sign in
+              {t('reg.signin')}
             </a>
           </div>
 

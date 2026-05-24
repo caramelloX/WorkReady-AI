@@ -7,9 +7,12 @@ import StudentScenarioSimulator from './StudentScenarioSimulator';
 import StudentEvidencePortfolio from './StudentEvidencePortfolio';
 import SkillAssessmentQuizModal from './SkillAssessmentQuizModal';
 import AiSkillQuizModal from './AiSkillQuizModal';
+import StudentSettings from './StudentSettings';
 import { api } from '../../api';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function StudentScreen({ onNavigate }) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState(() => {
     return sessionStorage.getItem('studentActiveTab') || 'dashboard';
   });
@@ -19,8 +22,10 @@ export default function StudentScreen({ onNavigate }) {
   }, [activeTab]);
   const [showSkillAssessment, setShowSkillAssessment] = useState(false);
   const [showAiQuiz, setShowAiQuiz] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   
   // User Profile State (from database / localStorage)
+  const [currentUser, setCurrentUser] = useState(null);
   const [firstName, setFirstName] = useState('');
   const [initials, setInitials] = useState('');
   const [fullName, setFullName] = useState('');
@@ -40,6 +45,7 @@ export default function StudentScreen({ onNavigate }) {
     if (storedUserStr) {
       try {
         const user = JSON.parse(storedUserStr);
+        setCurrentUser(user);
         const name = user.fullname || user.fullName;
         if (name) {
           setFullName(name);
@@ -66,6 +72,20 @@ export default function StudentScreen({ onNavigate }) {
       setTargetTrack('Quality Engineer');
     }
   }, []);
+
+  const handleProfileUpdate = (updatedUser) => {
+    setCurrentUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    const name = updatedUser.fullname || updatedUser.fullName;
+    if (name) {
+      setFullName(name);
+      const parts = name.split(' ');
+      setFirstName(parts[0]);
+      const inits = parts.length > 1 ? parts[0][0] + parts[1][0] : parts[0][0];
+      setInitials(inits.toUpperCase());
+    }
+    if (updatedUser.email) setEmail(updatedUser.email);
+  };
   
   const [ratings, setRatings] = useState({});
   const [aiRatings, setAiRatings] = useState({});
@@ -284,19 +304,20 @@ export default function StudentScreen({ onNavigate }) {
           <span>WorkReady AI</span>
         </div>
 
-        <nav className="student-nav">
+        <nav className="student-sidebar-nav">
           <button 
             className={`student-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="student-nav-icon">
-              <rect x="3" y="3" width="7" height="9" rx="1" />
-              <rect x="14" y="3" width="7" height="5" rx="1" />
-              <rect x="14" y="12" width="7" height="9" rx="1" />
-              <rect x="3" y="16" width="7" height="5" rx="1" />
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
             </svg>
-            <span>Dashboard</span>
+            <span>{t('sidebar.dashboard')}</span>
           </button>
+          
           <button 
             className={`student-nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
@@ -305,17 +326,19 @@ export default function StudentScreen({ onNavigate }) {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
-            <span>Profile</span>
+            <span>{t('sidebar.profile')}</span>
           </button>
+
           <button 
             className={`student-nav-btn ${activeTab === 'skillgap' ? 'active' : ''}`}
             onClick={() => setActiveTab('skillgap')}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="student-nav-icon">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
-            <span>Skill Gap Assessment</span>
+            <span>{t('sidebar.skillgap')}</span>
           </button>
+
           <button 
             className={`student-nav-btn ${activeTab === 'simulator' ? 'active' : ''}`}
             onClick={() => setActiveTab('simulator')}
@@ -325,8 +348,9 @@ export default function StudentScreen({ onNavigate }) {
               <line x1="8" y1="21" x2="16" y2="21" />
               <line x1="12" y1="17" x2="12" y2="21" />
             </svg>
-            <span>Scenario Simulator</span>
+            <span>{t('sidebar.simulator')}</span>
           </button>
+
           <button 
             className={`student-nav-btn ${activeTab === 'portfolio' ? 'active' : ''}`}
             onClick={() => setActiveTab('portfolio')}
@@ -334,14 +358,46 @@ export default function StudentScreen({ onNavigate }) {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="student-nav-icon">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
             </svg>
-            <span>Evidence Portfolio</span>
+            <span>{t('sidebar.portfolio')}</span>
           </button>
         </nav>
 
         <div className="student-sidebar-footer">
-          <button className="student-logout-btn" onClick={() => onNavigate('landing')}>
-            <span>Sign Out</span>
-          </button>
+          <div className="student-profile-dropdown-container">
+            <button className="student-profile-btn" onClick={() => setShowProfileDropdown(!showProfileDropdown)}>
+              {currentUser && currentUser.avatar_base64 ? (
+                <img src={currentUser.avatar_base64} alt="Avatar" className="student-profile-avatar" style={{ objectFit: 'cover' }} />
+              ) : (
+                <div className="student-profile-avatar">{initials}</div>
+              )}
+              <div className="student-profile-info">
+                <span className="student-profile-name">{firstName}</span>
+                <span className="student-profile-role">Student</span>
+              </div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`dropdown-icon ${showProfileDropdown ? 'open' : ''}`}>
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            {showProfileDropdown && (
+              <div className="student-profile-dropdown-menu">
+                <button className="dropdown-item" onClick={() => { setShowProfileDropdown(false); setActiveTab('settings'); }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="dropdown-item-icon">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                  {t('sidebar.settings')}
+                </button>
+                <button className="dropdown-item logout" onClick={() => onNavigate('logout')}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="dropdown-item-icon">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                  {t('sidebar.signout')}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -356,6 +412,19 @@ export default function StudentScreen({ onNavigate }) {
         {/* PROFILE TAB */}
         {activeTab === 'profile' && (
           <StudentProfile initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} email={email} careerGoal={careerGoal} strengthsList={strengthsList} developAreasList={developAreasList} />
+        )}
+
+        {/* SETTINGS TAB */}
+        {activeTab === 'settings' && (
+          <StudentSettings 
+            currentUser={currentUser}
+            onProfileUpdate={handleProfileUpdate}
+            initials={initials} 
+            fullName={fullName} 
+            email={email} 
+            targetIndustry={targetIndustry} 
+            major={major} 
+          />
         )}
         
         {/* SKILL GAP TAB */}

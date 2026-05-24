@@ -1,65 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { createPortal } from 'react-dom';
 import './QuizModal.css'; // Reusing the same CSS
 
-const QUIZ_QUESTIONS = [
-  {
-    id: 'processMap',
-    question: "How comfortable are you with drawing end-to-end process maps?",
-    options: [
-      "I don't know how to create process maps.",
-      "I can create basic flowcharts but struggle with complex workflows.",
-      "I can confidently draw detailed end-to-end process maps for unfamiliar workflows."
-    ]
-  },
-  {
-    id: 'safetyRisk',
-    question: "How would you rate your ability to identify safety and quality risks?",
-    options: [
-      "I rarely consider edge-case safety regressions.",
-      "I can identify common risks but might miss complex system interactions.",
-      "I can independently spot edge-case safety or quality regressions in existing systems."
-    ]
-  },
-  {
-    id: 'rca',
-    question: "How experienced are you with Root Cause Analysis (RCA)?",
-    options: [
-      "I usually just fix the immediate bug without structured analysis.",
-      "I know what RCA is but haven't run structured 5-Whys or fishbone reviews.",
-      "I know how to run a structured 5-Whys or fishbone analysis to find true root causes."
-    ]
-  },
-  {
-    id: 'traceability',
-    question: "How well can you trace artifacts back to their source?",
-    options: [
-      "I find it difficult to connect requirements with code and tests.",
-      "I can somewhat trace artifacts but sometimes get lost in complex systems.",
-      "I can trace logs, metrics, or artifacts back to their source without getting lost."
-    ]
-  },
-  {
-    id: 'memo',
-    question: "How comfortable are you writing technical incident memos?",
-    options: [
-      "I have never written a technical incident report.",
-      "I can write a report but it's often unstructured or too detailed.",
-      "I can write a crisp 1-page technical memo outlining an incident, root cause, and next steps."
-    ]
-  },
-  {
-    id: 'responsibleAi',
-    question: "How well do you understand Responsible AI practices?",
-    options: [
-      "I am unfamiliar with designing features for fairness and avoiding bias.",
-      "I have a basic understanding but lack practical experience evaluating AI bias.",
-      "I understand how to design and evaluate features to avoid bias and ensure fairness."
-    ]
-  }
+const getQuizQuestions = (t) => [
+  { id: 'processMap', question: t('quiz.q1'), options: [t('quiz.q1_opt1'), t('quiz.q1_opt2'), t('quiz.q1_opt3')] },
+  { id: 'safetyRisk', question: t('quiz.q2'), options: [t('quiz.q2_opt1'), t('quiz.q2_opt2'), t('quiz.q2_opt3')] },
+  { id: 'rca', question: t('quiz.q3'), options: [t('quiz.q3_opt1'), t('quiz.q3_opt2'), t('quiz.q3_opt3')] },
+  { id: 'traceability', question: t('quiz.q4'), options: [t('quiz.q4_opt1'), t('quiz.q4_opt2'), t('quiz.q4_opt3')] },
+  { id: 'memo', question: t('quiz.q5'), options: [t('quiz.q5_opt1'), t('quiz.q5_opt2'), t('quiz.q5_opt3')] },
+  { id: 'responsibleAi', question: t('quiz.q6'), options: [t('quiz.q6_opt1'), t('quiz.q6_opt2'), t('quiz.q6_opt3')] }
 ];
 
 export default function SkillAssessmentQuizModal({ isOpen, onClose, onComplete }) {
+  const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,6 +28,7 @@ export default function SkillAssessmentQuizModal({ isOpen, onClose, onComplete }
 
   if (!isOpen) return null;
 
+  const QUIZ_QUESTIONS = getQuizQuestions(t);
   const totalSteps = QUIZ_QUESTIONS.length;
   const currentQuizItem = QUIZ_QUESTIONS[currentStep - 1];
   const answeredCount = Object.keys(selectedOptions).length;
@@ -122,7 +77,7 @@ export default function SkillAssessmentQuizModal({ isOpen, onClose, onComplete }
         <div className="quiz-modal-header">
           <div className="quiz-modal-header-left">
             <span className="quiz-modal-header-icon">&gt;_</span>
-            <h2 className="quiz-modal-title">Initial Skill Gap Assessment</h2>
+            <h2 className="quiz-modal-title">{t('quiz.title')}</h2>
           </div>
         </div>
 
@@ -130,14 +85,14 @@ export default function SkillAssessmentQuizModal({ isOpen, onClose, onComplete }
         <div className="quiz-modal-body">
           {/* Progress Row */}
           <div className="quiz-progress-row">
-            <span className="quiz-progress-text">QUESTION {currentStep} OF {totalSteps}</span>
+            <span className="quiz-progress-text">{t('aiquiz.questionOf')}{currentStep}{t('aiquiz.of')}{totalSteps}</span>
             <div className="quiz-progress-track">
               <div 
                 className="quiz-progress-fill" 
                 style={{ width: `${(currentStep / totalSteps) * 100}%` }}
               ></div>
             </div>
-            <span className="quiz-progress-text">{answeredCount}/{totalSteps} answered</span>
+            <span className="quiz-progress-text">{answeredCount}/{totalSteps}{t('aiquiz.answered')}</span>
           </div>
 
           {/* Question Area */}
@@ -171,14 +126,14 @@ export default function SkillAssessmentQuizModal({ isOpen, onClose, onComplete }
             onClick={handlePrev}
             disabled={currentStep === 1 || isSubmitting}
           >
-            Previous
+            {t('aiquiz.previous')}
           </button>
           <button 
             className="quiz-btn-primary" 
             onClick={handleNext}
             disabled={isNextDisabled}
           >
-            {isSubmitting ? 'Saving...' : currentStep === totalSteps ? 'Finish & View Profile →' : 'Next →'}
+            {isSubmitting ? t('quiz.saving') : currentStep === totalSteps ? t('quiz.finishProfile') : t('aiquiz.next')}
           </button>
         </div>
 

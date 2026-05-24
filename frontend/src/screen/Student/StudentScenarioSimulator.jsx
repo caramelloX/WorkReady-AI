@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import './StudentScenarioSimulator.css';
 import QuizModal from './QuizModal';
 
 export default function StudentScenarioSimulator({ scenarios, activeScenario, handleOpenScenario, handleLaunchScenario, simCompleted, stepIndex, terminalLogs, chatMessages, inputVal, setInputVal, handleSendChat, choicesForStep, onRegenerate }) {
+  const { t } = useLanguage();
   const [selectedScenarioId, setSelectedScenarioId] = useState(null);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -28,8 +30,8 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
     <div className="student-tab-panel scenario-simulator-root">
       <div className="student-page-header">
         <div className="student-page-title-area">
-          <h1 className="student-page-title">Scenario Simulator</h1>
-          <p className="student-page-subtitle">Step into a live production system. Diagnose. Decide. Defend your choices.</p>
+          <h1 className="student-page-title">{t('sim.title')}</h1>
+          <p className="student-page-subtitle">{t('sim.subtitle')}</p>
         </div>
       </div>
 
@@ -39,7 +41,7 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
           {/* Left Column: Scenario Library */}
           <div className="scenario-library-column">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 className="scenario-library-title" style={{ marginBottom: 0 }}>Scenario library</h3>
+              <h3 className="scenario-library-title" style={{ marginBottom: 0 }}>{t('sim.library')}</h3>
               <button 
                 onClick={handleAiGenerate}
                 disabled={isGenerating}
@@ -54,7 +56,7 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                   opacity: isGenerating ? 0.7 : 1
                 }}
               >
-                {isGenerating ? 'Generating AI...' : '✨ AI Generate'}
+                {isGenerating ? t('sim.generatingAi') : t('sim.aiGenerate')}
               </button>
             </div>
             <div className="scenario-lib-list">
@@ -107,13 +109,13 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                         <circle cx="12" cy="12" r="10"></circle>
                         <polyline points="12 6 12 12 16 14"></polyline>
                       </svg>
-                      {selectedScenario.estimatedTime || '30 min'}
+                      {selectedScenario.estimatedTime || t('sim.min30')}
                     </div>
                     <div className="meta-item">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                       </svg>
-                      {selectedScenario.tags?.[0] || 'Intermediate'}
+                      {selectedScenario.tags?.[0] || t('sim.intermediate')}
                     </div>
                     <div className="meta-item">
                       <span className={`status-badge ${selectedScenario.difficulty === 'Available' ? 'available' : selectedScenario.difficulty === 'In progress' ? 'in-progress' : 'completed'}`}>
@@ -127,31 +129,31 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                   </svg>
-                  Launch simulation
+                  {t('sim.launch')}
                 </button>
               </div>
 
               <div className="detail-card briefing">
-                <h4 className="detail-card-title">Briefing</h4>
+                <h4 className="detail-card-title">{t('sim.briefing')}</h4>
                 <p className="detail-briefing-text">
-                  {selectedScenario.briefing || "The incident commander has escalated an active issue to you. Check the logs and engage with the AI Coach to resolve it."}
+                  {selectedScenario.briefing || t('sim.briefingDesc')}
                 </p>
               </div>
 
               <div className="detail-grid">
                 <div className="detail-card">
-                  <h4 className="detail-card-title">Your Objectives</h4>
+                  <h4 className="detail-card-title">{t('sim.objectives')}</h4>
                   <ul className="detail-bullet-list objectives-list">
-                    {(selectedScenario.objectives || ['Identify root cause', 'Recommend fix']).map((obj, i) => (
+                    {(selectedScenario.objectives || [t('sim.obj1'), t('sim.obj2')]).map((obj, i) => (
                       <li key={i}>{obj}</li>
                     ))}
                   </ul>
                 </div>
 
                 <div className="detail-card">
-                  <h4 className="detail-card-title">AI Coach Will Evaluate</h4>
+                  <h4 className="detail-card-title">{t('sim.aiEval')}</h4>
                   <ul className="detail-bullet-list evaluation-list">
-                    {(selectedScenario.evaluationCriteria || ['Diagnostic speed', 'Accuracy']).map((crit, i) => (
+                    {(selectedScenario.evaluationCriteria || [t('sim.eval1'), t('sim.eval2')]).map((crit, i) => (
                       <li key={i}>{crit}</li>
                     ))}
                   </ul>
@@ -174,7 +176,7 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                           <span className="simulator-terminal-dot yellow"></span>
                           <span className="simulator-terminal-dot green"></span>
                         </div>
-                        <span className="simulator-terminal-title">Staging Shell · {activeScenario.id}</span>
+                        <span className="simulator-terminal-title">{t('sim.stagingShell')} · {activeScenario.id}</span>
                       </div>
 
                       <div className="simulator-terminal-body">
@@ -194,7 +196,7 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
 
                     {/* Decision Branching Choices */}
                     <div className="simulator-choices-container">
-                      <span className="simulator-choice-title">Select Diagnostic Strategy:</span>
+                      <span className="simulator-choice-title">{t('sim.selectStrategy')}</span>
                       
                       {!simCompleted ? (
                         choicesForStep[stepIndex] && choicesForStep[stepIndex].map((ch, idx) => (
@@ -208,12 +210,12 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                         ))
                       ) : (
                         <div className="student-card" style={{ padding: '16px', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', textAlign: 'center' }}>
-                          <h4 style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)' }}>🎉 Scenario Successfully Cleared!</h4>
-                          <p style={{ margin: 0, fontSize: '13px' }}>Your evidence memo has been compiled and submitted to Emily Vance for validation.</p>
+                          <h4 style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)' }}>{t('sim.cleared')}</h4>
+                          <p style={{ margin: 0, fontSize: '13px' }}>{t('sim.clearedDesc')}</p>
                           <button className="student-header-btn" style={{ marginTop: '12px' }} onClick={() => {
                             setActiveScenario(null);
                             setActiveTab('portfolio');
-                          }}>Go to Evidence Portfolio</button>
+                          }}>{t('sim.goToPortfolio')}</button>
                         </div>
                       )}
                     </div>
@@ -232,8 +234,8 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                           </svg>
                         </div>
                         <div className="simulator-chat-coach-info">
-                          <h4 className="simulator-chat-coach-name">AI Incident Coach</h4>
-                          <span className="simulator-chat-coach-status">● Live SRE Coach</span>
+                          <h4 className="simulator-chat-coach-name">{t('sim.coachName')}</h4>
+                          <span className="simulator-chat-coach-status">{t('sim.coachStatus')}</span>
                         </div>
                       </div>
 
@@ -250,7 +252,7 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                           <input
                             type="text"
                             className="simulator-chat-input"
-                            placeholder="Type a message to the AI coach..."
+                            placeholder={t('sim.chatPlaceholder')}
                             value={inputVal}
                             onChange={(e) => setInputVal(e.target.value)}
                           />
@@ -271,9 +273,9 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                 {/* Console Footer */}
                 <div className="simulator-console-footer">
                   <button className="simulator-quit-btn" onClick={() => setActiveScenario(null)}>
-                    Quit Simulation
+                    {t('sim.quit')}
                   </button>
-                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>Staging Pod: deployment-coupon-verify-4491-db-slot</span>
+                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>{t('sim.stagingPod')}</span>
                 </div>
               </div>
             )}

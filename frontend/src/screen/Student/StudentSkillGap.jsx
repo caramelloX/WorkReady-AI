@@ -1,6 +1,8 @@
 import React from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function StudentSkillGap({ ratings, calculateRadarPoints, overallReadiness, strengthsCount, gapsCount }) {
+  const { t } = useLanguage();
   const getRating = (key) => ratings && ratings[key] ? ratings[key].toUpperCase() : 'NON-GRADED';
   const getBgColor = (key) => {
     if (!ratings || !ratings[key]) return '#f3f4f6';
@@ -19,8 +21,8 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
     <div className="student-tab-panel">
             <div className="skillgap-header-row">
               <div className="student-page-title-area">
-                <h1 className="student-page-title">Skill Gap Assessment</h1>
-                <p className="student-page-subtitle">View your competencies based on your initial assessment.</p>
+                <h1 className="student-page-title">{t('skillgap.title')}</h1>
+                <p className="student-page-subtitle">{t('skillgap.subtitle')}</p>
               </div>
             </div>
 
@@ -30,41 +32,41 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
               {/* Composite Score */}
               <div className="skillgap-summary-card">
                 <div className="label-row">
-                  <span className="label">Overall Readiness</span>
+                  <span className="label">{t('skillgap.overall')}</span>
                   <span className="dot" style={{ backgroundColor: 'var(--accent-blue)' }}></span>
                 </div>
                 <h3 className="val">{overallReadiness}%</h3>
-                <p className="desc">Composite from self-rating</p>
+                <p className="desc">{t('skillgap.overallDesc')}</p>
               </div>
 
               {/* Strengths count */}
               <div className="skillgap-summary-card">
                 <div className="label-row">
-                  <span className="label">Strengths</span>
+                  <span className="label">{t('skillgap.strengths')}</span>
                   <span className="dot" style={{ backgroundColor: 'var(--accent-green)' }}></span>
                 </div>
                 <h3 className="val">{strengthsCount}</h3>
-                <p className="desc">Rated High by student</p>
+                <p className="desc">{t('skillgap.strengthsDesc')}</p>
               </div>
 
               {/* Gaps count */}
               <div className="skillgap-summary-card">
                 <div className="label-row">
-                  <span className="label">Gaps to Close</span>
+                  <span className="label">{t('skillgap.gaps')}</span>
                   <span className="dot" style={{ backgroundColor: 'var(--accent-yellow)' }}></span>
                 </div>
                 <h3 className="val">{gapsCount}</h3>
-                <p className="desc">Rated Low by student</p>
+                <p className="desc">{t('skillgap.gapsDesc')}</p>
               </div>
 
               {/* Tracked count */}
               <div className="skillgap-summary-card">
                 <div className="label-row">
-                  <span className="label">Competencies</span>
+                  <span className="label">{t('skillgap.competencies')}</span>
                   <span className="dot" style={{ backgroundColor: 'var(--accent-teal)' }}></span>
                 </div>
                 <h3 className="val">6</h3>
-                <p className="desc">Tracked in this assessment</p>
+                <p className="desc">{t('skillgap.competenciesDesc')}</p>
               </div>
 
             </div>
@@ -75,14 +77,14 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
               {/* Question list */}
               <div className="student-card skillgap-assessment-card">
                 <div className="skillgap-rating-header">
-                  <h4 className="skillgap-card-title">Rating questions</h4>
-                  <span className="skillgap-scale-legend">Scale: Low — Medium — High</span>
+                  <h4 className="skillgap-card-title">{t('skillgap.ratingQuestions')}</h4>
+                  <span className="skillgap-scale-legend">{t('skillgap.scaleLegend')}</span>
                 </div>
 
                 {/* 1. Process Map */}
                 <div className="skillgap-question-section">
                   <div className="skillgap-question-header">
-                    <h5 className="skillgap-question-title">Process Map</h5>
+                    <h5 className="skillgap-question-title">{t('skills.processMapAss')}</h5>
                     <span className="skillgap-level-indicator" style={{
                       backgroundColor: getBgColor('processMap'),
                       color: getTextColor('processMap'),
@@ -90,7 +92,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
-                      <span className="skillgap-item-text">I can draw an end-to-end process map for an unfamiliar workflow.</span>
+                      <span className="skillgap-item-text">{t('skillgap.q1')}</span>
                     </div>
                   </div>
                 </div>
@@ -98,7 +100,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                 {/* 2. Safety Risk */}
                 <div className="skillgap-question-section">
                   <div className="skillgap-question-header">
-                    <h5 className="skillgap-question-title">Safety & Quality Risk Identification</h5>
+                    <h5 className="skillgap-question-title">{t('skills.safetyRiskAss')}</h5>
                     <span className="skillgap-level-indicator" style={{
                       backgroundColor: getBgColor('safetyRisk'),
                       color: getTextColor('safetyRisk'),
@@ -106,7 +108,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
-                      <span className="skillgap-item-text">I can independently spot edge-case safety or quality regressions in existing systems.</span>
+                      <span className="skillgap-item-text">{t('skillgap.q2')}</span>
                     </div>
                   </div>
                 </div>
@@ -114,7 +116,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                 {/* 3. RCA */}
                 <div className="skillgap-question-section">
                   <div className="skillgap-question-header">
-                    <h5 className="skillgap-question-title">Root Cause Analysis (RCA)</h5>
+                    <h5 className="skillgap-question-title">{t('skills.rcaAss')}</h5>
                     <span className="skillgap-level-indicator" style={{
                       backgroundColor: getBgColor('rca'),
                       color: getTextColor('rca'),
@@ -122,7 +124,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
-                      <span className="skillgap-item-text">I know how to run a structured 5-Whys or fishbone analysis to find true root causes.</span>
+                      <span className="skillgap-item-text">{t('skillgap.q3')}</span>
                     </div>
                   </div>
                 </div>
@@ -130,7 +132,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                 {/* 4. Traceability */}
                 <div className="skillgap-question-section">
                   <div className="skillgap-question-header">
-                    <h5 className="skillgap-question-title">Traceability</h5>
+                    <h5 className="skillgap-question-title">{t('skills.traceabilityAss')}</h5>
                     <span className="skillgap-level-indicator" style={{
                       backgroundColor: getBgColor('traceability'),
                       color: getTextColor('traceability'),
@@ -138,7 +140,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
-                      <span className="skillgap-item-text">I can trace logs, metrics, or artifacts back to their source without getting lost.</span>
+                      <span className="skillgap-item-text">{t('skillgap.q4')}</span>
                     </div>
                   </div>
                 </div>
@@ -146,7 +148,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                 {/* 5. Technical Memo */}
                 <div className="skillgap-question-section">
                   <div className="skillgap-question-header">
-                    <h5 className="skillgap-question-title">Technical Memo</h5>
+                    <h5 className="skillgap-question-title">{t('skills.memoAss')}</h5>
                     <span className="skillgap-level-indicator" style={{
                       backgroundColor: getBgColor('memo'),
                       color: getTextColor('memo'),
@@ -154,7 +156,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
-                      <span className="skillgap-item-text">I can write a crisp 1-page technical memo outlining an incident, root cause, and next steps.</span>
+                      <span className="skillgap-item-text">{t('skillgap.q5')}</span>
                     </div>
                   </div>
                 </div>
@@ -162,7 +164,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                 {/* 6. Responsible AI */}
                 <div className="skillgap-question-section">
                   <div className="skillgap-question-header">
-                    <h5 className="skillgap-question-title">Responsible AI Usage</h5>
+                    <h5 className="skillgap-question-title">{t('skills.responsibleAiAss')}</h5>
                     <span className="skillgap-level-indicator" style={{
                       backgroundColor: getBgColor('responsibleAi'),
                       color: getTextColor('responsibleAi'),
@@ -170,7 +172,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   </div>
                   <div className="skillgap-question-items">
                     <div className="skillgap-item-row">
-                      <span className="skillgap-item-text">I understand how to design and evaluate features to avoid bias and ensure fairness.</span>
+                      <span className="skillgap-item-text">{t('skillgap.q6')}</span>
                     </div>
                   </div>
                 </div>
@@ -179,7 +181,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
 
               {/* Visual Radar Card */}
               <div className="student-card skillgap-radar-card">
-                <h4 className="skillgap-card-title">Skill-gap radar</h4>
+                <h4 className="skillgap-card-title">{t('skillgap.radarTitle')}</h4>
                 
                 <div className="skillgap-radar-container">
                   <svg viewBox="0 0 300 300" width="100%" height="100%" style={{ overflow: 'visible' }}>
@@ -219,7 +221,7 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   </svg>
                 </div>
 
-                <p className="skillgap-radar-legend">Blue/Teal — your current level. Outer borders — target proficiency</p>
+                <p className="skillgap-radar-legend">{t('skillgap.radarLegend')}</p>
               </div>
 
             </div>
@@ -233,18 +235,18 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <span>Strengths</span>
+                  <span>{t('skillgap.strengths')}</span>
                 </h4>
                 {strengthsCount === 0 ? (
-                  <p className="skillgap-feedback-empty">No High ratings yet — keep practicing.</p>
+                  <p className="skillgap-feedback-empty">{t('skillgap.noHighRatings')}</p>
                 ) : (
                   <ul className="skillgap-feedback-list">
-                    {ratings.processMap === 'high' && <li><strong>Process Map:</strong> Capable of mapping and optimizing workflows.</li>}
-                    {ratings.safetyRisk === 'high' && <li><strong>Safety & Risk:</strong> Skilled at isolating critical system threats.</li>}
-                    {ratings.rca === 'high' && <li><strong>RCA:</strong> Mastery of incident debug and 5-Why root-cause flows.</li>}
-                    {ratings.traceability === 'high' && <li><strong>Traceability:</strong> Rigidly links features, code reviews, and automated builds.</li>}
-                    {ratings.memo === 'high' && <li><strong>Technical Memo:</strong> Strong developer-advocacy post-mortem documentation skill.</li>}
-                    {ratings.responsibleAi === 'high' && <li><strong>Responsible AI:</strong> Proactively inspects prompts and LLM security constraints.</li>}
+                    {ratings.processMap === 'high' && <li><strong>{t('skills.processMapAss')}:</strong> {t('skillgap.fb1')}</li>}
+                    {ratings.safetyRisk === 'high' && <li><strong>{t('skills.safetyRiskAss')}:</strong> {t('skillgap.fb2')}</li>}
+                    {ratings.rca === 'high' && <li><strong>{t('skills.rcaAss')}:</strong> {t('skillgap.fb3')}</li>}
+                    {ratings.traceability === 'high' && <li><strong>{t('skills.traceabilityAss')}:</strong> {t('skillgap.fb4')}</li>}
+                    {ratings.memo === 'high' && <li><strong>{t('skills.memoAss')}:</strong> {t('skillgap.fb5')}</li>}
+                    {ratings.responsibleAi === 'high' && <li><strong>{t('skills.responsibleAiAss')}:</strong> {t('skillgap.fb6')}</li>}
                   </ul>
                 )}
               </div>
@@ -257,18 +259,18 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
                     <line x1="12" y1="9" x2="12" y2="13" />
                     <line x1="12" y1="17" x2="12.01" y2="17" />
                   </svg>
-                  <span>Weaknesses</span>
+                  <span>{t('skillgap.feedbackWeaknesses')}</span>
                 </h4>
                 {gapsCount === 0 ? (
-                  <p className="skillgap-feedback-empty">No Low ratings — nice work!</p>
+                  <p className="skillgap-feedback-empty">{t('skillgap.noLowRatings')}</p>
                 ) : (
                   <ul className="skillgap-feedback-list">
-                    {ratings.processMap === 'low' && <li><strong>Process Map:</strong> Struggle to visualize architecture flows. Recommendation: Workshop: Mapping a production line using SIPOC + swimlane diagrams.</li>}
-                    {ratings.safetyRisk === 'low' && <li><strong>Safety & Risk:</strong> Need guidelines to rank vulnerability scores. Recommendation: Module: FMEA + 5-Why for a packaging-line near-miss case.</li>}
-                    {ratings.rca === 'low' && <li><strong>RCA:</strong> Easily treat symptoms rather than root bugs. Recommendation: Scenario S-102 — Database pool exhaustion: build the full RCA tree.</li>}
-                    {ratings.traceability === 'low' && <li><strong>Traceability:</strong> Lacks clean traceability indexes in test scripts. Recommendation: Lab: Build a traceability matrix linking requirements &rarr; tests &rarr; defects.</li>}
-                    {ratings.memo === 'low' && <li><strong>Technical Memo:</strong> Need to clarify writing style for non-tech audiences. Recommendation: Practice: Draft a post-mortem memo for the Checkout API outage.</li>}
-                    {ratings.responsibleAi === 'low' && <li><strong>Responsible AI:</strong> Prone to blindly copying third-party chatbot answers. Recommendation: Quiz: Responsible AI checklist + redaction practice on sample prompts.</li>}
+                    {ratings.processMap === 'low' && <li><strong>{t('skills.processMapAss')}:</strong> {t('skillgap.rec1')} {t('skillgap.rec1act')}</li>}
+                    {ratings.safetyRisk === 'low' && <li><strong>{t('skills.safetyRiskAss')}:</strong> {t('skillgap.rec2')} {t('skillgap.rec2act')}</li>}
+                    {ratings.rca === 'low' && <li><strong>{t('skills.rcaAss')}:</strong> {t('skillgap.rec3')} {t('skillgap.rec3act')}</li>}
+                    {ratings.traceability === 'low' && <li><strong>{t('skills.traceabilityAss')}:</strong> {t('skillgap.rec4')} {t('skillgap.rec4act')}</li>}
+                    {ratings.memo === 'low' && <li><strong>{t('skills.memoAss')}:</strong> {t('skillgap.rec5')} {t('skillgap.rec5act')}</li>}
+                    {ratings.responsibleAi === 'low' && <li><strong>{t('skills.responsibleAiAss')}:</strong> {t('skillgap.rec6')} {t('skillgap.rec6act')}</li>}
                   </ul>
                 )}
               </div>
@@ -277,60 +279,60 @@ export default function StudentSkillGap({ ratings, calculateRadarPoints, overall
 
             {/* Recommended Training Courses */}
             <div className="student-card skillgap-training-card">
-              <h4 className="skillgap-card-title" style={{ marginBottom: '20px' }}>Recommended training</h4>
+              <h4 className="skillgap-card-title" style={{ marginBottom: '20px' }}>{t('skillgap.recommended')}</h4>
               
               <div className="skillgap-table-wrapper">
                 <table className="skillgap-table">
                   <thead>
                     <tr>
-                      <th>Competency</th>
-                      <th>Current</th>
-                      <th>Priority</th>
-                      <th>What to Train Next</th>
+                      <th>{t('skillgap.thCompetency')}</th>
+                      <th>{t('skillgap.thCurrent')}</th>
+                      <th>{t('skillgap.thPriority')}</th>
+                      <th>{t('skillgap.thTrainNext')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     
                     <tr>
-                      <td className="skillgap-table-competency">Process Map</td>
+                      <td className="skillgap-table-competency">{t('skills.processMapAss')}</td>
                       <td><span className={`skillgap-table-level ${ratings.processMap}`}>{ratings.processMap}</span></td>
                       <td><span className={`skillgap-table-level ${ratings.processMap === 'high' ? 'low' : ratings.processMap === 'low' ? 'high' : 'medium'}`}>{ratings.processMap === 'high' ? 'low' : ratings.processMap === 'low' ? 'high' : 'medium'}</span></td>
-                      <td>Workshop: Mapping a production line using SIPOC + swimlane diagrams.</td>
+                      <td>{t('skillgap.rec1act')}</td>
                     </tr>
 
                     <tr>
-                      <td className="skillgap-table-competency">Safety & Quality Risk Identification</td>
+                      <td className="skillgap-table-competency">{t('skills.safetyRiskAss')}</td>
                       <td><span className={`skillgap-table-level ${ratings.safetyRisk}`}>{ratings.safetyRisk}</span></td>
                       <td><span className={`skillgap-table-level ${ratings.safetyRisk === 'high' ? 'low' : ratings.safetyRisk === 'low' ? 'high' : 'medium'}`}>{ratings.safetyRisk === 'high' ? 'low' : ratings.safetyRisk === 'low' ? 'high' : 'medium'}</span></td>
-                      <td>Module: FMEA + 5-Why for a packaging-line near-miss case.</td>
+                      <td>{t('skillgap.rec2act')}</td>
                     </tr>
 
                     <tr>
-                      <td className="skillgap-table-competency">Root Cause Analysis (RCA)</td>
+                      <td className="skillgap-table-competency">{t('skills.rcaAss')}</td>
                       <td><span className={`skillgap-table-level ${ratings.rca}`}>{ratings.rca}</span></td>
                       <td><span className={`skillgap-table-level ${ratings.rca === 'high' ? 'low' : ratings.rca === 'low' ? 'high' : 'medium'}`}>{ratings.rca === 'high' ? 'low' : ratings.rca === 'low' ? 'high' : 'medium'}</span></td>
-                      <td>Scenario S-102 — Database pool exhaustion: build the full RCA tree.</td>
+                      <td>{t('skillgap.rec3act')}</td>
                     </tr>
 
                     <tr>
-                      <td className="skillgap-table-competency">Traceability</td>
+                      <td className="skillgap-table-competency">{t('skills.traceabilityAss')}</td>
                       <td><span className={`skillgap-table-level ${ratings.traceability}`}>{ratings.traceability}</span></td>
                       <td><span className={`skillgap-table-level ${ratings.traceability === 'high' ? 'low' : ratings.traceability === 'low' ? 'high' : 'medium'}`}>{ratings.traceability === 'high' ? 'low' : ratings.traceability === 'low' ? 'high' : 'medium'}</span></td>
-                      <td>Lab: Build a traceability matrix linking requirements &rarr; tests &rarr; defects.</td>
+                      <td>{t('skillgap.rec4act')}</td>
                     </tr>
 
                     <tr>
-                      <td className="skillgap-table-competency">Technical Memo</td>
+                      <td className="skillgap-table-competency">{t('skills.memoAss')}</td>
                       <td><span className={`skillgap-table-level ${ratings.memo}`}>{ratings.memo}</span></td>
                       <td><span className={`skillgap-table-level ${ratings.memo === 'high' ? 'low' : ratings.memo === 'low' ? 'high' : 'medium'}`}>{ratings.memo === 'high' ? 'low' : ratings.memo === 'low' ? 'high' : 'medium'}</span></td>
-                      <td>Practice: Draft a post-mortem memo for the Checkout API outage.</td>
+                      <td>{t('skillgap.rec5act')}</td>
                     </tr>
 
                     <tr>
-                      <td className="skillgap-table-competency">Responsible AI Usage</td>
+                      <td className="skillgap-table-competency">{t('skills.responsibleAiAss')}</td>
                       <td><span className={`skillgap-table-level ${ratings.responsibleAi}`}>{ratings.responsibleAi}</span></td>
                       <td><span className={`skillgap-table-level ${ratings.responsibleAi === 'high' ? 'low' : ratings.responsibleAi === 'low' ? 'high' : 'medium'}`}>{ratings.responsibleAi === 'high' ? 'low' : ratings.responsibleAi === 'low' ? 'high' : 'medium'}</span></td>
-                      <td>Quiz: Responsible AI checklist + redaction practice on sample prompts.</td>
+                      <td>{t('skillgap.rec6act')}</td>
                     </tr>
 
                   </tbody>

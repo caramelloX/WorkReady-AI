@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import './MentorScreen.css';
 import { api } from '../../api.js';
+import StudentSettings from '../Student/StudentSettings';
 
 export default function MentorScreen({ onNavigate }) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState(() => {
     return sessionStorage.getItem('mentorActiveTab') || 'dashboard';
   });
@@ -10,6 +13,7 @@ export default function MentorScreen({ onNavigate }) {
   useEffect(() => {
     sessionStorage.setItem('mentorActiveTab', activeTab);
   }, [activeTab]);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState('student-01');
   const [submissionFilter, setSubmissionFilter] = useState('All'); // All, Pending, Reviewed, Needs Revision
   const [mentorHighlights, setMentorHighlights] = useState({
@@ -122,7 +126,7 @@ export default function MentorScreen({ onNavigate }) {
           <span>WorkReady AI</span>
         </div>
 
-        <div className="mentor-sidebar-header">MENTOR PORTAL</div>
+        <div className="mentor-sidebar-header">{t('mentor.portal')}</div>
 
         <nav className="mentor-sidebar-nav">
           <button 
@@ -135,7 +139,7 @@ export default function MentorScreen({ onNavigate }) {
               <rect x="14" y="12" width="7" height="9" rx="1" />
               <rect x="3" y="16" width="7" height="5" rx="1" />
             </svg>
-            <span>Mentor Dashboard</span>
+            <span>{t('mentor.dashboardTab')}</span>
           </button>
 
           <button 
@@ -148,7 +152,7 @@ export default function MentorScreen({ onNavigate }) {
               <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-            <span>Student List</span>
+            <span>{t('mentor.studentListTab')}</span>
           </button>
 
           <button 
@@ -161,7 +165,7 @@ export default function MentorScreen({ onNavigate }) {
               <line x1="16" y1="13" x2="8" y2="13" />
               <line x1="16" y1="17" x2="8" y2="17" />
             </svg>
-            <span>Submissions</span>
+            <span>{t('mentor.submissionsTab')}</span>
             {submissions.filter(sub => sub.status === 'Pending').length > 0 && (
               <span className="mentor-badge-count">
                 {submissions.filter(sub => sub.status === 'Pending').length}
@@ -176,21 +180,46 @@ export default function MentorScreen({ onNavigate }) {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mentor-nav-icon">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
             </svg>
-            <span>Portfolio Review</span>
+            <span>{t('mentor.portfolioTab')}</span>
           </button>
         </nav>
 
         <div className="mentor-sidebar-footer">
-          <div className="mentor-user-card">
-            <div className="mentor-avatar">{mentorInitials}</div>
-            <div className="mentor-user-info">
-              <span className="mentor-user-name">{mentorName}</span>
-              <span className="mentor-user-role">{mentorRole}</span>
-            </div>
+          <div className="mentor-profile-dropdown-container">
+            <button className="mentor-profile-btn" onClick={() => setShowProfileDropdown(!showProfileDropdown)}>
+              {currentUser && currentUser.avatar_base64 ? (
+                <img src={currentUser.avatar_base64} alt="Avatar" className="mentor-profile-avatar" style={{ objectFit: 'cover' }} />
+              ) : (
+                <div className="mentor-profile-avatar">{mentorInitials}</div>
+              )}
+              <div className="mentor-profile-info">
+                <span className="mentor-profile-name">{mentorName}</span>
+                <span className="mentor-profile-role">{mentorRole}</span>
+              </div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`dropdown-icon ${showProfileDropdown ? 'open' : ''}`}>
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            {showProfileDropdown && (
+              <div className="mentor-profile-dropdown-menu">
+                <button className="dropdown-item" onClick={() => { setShowProfileDropdown(false); setActiveTab('settings'); }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="dropdown-item-icon">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                  {t('sidebar.settings') || 'Settings'}
+                </button>
+                <button className="dropdown-item logout" onClick={() => onNavigate('logout')}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="dropdown-item-icon">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                  {t('mentor.signOut')}
+                </button>
+              </div>
+            )}
           </div>
-          <button className="mentor-logout-btn" onClick={() => onNavigate('landing')}>
-            Sign out
-          </button>
         </div>
       </div>
 
@@ -204,8 +233,8 @@ export default function MentorScreen({ onNavigate }) {
           <>
             <header className="mentor-header">
               <div className="mentor-header-title-box">
-                <h1 className="mentor-page-title">Mentor Dashboard</h1>
-                <p className="mentor-page-subtitle">Coach your cohort through real-world software engineering incidents.</p>
+                <h1 className="mentor-page-title">{t('mentor.dashTitle')}</h1>
+                <p className="mentor-page-subtitle">{t('mentor.dashSubtitle')}</p>
               </div>
             </header>
 
@@ -214,30 +243,30 @@ export default function MentorScreen({ onNavigate }) {
               <div className="mentor-stats-grid">
                 <div className="mentor-stat-card border-blue">
                   <div className="stat-card-inner">
-                    <span className="mentor-stat-label color-blue">Mentees</span>
+                    <span className="mentor-stat-label color-blue">{t('mentor.mentees')}</span>
                     <h3 className="mentor-stat-value">{students.length}</h3>
-                    <p className="mentor-stat-subtext">Active this term</p>
+                    <p className="mentor-stat-subtext">{t('mentor.activeTerm')}</p>
                   </div>
                 </div>
                 <div className="mentor-stat-card border-yellow">
                   <div className="stat-card-inner">
-                    <span className="mentor-stat-label color-yellow">Unfinished</span>
+                    <span className="mentor-stat-label color-yellow">{t('mentor.unfinished')}</span>
                     <h3 className="mentor-stat-value">{submissions.filter(s => s.status === 'Pending' || s.status === 'Needs Revision').length}</h3>
-                    <p className="mentor-stat-subtext">Requires attention</p>
+                    <p className="mentor-stat-subtext">{t('mentor.requiresAttn')}</p>
                   </div>
                 </div>
                 <div className="mentor-stat-card border-teal">
                   <div className="stat-card-inner">
-                    <span className="mentor-stat-label color-teal">Available</span>
+                    <span className="mentor-stat-label color-teal">{t('mentor.available')}</span>
                     <h3 className="mentor-stat-value">{scenarios.length}</h3>
-                    <p className="mentor-stat-subtext">Incident scenarios open</p>
+                    <p className="mentor-stat-subtext">{t('mentor.incidentsOpen')}</p>
                   </div>
                 </div>
                 <div className="mentor-stat-card border-green">
                   <div className="stat-card-inner">
-                    <span className="mentor-stat-label color-green">Finished</span>
+                    <span className="mentor-stat-label color-green">{t('mentor.finished')}</span>
                     <h3 className="mentor-stat-value">{submissions.filter(s => s.status === 'Reviewed').length}</h3>
-                    <p className="mentor-stat-subtext">Approved evidence logs</p>
+                    <p className="mentor-stat-subtext">{t('mentor.approvedEv')}</p>
                   </div>
                 </div>
               </div>
@@ -246,17 +275,17 @@ export default function MentorScreen({ onNavigate }) {
               <div className="mentor-grid-layout">
                 {/* Left: Student Progress Table */}
                 <div className="mentor-table-card">
-                  <h3 className="card-title">Student Progress</h3>
+                  <h3 className="card-title">{t('mentor.studentProg')}</h3>
                   <div className="table-responsive">
                     <table className="mentor-custom-table">
                       <thead>
                         <tr>
-                          <th>Student</th>
-                          <th>Readiness</th>
-                          <th>Scenarios</th>
-                          <th>Risk</th>
-                          <th>Last Active</th>
-                          <th>Actions</th>
+                          <th>{t('mentor.thStudent')}</th>
+                          <th>{t('mentor.thReadiness')}</th>
+                          <th>{t('mentor.thScenarios')}</th>
+                          <th>{t('mentor.thRisk')}</th>
+                          <th>{t('mentor.thLastActive')}</th>
+                          <th>{t('mentor.thActions')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -307,10 +336,10 @@ export default function MentorScreen({ onNavigate }) {
                 <div className="mentor-sidebar-widgets">
                   {/* Pending Reviews Widget */}
                   <div className="widget-card">
-                    <h3 className="widget-title">Pending Reviews</h3>
+                    <h3 className="widget-title">{t('mentor.pendingRev')}</h3>
                     <div className="widget-list">
                       {submissions.filter(sub => sub.status === 'Pending').length === 0 ? (
-                        <p style={{ fontSize: '13px', color: '#94a3b8', margin: '10px 0' }}>All reviews completed! 🎉</p>
+                        <p style={{ fontSize: '13px', color: '#94a3b8', margin: '10px 0' }}>{t('mentor.allRevDone')}</p>
                       ) : (
                         submissions.filter(sub => sub.status === 'Pending').map(sub => (
                           <div className="widget-item" key={sub.id}>
@@ -319,7 +348,7 @@ export default function MentorScreen({ onNavigate }) {
                               <span className="task">{sub.artifact} ({sub.type})</span>
                             </div>
                             <span className={`widget-badge ${sub.date === 'Today' ? 'today' : 'overdue'}`}>
-                              {sub.date === 'Today' ? 'Today' : 'Overdue'}
+                              {sub.date === 'Today' ? t('mentor.today') : t('mentor.overdue')}
                             </span>
                           </div>
                         ))
@@ -329,7 +358,7 @@ export default function MentorScreen({ onNavigate }) {
 
                   {/* Unfinished Task Reminders */}
                   <div className="widget-card">
-                    <h3 className="widget-title">Unfinished Reminders</h3>
+                    <h3 className="widget-title">{t('mentor.unfinReminders')}</h3>
                     <div className="widget-list">
                       <div className="widget-item">
                         <div className="widget-item-info">
@@ -360,24 +389,24 @@ export default function MentorScreen({ onNavigate }) {
           <>
             <header className="mentor-header">
               <div className="mentor-header-title-box">
-                <h1 className="mentor-page-title">Student List</h1>
-                <p className="mentor-page-subtitle">Detailed engineering readiness progression tracking for active candidates.</p>
+                <h1 className="mentor-page-title">{t('mentor.studListTitle')}</h1>
+                <p className="mentor-page-subtitle">{t('mentor.studListSub')}</p>
               </div>
             </header>
 
             <main className="mentor-content">
               <div className="mentor-table-card full-width">
-                <h3 className="card-title">Active Candidates</h3>
+                <h3 className="card-title">{t('mentor.activeCand')}</h3>
                 <div className="table-responsive">
                   <table className="mentor-custom-table">
                     <thead>
                       <tr>
-                        <th>Student Name</th>
-                        <th>Target Industry</th>
-                        <th>Competency Level</th>
-                        <th>Scenarios Solved</th>
-                        <th>Last Active</th>
-                        <th>Action</th>
+                        <th>{t('mentor.thName')}</th>
+                        <th>{t('mentor.thIndustry')}</th>
+                        <th>{t('mentor.thLevel')}</th>
+                        <th>{t('mentor.thSolved')}</th>
+                        <th>{t('mentor.thLastActive')}</th>
+                        <th>{t('mentor.thActions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -417,8 +446,8 @@ export default function MentorScreen({ onNavigate }) {
           <>
             <header className="mentor-header">
               <div className="mentor-header-title-box">
-                <h1 className="mentor-page-title">Evidence Submissions</h1>
-                <p className="mentor-page-subtitle">Verify student incident write-ups and diagnostic process charts.</p>
+                <h1 className="mentor-page-title">{t('mentor.subTitle')}</h1>
+                <p className="mentor-page-subtitle">{t('mentor.subSub')}</p>
               </div>
             </header>
 
@@ -437,17 +466,17 @@ export default function MentorScreen({ onNavigate }) {
               </div>
 
               <div className="mentor-table-card full-width">
-                <h3 className="card-title">Solutions Queue</h3>
+                <h3 className="card-title">{t('mentor.queue')}</h3>
                 <div className="table-responsive">
                   <table className="mentor-custom-table">
                     <thead>
                       <tr>
-                        <th>Candidate</th>
-                        <th>Artifact Type</th>
-                        <th>Evidence Artifact Name</th>
-                        <th>Submitted Date</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                        <th>{t('mentor.thStudent')}</th>
+                        <th>{t('mentor.thArtifactType')}</th>
+                        <th>{t('mentor.thEvidenceName')}</th>
+                        <th>{t('mentor.thDate')}</th>
+                        <th>{t('mentor.thStatus')}</th>
+                        <th>{t('mentor.thActions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -515,7 +544,7 @@ export default function MentorScreen({ onNavigate }) {
             
             {/* Left Sidebar student selector */}
             <div className="portfolio-master-sidebar">
-              <h3 className="master-title">Mentees list</h3>
+              <h3 className="master-title">{t('mentor.menteeList')}</h3>
               <div className="master-list">
                 {students.map((st) => (
                   <div 
@@ -524,7 +553,7 @@ export default function MentorScreen({ onNavigate }) {
                     onClick={() => { setSelectedStudentId(st.id); setEditingHighlight(''); }}
                   >
                     <span className="name">{st.name}</span>
-                    <span className="readiness-score">{st.readiness}% Ready</span>
+                    <span className="readiness-score">{st.readiness}% {t('mentor.ready')}</span>
                   </div>
                 ))}
               </div>
@@ -543,7 +572,7 @@ export default function MentorScreen({ onNavigate }) {
                 <div className="detail-panel-body">
                   {/* Readiness Progress Indicator */}
                   <div className="detail-section-card">
-                    <h4 className="section-card-title">Job Readiness Index</h4>
+                    <h4 className="section-card-title">{t('mentor.jobReadyIdx')}</h4>
                     <div className="readiness-big-display">
                       <div className="readiness-circle">
                         <svg width="80" height="80" viewBox="0 0 80 80" style={{ transform: 'rotate(-90deg)' }}>
@@ -568,15 +597,15 @@ export default function MentorScreen({ onNavigate }) {
                         <div className="scale-bar-container">
                           <div className="scale-bar-fill" style={{ width: `${currentStudent.readiness}%` }}></div>
                         </div>
-                        <p className="description">Candidate has solved {currentStudent.scenarios} incident modules and met Stripe diagnostic standard benchmarks.</p>
+                        <p className="description">{t('mentor.candHasSolved')} {currentStudent.scenarios} {t('mentor.incidentsMet')}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Mentor Highlights (Review Comments) */}
                   <div className="detail-section-card">
-                    <h4 className="section-card-title">Mentor Highlights</h4>
-                    <p className="highlight-text">{mentorHighlights[currentStudent.id] || 'No custom highlights provided yet.'}</p>
+                    <h4 className="section-card-title">{t('mentor.highlightsTitle')}</h4>
+                    <p className="highlight-text">{mentorHighlights[currentStudent.id] || t('mentor.noHighlights')}</p>
                     
                     <form onSubmit={handleSaveHighlight} className="highlight-edit-form">
                       <textarea 
@@ -594,7 +623,7 @@ export default function MentorScreen({ onNavigate }) {
 
                   {/* Evidence List */}
                   <div className="detail-section-card">
-                    <h4 className="section-card-title">Evidence Artifact Folder</h4>
+                    <h4 className="section-card-title">{t('mentor.evFolder')}</h4>
                     <div className="evidence-list-widget">
                       {currentStudent.evidence && currentStudent.evidence.map((ev, idx) => (
                         <div key={idx} className="evidence-item-row">
@@ -605,7 +634,7 @@ export default function MentorScreen({ onNavigate }) {
                             </svg>
                             <span className="name">{ev.name}</span>
                           </div>
-                          <span className="score-pill">{ev.points} / 100 pts</span>
+                          <span className="score-pill">{ev.points} / 100 {t('mentor.pts')}</span>
                         </div>
                       ))}
                     </div>
@@ -615,11 +644,15 @@ export default function MentorScreen({ onNavigate }) {
               </div>
             ) : (
               <div className="portfolio-detail-panel" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                <p>Loading candidate portfolio...</p>
+                <p>{t('mentor.loadingCand')}</p>
               </div>
             )}
 
           </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <StudentSettings currentUser={currentUser} />
         )}
 
       </div>

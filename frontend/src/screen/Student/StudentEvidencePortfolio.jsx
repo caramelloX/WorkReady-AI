@@ -1,22 +1,24 @@
 import React from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function StudentEvidencePortfolio({ portfolioItems, handleSubmitPortfolio, onNavigate }) {
+  const { t } = useLanguage();
   return (
     <div className="student-tab-panel portfolio-tab-panel-updated">
             
             {/* Header Row */}
             <div className="student-page-header portfolio-header-row">
               <div className="student-page-title-area">
-                <h1 className="student-page-title">Evidence Portfolio</h1>
-                <p className="student-page-subtitle">Every solved scenario becomes verified proof recruiters and mentors can trust.</p>
+                <h1 className="student-page-title">{t('portfolio.title')}</h1>
+                <p className="student-page-subtitle">{t('portfolio.subtitle')}</p>
               </div>
-              <button className="portfolio-share-btn-new" onClick={() => alert('Recruiter access link copied to clipboard!')}>
+              <button className="portfolio-share-btn-new" onClick={() => alert(t('portfolio.linkCopied'))}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="portfolio-share-icon" width="16" height="16">
                   <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
                   <polyline points="16 6 12 2 8 6" />
                   <line x1="12" y1="2" x2="12" y2="15" />
                 </svg>
-                <span>Share portfolio</span>
+                <span>{t('portfolio.share')}</span>
               </button>
             </div>
 
@@ -24,30 +26,30 @@ export default function StudentEvidencePortfolio({ portfolioItems, handleSubmitP
             <div className="portfolio-stats-container">
               <div className="portfolio-stat-card">
                 <div className="portfolio-stat-dot blue"></div>
-                <span className="portfolio-stat-label">ARTIFACTS</span>
+                <span className="portfolio-stat-label">{t('portfolio.artifacts')}</span>
                 <h3 className="portfolio-stat-value">5</h3>
-                <p className="portfolio-stat-subtext">3 completed</p>
+                <p className="portfolio-stat-subtext">{t('portfolio.artifactsCompleted')}</p>
               </div>
 
               <div className="portfolio-stat-card">
                 <div className="portfolio-stat-dot teal"></div>
-                <span className="portfolio-stat-label">TOTAL POINTS</span>
+                <span className="portfolio-stat-label">{t('portfolio.totalPoints')}</span>
                 <h3 className="portfolio-stat-value">380/500</h3>
-                <p className="portfolio-stat-subtext">Across all evidence</p>
+                <p className="portfolio-stat-subtext">{t('portfolio.acrossAll')}</p>
               </div>
 
               <div className="portfolio-stat-card">
                 <div className="portfolio-stat-dot green"></div>
-                <span className="portfolio-stat-label">MENTOR REVIEWS</span>
+                <span className="portfolio-stat-label">{t('portfolio.mentorReviews')}</span>
                 <h3 className="portfolio-stat-value">2</h3>
-                <p className="portfolio-stat-subtext">Last 30 days</p>
+                <p className="portfolio-stat-subtext">{t('portfolio.last30Days')}</p>
               </div>
 
               <div className="portfolio-stat-card">
                 <div className="portfolio-stat-dot yellow"></div>
-                <span className="portfolio-stat-label">READINESS</span>
+                <span className="portfolio-stat-label">{t('portfolio.readiness')}</span>
                 <h3 className="portfolio-stat-value">76%</h3>
-                <p className="portfolio-stat-subtext">Job-ready score</p>
+                <p className="portfolio-stat-subtext">{t('portfolio.jobReadyScore')}</p>
               </div>
             </div>
 
@@ -58,8 +60,8 @@ export default function StudentEvidencePortfolio({ portfolioItems, handleSubmitP
               <div className="portfolio-left-column">
                 <div className="student-card portfolio-evidence-list-card">
                   <div className="portfolio-card-header">
-                    <h3 className="portfolio-card-title">Evidence list</h3>
-                    <p className="portfolio-card-subtitle">All artifacts collected through scenarios and coaching.</p>
+                    <h3 className="portfolio-card-title">{t('portfolio.evidenceList')}</h3>
+                    <p className="portfolio-card-subtitle">{t('portfolio.evidenceListDesc')}</p>
                   </div>
                   <div className="portfolio-evidence-items">
                     {portfolioItems.map(item => {
@@ -129,7 +131,7 @@ export default function StudentEvidencePortfolio({ portfolioItems, handleSubmitP
                             </div>
                           </div>
                           <div className="portfolio-evidence-item-right">
-                            <span className={`portfolio-evidence-badge ${badgeClass}`}>{item.status}</span>
+                            <span className={`portfolio-evidence-badge ${badgeClass}`}>{t(item.status)}</span>
                             <div className="portfolio-evidence-progress-section">
                               <span className="portfolio-evidence-score">{item.score}</span>
                               <div className="portfolio-evidence-progress-bar-container">
@@ -149,14 +151,16 @@ export default function StudentEvidencePortfolio({ portfolioItems, handleSubmitP
                 
                 {/* Readiness Score Card */}
                 <div className="student-card portfolio-readiness-card">
-                  <span className="portfolio-card-mini-label">READINESS SCORE</span>
+                  <span className="portfolio-card-mini-label">{t('portfolio.readinessScore')}</span>
                   <div className="portfolio-readiness-score-display">
                     <h2 className="portfolio-readiness-score-number">76</h2>
                     <span className="portfolio-readiness-score-denom">/ 100</span>
                   </div>
                   <p className="portfolio-readiness-desc">
+                    {t('portfolio.readinessDesc')} </p>
+                  {/* 
                     Weighted competency index showing your target match against standard backend junior roles.
-                  </p>
+                  */}  
                   
                   <div className="portfolio-readiness-bar">
                     <div className="portfolio-progress-fill" style={{ width: '76%' }}></div>
@@ -164,15 +168,15 @@ export default function StudentEvidencePortfolio({ portfolioItems, handleSubmitP
 
                   <div className="portfolio-metrics-list">
                     <div className="portfolio-metric-row">
-                      <span className="portfolio-metric-name">Completed</span>
+                      <span className="portfolio-metric-name">{t('portfolio.completed')}</span>
                       <span className="portfolio-metric-value">3 / 5</span>
                     </div>
                     <div className="portfolio-metric-row">
-                      <span className="portfolio-metric-name">Needs review</span>
+                      <span className="portfolio-metric-name">{t('portfolio.needsReview')}</span>
                       <span className="portfolio-metric-value text-blue">1</span>
                     </div>
                     <div className="portfolio-metric-row">
-                      <span className="portfolio-metric-name">Needs revision</span>
+                      <span className="portfolio-metric-name">{t('portfolio.needsRevision')}</span>
                       <span className="portfolio-metric-value text-orange">1</span>
                     </div>
                   </div>
@@ -180,20 +184,24 @@ export default function StudentEvidencePortfolio({ portfolioItems, handleSubmitP
 
                 {/* Submit for Review Card */}
                 <div className="student-card portfolio-submit-card">
-                  <h4 className="portfolio-submit-title">Submit for review</h4>
+                  <h4 className="portfolio-submit-title">{t('portfolio.submitReview')}</h4>
                   <p className="portfolio-submit-desc">
+                    {t('portfolio.submitReviewDesc')} </p>
+                  {/*
                     Send your completed evidence portfolio to your course mentor for final assessment.
-                  </p>
+                  */} 
                   <button className="portfolio-submit-btn" onClick={handleSubmitPortfolio}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
                       <line x1="22" y1="2" x2="11" y2="13"></line>
                       <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                     </svg>
-                    <span>Submit portfolio</span>
+                    <span>{t('portfolio.submitPortfolio')}</span>
                   </button>
                   <span className="portfolio-submit-notification">
+                    {t('portfolio.submitNotification')} </span>
+                  {/*
                     You'll be notified when reviews are completed.
-                  </span>
+                  */} 
                 </div>
 
               </div>
@@ -203,8 +211,8 @@ export default function StudentEvidencePortfolio({ portfolioItems, handleSubmitP
             {/* Mentor Feedback Section */}
             <div className="portfolio-mentor-feedback-section">
               <div className="portfolio-section-header">
-                <h2 className="portfolio-section-title">Mentor Feedback</h2>
-                <p className="portfolio-section-subtitle">Feedback and comments from industry mentors on your submitted evidence.</p>
+                <h2 className="portfolio-section-title">{t('portfolio.mentorFeedback')}</h2>
+                <p className="portfolio-section-subtitle">{t('portfolio.mentorFeedbackDesc')}</p>
               </div>
 
               <div className="portfolio-mentor-feedback-list">
@@ -213,10 +221,10 @@ export default function StudentEvidencePortfolio({ portfolioItems, handleSubmitP
                     <div className="portfolio-feedback-header">
                       <div className="portfolio-feedback-meta-left">
                         <span className="portfolio-feedback-id">{item.id}</span>
-                        <span className="portfolio-feedback-scenario">Solved Scenario {item.scenarioId}</span>
+                        <span className="portfolio-feedback-scenario">{t('portfolio.solvedScenario')}{item.scenarioId}</span>
                         <span className="portfolio-feedback-topic">· {item.topic}</span>
                       </div>
-                      <div className="portfolio-feedback-score">{item.score} Score</div>
+                      <div className="portfolio-feedback-score">{item.score}{t('portfolio.score')}</div>
                     </div>
                     <h3 className="portfolio-feedback-title">{item.title}</h3>
                     <p className="portfolio-feedback-desc">{item.desc}</p>
@@ -242,7 +250,7 @@ export default function StudentEvidencePortfolio({ portfolioItems, handleSubmitP
                   <line x1="19" y1="12" x2="5" y2="12"></line>
                   <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
-                <span>Return to App Dashboard</span>
+                <span>{t('portfolio.returnApp')}</span>
               </button>
             </div>
 

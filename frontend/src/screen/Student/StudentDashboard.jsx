@@ -1,23 +1,25 @@
 import React from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function StudentDashboard({ firstName, initials, fullName, targetTrack, major, educationLevel, occupationGoal, targetIndustry, setActiveTab, scenarios, handleOpenScenario, overallReadiness, ratings, aiRatings }) {
+  const { t } = useLanguage();
   
   const skillMapping = {
-    processMap: { title: 'System Design', weight: '25%' },
-    safetyRisk: { title: 'Cloud & DevOps (AWS/Docker)', weight: '20%' },
-    rca: { title: 'Git & Code Review', weight: '15%' },
-    traceability: { title: 'Data Structures & Algorithms', weight: '20%' },
-    memo: { title: 'Secure Coding (OWASP)', weight: '15%' },
-    responsibleAi: { title: 'Technical Writing', weight: '5%' }
+    processMap: { title: t('skills.processMap'), weight: '25%' },
+    safetyRisk: { title: t('skills.safetyRisk'), weight: '20%' },
+    rca: { title: t('skills.rca'), weight: '15%' },
+    traceability: { title: t('skills.traceability'), weight: '20%' },
+    memo: { title: t('skills.memo'), weight: '15%' },
+    responsibleAi: { title: t('skills.responsibleAi'), weight: '5%' }
   };
 
   const assessmentMapping = {
-    processMap: 'Process Map',
-    safetyRisk: 'Safety & Quality Risk Identification',
-    rca: 'Root Cause Analysis (RCA)',
-    traceability: 'Traceability',
-    memo: 'Technical Memo',
-    responsibleAi: 'Responsible AI Usage'
+    processMap: t('skills.processMapAss'),
+    safetyRisk: t('skills.safetyRiskAss'),
+    rca: t('skills.rcaAss'),
+    traceability: t('skills.traceabilityAss'),
+    memo: t('skills.memoAss'),
+    responsibleAi: t('skills.responsibleAiAss')
   };
 
   const getScore = (val) => val === 'high' ? 100 : val === 'medium' ? 50 : val === 'low' ? 10 : 0;
@@ -48,11 +50,11 @@ export default function StudentDashboard({ firstName, initials, fullName, target
             {/* Greeting Header Row */}
             <div className="student-dashboard-header">
               <div className="student-dashboard-header-text">
-                <h1>Welcome back, {firstName}</h1>
-                <p>Here's where you stand today, and what to tackle next.</p>
+                <h1>{t('dashboard.welcome')}, {firstName}</h1>
+                <p>{t('dashboard.subtitle')}</p>
               </div>
               <button className="continue-training-btn" onClick={() => setActiveTab('simulator')}>
-                <span>Continue training</span>
+                <span>{t('dashboard.continueTraining')}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
@@ -67,7 +69,7 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                 <div className="student-profile-overview-meta">
                   <h2>
                     {fullName}
-                    <span className="student-cohort-pill">· Cohort 2026 — {targetTrack} Track</span>
+                    <span className="student-cohort-pill">· {t('dashboard.cohortPrefix')}{targetTrack}{t('dashboard.cohortSuffix')}</span>
                   </h2>
                 </div>
               </div>
@@ -75,7 +77,7 @@ export default function StudentDashboard({ firstName, initials, fullName, target
               <div className="student-info-columns-grid">
                 {/* Major Column */}
                 <div className="student-info-column">
-                  <span className="student-info-column-label">MAJOR</span>
+                  <span className="student-info-column-label">{t('dashboard.major')}</span>
                   <div className="student-info-column-content-row">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="student-info-column-icon">
                       <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
@@ -90,7 +92,7 @@ export default function StudentDashboard({ firstName, initials, fullName, target
 
                 {/* Occupation Goal Column */}
                 <div className="student-info-column">
-                  <span className="student-info-column-label">OCCUPATION GOAL</span>
+                  <span className="student-info-column-label">{t('dashboard.occupationGoal')}</span>
                   <div className="student-info-column-content-row">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="student-info-column-icon">
                       <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
@@ -98,14 +100,14 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                     </svg>
                     <div className="student-info-column-details">
                       <h4 className="student-info-column-title">{occupationGoal}</h4>
-                      <p className="student-info-column-subtitle">Targeting {targetIndustry}</p>
+                      <p className="student-info-column-subtitle">{t('dashboard.targeting')}{targetIndustry}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Goals Column */}
                 <div className="student-info-column">
-                  <span className="student-info-column-label">GOALS</span>
+                  <span className="student-info-column-label">{t('dashboard.goals')}</span>
                   <div className="student-info-column-content-row">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="student-info-column-icon orange">
                       <circle cx="12" cy="12" r="10" />
@@ -114,9 +116,9 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                     </svg>
                     <div className="student-info-column-details">
                       <ul className="student-goals-bullet-list">
-                        <li>Reach Work-Ready Score 85</li>
-                        <li>Ship 3 mentor-reviewed memos</li>
-                        <li>Land summer internship</li>
+                        <li>{t('dashboard.goal1')}</li>
+                        <li>{t('dashboard.goal2')}</li>
+                        <li>{t('dashboard.goal3')}</li>
                       </ul>
                     </div>
                   </div>
@@ -134,8 +136,8 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                     </svg>
                   </div>
                   <div className="student-sublink-info">
-                    <h4 className="student-sublink-title">View Portfolio</h4>
-                    <p className="student-sublink-subtitle">9 mentor-reviewed evidence items</p>
+                    <h4 className="student-sublink-title">{t('dashboard.viewPortfolio')}</h4>
+                    <p className="student-sublink-subtitle">{t('dashboard.portfolioDesc')}</p>
                   </div>
                 </div>
                 <svg className="student-sublink-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -152,8 +154,8 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                     </svg>
                   </div>
                   <div className="student-sublink-info">
-                    <h4 className="student-sublink-title">View Feedback</h4>
-                    <p className="student-sublink-subtitle">Mentor + AI coach notes on your work</p>
+                    <h4 className="student-sublink-title">{t('dashboard.viewFeedback')}</h4>
+                    <p className="student-sublink-subtitle">{t('dashboard.feedbackDesc')}</p>
                   </div>
                 </div>
                 <svg className="student-sublink-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -176,8 +178,8 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                     </svg>
                   </div>
                   <div className="student-sublink-info">
-                    <h4 className="student-sublink-title">Check Readiness Score</h4>
-                    <p className="student-sublink-subtitle">{displayReadiness}/100 against {targetTrack || 'your track'}</p>
+                    <h4 className="student-sublink-title">{t('dashboard.checkReadiness')}</h4>
+                    <p className="student-sublink-subtitle">{displayReadiness}{t('dashboard.readinessAgainst')}{targetTrack || t('dashboard.yourTrack')}</p>
                   </div>
                 </div>
                 <svg className="student-sublink-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -192,17 +194,17 @@ export default function StudentDashboard({ firstName, initials, fullName, target
               {/* Card 1: Work-Ready Score */}
               <div className="student-stat-card">
                 <div className="student-stat-label-row">
-                  <span className="student-stat-label">WORK-READY SCORE</span>
+                  <span className="student-stat-label">{t('dashboard.workReadyScore')}</span>
                   <span className="student-stat-dot blue"></span>
                 </div>
                 <h3 className="student-stat-value">{displayReadiness}/100</h3>
-                <p className="student-stat-comparison">vs {targetTrack || 'your track'}</p>
+                <p className="student-stat-comparison">{t('dashboard.vsTrack')}{targetTrack || t('dashboard.yourTrack')}</p>
               </div>
 
               {/* Card 2: Scenarios Completed */}
               <div className="student-stat-card">
                 <div className="student-stat-label-row">
-                  <span className="student-stat-label">SCENARIOS COMPLETED</span>
+                  <span className="student-stat-label">{t('dashboard.scenariosCompleted')}</span>
                   <span className="student-stat-dot teal"></span>
                 </div>
                 <h3 className="student-stat-value">-</h3>
@@ -212,7 +214,7 @@ export default function StudentDashboard({ firstName, initials, fullName, target
               {/* Card 3: RCA Coach Rating */}
               <div className="student-stat-card">
                 <div className="student-stat-label-row">
-                  <span className="student-stat-label">RCA COACH RATING</span>
+                  <span className="student-stat-label">{t('dashboard.rcaRating')}</span>
                   <span className="student-stat-dot green"></span>
                 </div>
                 <h3 className="student-stat-value">-</h3>
@@ -222,7 +224,7 @@ export default function StudentDashboard({ firstName, initials, fullName, target
               {/* Card 4: Streak */}
               <div className="student-stat-card">
                 <div className="student-stat-label-row">
-                  <span className="student-stat-label">STREAK</span>
+                  <span className="student-stat-label">{t('dashboard.streak')}</span>
                   <span className="student-stat-dot orange"></span>
                 </div>
                 <h3 className="student-stat-value">-</h3>
@@ -242,14 +244,14 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                     </svg>
                   </span>
                   <div>
-                    <h3 className="breakdown-card-title">Work-Ready Score breakdown</h3>
-                    <p className="breakdown-card-subtitle">Weighted coverage of skills required for Backend Software Engineer against your current levels.</p>
+                    <h3 className="breakdown-card-title">{t('dashboard.breakdownTitle')}</h3>
+                    <p className="breakdown-card-subtitle">{t('dashboard.breakdownDesc')}</p>
                   </div>
                 </div>
                 
                 <div className="breakdown-score-badge">
                   <div className="score-main">{displayReadiness}<span className="score-max">/100</span></div>
-                  <div className="score-gap-label">Biggest gap: <span className="highlight-gap">{biggestGap}</span></div>
+                  <div className="score-gap-label">{t('dashboard.biggestGap')}<span className="highlight-gap">{biggestGap}</span></div>
                 </div>
               </div>
               
@@ -286,7 +288,7 @@ export default function StudentDashboard({ firstName, initials, fullName, target
               </div>
               
               <div className="breakdown-footer">
-                Score = &Sigma; (skill coverage &times; occupation weight). Coverage is capped at the role's target per skill.
+                {t('dashboard.scoreFormula')}
               </div>
             </div>
 
@@ -296,8 +298,8 @@ export default function StudentDashboard({ firstName, initials, fullName, target
               {/* Left Panel: Upcoming Scenarios */}
               <div className="dashboard-card scenarios-panel">
                 <div className="panel-header">
-                  <h3 className="panel-title">Upcoming scenarios</h3>
-                  <button className="panel-link-btn" onClick={() => setActiveTab('simulator')}>View all</button>
+                  <h3 className="panel-title">{t('dashboard.upcomingScenarios')}</h3>
+                  <button className="panel-link-btn" onClick={() => setActiveTab('simulator')}>{t('dashboard.viewAll')}</button>
                 </div>
                 
                 <div className="scenarios-list">
@@ -316,7 +318,7 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                         <p className="sc-meta-text">{sc.desc}</p>
                       </div>
                       <button className="sc-open-link" onClick={() => handleOpenScenario(sc.id)}>
-                        <span>Open</span>
+                        <span>{t('dashboard.open')}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <line x1="5" y1="12" x2="19" y2="12"></line>
                           <polyline points="12 5 19 12 12 19"></polyline>
@@ -330,7 +332,7 @@ export default function StudentDashboard({ firstName, initials, fullName, target
               {/* Right Panel: Top Skill Gaps */}
               <div className="dashboard-card skillgaps-panel">
                 <div className="panel-header">
-                  <h3 className="panel-title">Top skill gaps</h3>
+                  <h3 className="panel-title">{t('dashboard.topSkillGaps')}</h3>
                 </div>
                 
                 <div className="skillgaps-list">
@@ -348,7 +350,7 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                 </div>
 
                 <button className="gaps-assessment-link" onClick={() => setActiveTab('skillgap')}>
-                  <span>Full assessment</span>
+                  <span>{t('dashboard.fullAssessment')}</span>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
@@ -368,13 +370,13 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                     <circle cx="12" cy="8" r="7" />
                     <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
                   </svg>
-                  <h4 className="bottom-card-title">Badges earned</h4>
+                  <h4 className="bottom-card-title">{t('dashboard.badgesEarned')}</h4>
                 </div>
                 <div className="badges-pills-row">
-                  <span className="badge-pill">Clean Coder</span>
-                  <span className="badge-pill">Incident Responder</span>
-                  <span className="badge-pill">Code Reviewer</span>
-                  <span className="badge-pill">System Designer</span>
+                  <span className="badge-pill">{t('dashboard.badge1')}</span>
+                  <span className="badge-pill">{t('dashboard.badge2')}</span>
+                  <span className="badge-pill">{t('dashboard.badge3')}</span>
+                  <span className="badge-pill">{t('dashboard.badge4')}</span>
                 </div>
               </div>
 
@@ -384,10 +386,10 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="bottom-card-icon week-icon">
                     <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                   </svg>
-                  <h4 className="bottom-card-title">This week</h4>
+                  <h4 className="bottom-card-title">{t('dashboard.thisWeek')}</h4>
                 </div>
                 <p className="bottom-card-text font-accent-dark">
-                  3 scenarios, 2 RCA reviews, 1 memo drafted.
+                  {t('dashboard.thisWeekDesc')}
                 </p>
               </div>
 
@@ -400,10 +402,10 @@ export default function StudentDashboard({ firstName, initials, fullName, target
                     <line x1="8" y1="2" x2="8" y2="6" />
                     <line x1="3" y1="10" x2="21" y2="10" />
                   </svg>
-                  <h4 className="bottom-card-title">Next mentor sync</h4>
+                  <h4 className="bottom-card-title">{t('dashboard.nextMentorSync')}</h4>
                 </div>
                 <p className="bottom-card-text">
-                  Fri, 12:30 PM with M. Iyer (Staff Engineer, Razorpay).
+                  {t('dashboard.nextMentorSyncDesc')}
                 </p>
               </div>
 

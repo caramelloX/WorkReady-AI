@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import './LoginScreen.css';
 import { api } from '../api.js';
 import ProfileCompletionModal from '../components/ProfileCompletionModal';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function LoginScreen({ onNavigate }) {
+  const { t } = useLanguage();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -58,6 +60,11 @@ export default function LoginScreen({ onNavigate }) {
           localStorage.setItem('savedAccounts', JSON.stringify(existingAccounts));
         } catch(e) {}
         
+        // Clear any saved active tabs so user always lands on the dashboard
+        sessionStorage.removeItem('studentActiveTab');
+        sessionStorage.removeItem('mentorActiveTab');
+        sessionStorage.removeItem('adminActiveTab');
+        
         const role = resData.user.role;
         if (role === 'mentor') {
           if (onNavigate) onNavigate('mentor');
@@ -72,10 +79,10 @@ export default function LoginScreen({ onNavigate }) {
           }
         }
       } else {
-        setErrorMessage('ชื่อผู้ใช้หรือรหัสผ่านผิด');
+        setErrorMessage(t('login.errorMsg'));
       }
     } catch (err) {
-      setErrorMessage(err.message === 'Account suspended. Please contact support.' ? err.message : 'ชื่อผู้ใช้หรือรหัสผ่านผิด');
+      setErrorMessage(err.message === 'Account suspended. Please contact support.' ? err.message : t('login.errorMsg'));
     }
   };
 
@@ -113,16 +120,16 @@ export default function LoginScreen({ onNavigate }) {
         {/* Hero Branding Info */}
         <div className="login-left-content">
           <h1 className="login-left-title">
-            Industry-grade engineering practice, before day one.
+            {t('login.title')}
           </h1>
           <p className="login-left-subtitle">
-            Step into a live production system. Diagnose, document, and prove your readiness with mentor-verified evidence.
+            {t('login.subtitle')}
           </p>
         </div>
 
         {/* Competition Footer */}
         <div className="login-left-footer">
-          National Software Competition 2026
+          {t('login.footer')}
         </div>
       </div>
 
@@ -133,8 +140,8 @@ export default function LoginScreen({ onNavigate }) {
           {savedAccounts.length > 0 && showSavedAccounts ? (
             <>
               <div className="login-form-header">
-                <h2 className="login-form-title">Recent Accounts</h2>
-                <p className="login-form-subtitle">Click an account to sign in quickly.</p>
+                <h2 className="login-form-title">{t('login.recentAccounts')}</h2>
+                <p className="login-form-subtitle">{t('login.recentAccountsDesc')}</p>
               </div>
               
               <div className="saved-accounts-list">
@@ -150,25 +157,25 @@ export default function LoginScreen({ onNavigate }) {
               </div>
               
               <button type="button" className="login-btn-secondary" onClick={() => setShowSavedAccounts(false)}>
-                Sign in with another account
+                {t('login.otherAccount')}
               </button>
               
-              <div className="login-divider" style={{margin: '16px 0'}}>or</div>
+              <div className="login-divider" style={{margin: '16px 0'}}>{t('login.or')}</div>
               
               <button className="login-btn-secondary" onClick={handleContinueAsEmployer}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="login-btn-secondary-icon">
                   <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                   <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                 </svg>
-                <span>Continue as Employer — find students</span>
+                <span>{t('login.employer')}</span>
               </button>
             </>
           ) : (
             <>
               {/* Header */}
               <div className="login-form-header">
-                <h2 className="login-form-title">Welcome back</h2>
-                <p className="login-form-subtitle">Sign in to continue your training.</p>
+                <h2 className="login-form-title">{t('login.welcome')}</h2>
+                <p className="login-form-subtitle">{t('login.welcomeSub')}</p>
               </div>
               {errorMessage && (
                 <div className="login-error-banner">
@@ -181,7 +188,7 @@ export default function LoginScreen({ onNavigate }) {
                 {/* Username */}
                 <div className="login-form-group">
                   <div className="login-label-row">
-                    <label htmlFor="username" className="login-field-label">Username</label>
+                    <label htmlFor="username" className="login-field-label">{t('login.username')}</label>
                   </div>
                   <input
                     id="username"
@@ -189,7 +196,7 @@ export default function LoginScreen({ onNavigate }) {
                     className="login-input-field"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter your username"
+                    placeholder={t('login.usernamePlaceholder')}
                     required
                   />
                 </div>
@@ -197,8 +204,8 @@ export default function LoginScreen({ onNavigate }) {
                 {/* Password */}
                 <div className="login-form-group">
                   <div className="login-label-row">
-                    <label htmlFor="password" className="login-field-label">Password</label>
-                    <a href="#forgot" className="login-forgot-link" onClick={(e) => e.preventDefault()}>Forgot?</a>
+                    <label htmlFor="password" className="login-field-label">{t('login.password')}</label>
+                    <a href="#forgot" className="login-forgot-link" onClick={(e) => e.preventDefault()}>{t('login.forgot')}</a>
                   </div>
                   <input
                     id="password"
@@ -206,14 +213,14 @@ export default function LoginScreen({ onNavigate }) {
                     className="login-input-field"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
+                    placeholder={t('login.passwordPlaceholder')}
                     required
                   />
                 </div>
 
                 {/* Submit Button */}
                 <button type="submit" className="login-btn-primary">
-                  <span>Sign in</span>
+                  <span>{t('login.signin')}</span>
                   <svg
                     width="16"
                     height="16"
@@ -231,7 +238,7 @@ export default function LoginScreen({ onNavigate }) {
               </form>
 
               {/* Divider */}
-              <div className="login-divider">or</div>
+              <div className="login-divider">{t('login.or')}</div>
 
               {/* Continue as Employer Button */}
               <button className="login-btn-secondary" onClick={handleContinueAsEmployer}>
@@ -239,14 +246,14 @@ export default function LoginScreen({ onNavigate }) {
                   <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                   <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                 </svg>
-                <span>Continue as Employer — find students</span>
+                <span>{t('login.employer')}</span>
               </button>
               
               {/* Add Back to Saved Accounts link if any exist */}
               {savedAccounts.length > 0 && (
                 <div style={{textAlign: 'center', marginTop: '16px'}}>
                   <a href="#saved" className="login-signup-link" onClick={(e) => { e.preventDefault(); setShowSavedAccounts(true); }}>
-                    Back to Saved Accounts
+                    {t('login.backToSaved')}
                   </a>
                 </div>
               )}
@@ -257,8 +264,8 @@ export default function LoginScreen({ onNavigate }) {
 
           {/* Form Footer */}
           <div className="login-form-footer">
-            New to WorkReady AI? 
-            <a href="#signup" className="login-signup-link" onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('register'); }}>Create an account</a>
+            {t('login.newTo')}
+            <a href="#signup" className="login-signup-link" onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('register'); }}>{t('login.createAccount')}</a>
           </div>
         </div>
       </div>

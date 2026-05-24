@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import './EmployerScreen.css';
 import { api } from '../../api.js';
 import { Briefcase, Search, LogOut, LayoutDashboard } from 'lucide-react';
+import StudentSettings from '../Student/StudentSettings';
 
 export default function EmployerScreen({ onNavigate }) {
+  const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [domainFilter, setDomainFilter] = useState('All tracks');
@@ -60,6 +64,8 @@ export default function EmployerScreen({ onNavigate }) {
     setSelectedCandidate(null);
   };
 
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
   return (
     <div className="employer-workspace">
       {/* 1. Sidebar Navigation */}
@@ -71,38 +77,59 @@ export default function EmployerScreen({ onNavigate }) {
           <span>WorkReady AI</span>
         </div>
 
-        <div className="employer-sidebar-header">PORTAL ACCESS</div>
+        <div className="employer-sidebar-header">{t('employer.portalAccess')}</div>
 
         <nav className="employer-sidebar-nav">
-          <button className="employer-nav-btn active">
+          <button className={`employer-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
             <Briefcase className="employer-nav-icon" />
-            <span>Talent Search</span>
+            <span>{t('employer.talentSearch')}</span>
           </button>
         </nav>
 
         <div className="employer-sidebar-footer">
-          <div className="employer-user-card">
-            <div className="employer-avatar">EP</div>
-            <div className="employer-user-info">
-              <span className="employer-user-name">Guest Recruiter</span>
-              <span className="employer-user-role">Public Preview</span>
-            </div>
+          <div className="employer-profile-dropdown-container">
+            <button className="employer-profile-btn" onClick={() => setShowProfileDropdown(!showProfileDropdown)}>
+              <div className="employer-profile-avatar">EP</div>
+              <div className="employer-profile-info">
+                <span className="employer-profile-name">{t('employer.guestRecruiter')}</span>
+                <span className="employer-profile-role">{t('employer.publicPreview')}</span>
+              </div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`dropdown-icon ${showProfileDropdown ? 'open' : ''}`}>
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            {showProfileDropdown && (
+              <div className="employer-profile-dropdown-menu">
+                <button className="dropdown-item" onClick={() => { setShowProfileDropdown(false); setActiveTab('settings'); }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="dropdown-item-icon">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                  {t('sidebar.settings') || 'Settings'}
+                </button>
+                <button className="dropdown-item logout" onClick={() => onNavigate('logout')}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="dropdown-item-icon">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                  {t('employer.backToHome')}
+                </button>
+              </div>
+            )}
           </div>
-          <button className="employer-logout-btn" onClick={() => onNavigate('landing')}>
-            <LogOut size={14} style={{ display: 'inline', marginRight: '8px' }} />
-            Back to Home
-          </button>
         </div>
       </div>
 
       {/* Main Panel */}
       <div className="employer-main-panel">
+        {activeTab === 'dashboard' && (<>
         
         {/* Header Section */}
         <header className="employer-header">
           <div className="employer-header-title-box">
-            <h1 className="employer-page-title">Find work-ready engineering talent</h1>
-            <p className="employer-page-subtitle">Search verified graduates with mentor-reviewed evidence portfolios.</p>
+            <h1 className="employer-page-title">{t('employer.title')}</h1>
+            <p className="employer-page-subtitle">{t('employer.subtitle')}</p>
           </div>
         </header>
 
@@ -113,7 +140,7 @@ export default function EmployerScreen({ onNavigate }) {
               <Search className="employer-search-icon" size={18} />
               <input
                 type="text"
-                placeholder="Search by name, university, or skill (e.g. Kubernetes)"
+                placeholder={t('employer.searchPlaceholder')}
                 className="employer-search-input-field"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -132,7 +159,7 @@ export default function EmployerScreen({ onNavigate }) {
                   value={domainFilter}
                   onChange={(e) => setDomainFilter(e.target.value)}
                 >
-                  <option value="All tracks">All tracks</option>
+                  <option value="All tracks">{t('employer.allTracks')}</option>
                   <option value="Backend">Backend</option>
                   <option value="Frontend">Frontend</option>
                   <option value="DevOps">DevOps</option>
@@ -148,11 +175,11 @@ export default function EmployerScreen({ onNavigate }) {
                   value={experienceFilter}
                   onChange={(e) => setExperienceFilter(e.target.value)}
                 >
-                  <option value="Any">Any Level</option>
-                  <option value="Job-ready">Job-ready (&gt;90)</option>
-                  <option value="Competent">Competent (86-90)</option>
-                  <option value="Developing">Developing (80-85)</option>
-                  <option value="Foundational">Foundational (&lt;80)</option>
+                  <option value="Any">{t('employer.anyLevel')}</option>
+                  <option value="Job-ready">{t('employer.jobReady')}</option>
+                  <option value="Competent">{t('employer.competent')}</option>
+                  <option value="Developing">{t('employer.developing')}</option>
+                  <option value="Foundational">{t('employer.foundational')}</option>
                 </select>
               </div>
             </div>
@@ -161,7 +188,7 @@ export default function EmployerScreen({ onNavigate }) {
           {isLoading ? (
             <div className="employer-loading-container">
               <div className="employer-loading-spinner"></div>
-              <p>Syncing premium talent profiles from database...</p>
+              <p>{t('employer.syncing')}</p>
             </div>
           ) : isEmptyState ? (
             <div className="employer-empty-state-card">
@@ -171,13 +198,13 @@ export default function EmployerScreen({ onNavigate }) {
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                   <path d="M8 11h6" />
                 </svg>
-                <h3>Refine your search parameters</h3>
-                <p>Enter a search term or apply a filter to view candidates.</p>
+                <h3>{t('employer.refineSearch')}</h3>
+                <p>{t('employer.enterSearch')}</p>
                 <div className="employer-empty-state-quick-keywords">
-                  <span>Try:</span>
+                  <span>{t('employer.try')}</span>
                   <button onClick={() => setSearchQuery('Kubernetes')}>Kubernetes</button>
                   <button onClick={() => setSearchQuery('React')}>React</button>
-                  <button onClick={() => setDomainFilter('Backend')}>Backend Track</button>
+                  <button onClick={() => setDomainFilter('Backend')}>{t('employer.backendTrack')}</button>
                 </div>
               </div>
             </div>
@@ -186,23 +213,23 @@ export default function EmployerScreen({ onNavigate }) {
               {/* 3. Search Results Header */}
               <div className="employer-results-header">
                 <div className="employer-results-summary">
-                  Showing <strong>{candidates.length}</strong> verified candidates
+                  {t('employer.showing')} <strong>{candidates.length}</strong> {t('employer.verifiedCand')}
                 </div>
                 <div className="employer-results-badge">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14" className="badge-check-icon">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
-                  <span>Verified portfolios</span>
+                  <span>{t('employer.verifiedPortfolios')}</span>
                 </div>
               </div>
 
               {/* Grid Layout */}
               {candidates.length === 0 ? (
                 <div className="employer-no-results-card">
-                  <p>No candidates match your current search query <strong>"{debouncedQuery}"</strong>.</p>
+                  <p>{t('employer.noCandidates').replace('{query}', debouncedQuery)}</p>
                   <button className="employer-reset-btn" onClick={() => { setSearchQuery(''); setDomainFilter('All tracks'); setExperienceFilter('Any'); }}>
-                    Clear all filters
+                    {t('employer.clearFilters')}
                   </button>
                 </div>
               ) : (
@@ -248,15 +275,15 @@ export default function EmployerScreen({ onNavigate }) {
                       {/* Data Row (Metrics) */}
                       <div className="card-data-row">
                         <div className="metric-col">
-                          <span className="label">Scenarios</span>
+                          <span className="label">{t('employer.scenarios')}</span>
                           <span className="value">{cand.scenarios}</span>
                         </div>
                         <div className="metric-col border-x">
-                          <span className="label">RCA</span>
+                          <span className="label">{t('employer.rca')}</span>
                           <span className="value">{cand.rcaRating} <span className="star-icon">★</span></span>
                         </div>
                         <div className="metric-col">
-                          <span className="label">Evidence</span>
+                          <span className="label">{t('employer.evidence')}</span>
                           <span className="value">{cand.evidence}</span>
                         </div>
                       </div>
@@ -264,14 +291,14 @@ export default function EmployerScreen({ onNavigate }) {
                       {/* Bottom Row (Availability & Action) */}
                       <div className="card-bottom-row">
                         <span className={`availability-badge avail-${cand.availability.toLowerCase().replace(' ', '-')}`}>
-                          {cand.availability === 'Immediate' ? 'Immediate availability' : `Available in ${cand.availability}`}
+                          {cand.availability === 'Immediate' ? t('employer.immediate') : `${t('employer.availableIn').split('{')[0]}${cand.availability}`}
                         </span>
                         <button className="view-portfolio-btn" onClick={(e) => { e.stopPropagation(); handleOpenPanel(cand); }}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13" className="eye-icon">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                             <circle cx="12" cy="12" r="3" />
                           </svg>
-                          <span>View</span>
+                          <span>{t('employer.view')}</span>
                         </button>
                       </div>
 
@@ -282,9 +309,13 @@ export default function EmployerScreen({ onNavigate }) {
             </>
           )}
         </main>
+        </>)}
+        {activeTab === 'settings' && (
+          <StudentSettings currentUser={{ role: 'employer', fullname: 'Guest Recruiter' }} />
+        )}
       </div>
 
-      {/* 5. Candidate Detail Panel (Slide-out Modal) */}
+            {/* 5. Candidate Detail Panel (Slide-out Modal) */}
       {isPanelOpen && selectedCandidate && (
         <div className="modal-backdrop-overlay" onClick={handleClosePanel}>
           <div className="slideout-detail-panel" onClick={(e) => e.stopPropagation()}>
@@ -312,10 +343,10 @@ export default function EmployerScreen({ onNavigate }) {
                       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                       <polyline points="22 4 12 14.01 9 11.01" />
                     </svg>
-                    <span>Verified portfolio</span>
+                    <span>{t('employer.verifiedPortfolio')}</span>
                   </div>
                   <div className="panel-wr-score-display">
-                    <span className="lbl">WR SCORE</span>
+                    <span className="lbl">{t('employer.wrScore')}</span>
                     <span className="val">{selectedCandidate.score}</span>
                   </div>
                 </div>
@@ -368,7 +399,7 @@ export default function EmployerScreen({ onNavigate }) {
                 
                 {/* 1. Summary */}
                 <section className="detail-section">
-                  <h4 className="section-subheader">Summary</h4>
+                  <h4 className="section-subheader">{t('employer.summary')}</h4>
                   <p className="summary-paragraph">{selectedCandidate.summary}</p>
                 </section>
 
@@ -376,7 +407,7 @@ export default function EmployerScreen({ onNavigate }) {
 
                 {/* 2. Education */}
                 <section className="detail-section">
-                  <h4 className="section-subheader">Education</h4>
+                  <h4 className="section-subheader">{t('employer.education')}</h4>
                   <div className="education-row">
                     <div className="edu-left">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" className="edu-icon">
@@ -398,7 +429,7 @@ export default function EmployerScreen({ onNavigate }) {
 
                 {/* 3. Process Map */}
                 <section className="detail-section">
-                  <h4 className="section-subheader">Architectural Process Map</h4>
+                  <h4 className="section-subheader">{t('employer.processMap')}</h4>
                   <div className="process-map-flow">
                     {selectedCandidate.processMap.map((step, idx) => (
                       <React.Fragment key={idx}>
@@ -415,8 +446,8 @@ export default function EmployerScreen({ onNavigate }) {
 
                 {/* 4. Safety / Quality */}
                 <section className="detail-section">
-                  <h4 className="section-subheader">Safety / Quality</h4>
-                  <div className="guardrails-title font-medium">Reliability Guardrails</div>
+                  <h4 className="section-subheader">{t('employer.safetyQuality')}</h4>
+                  <div className="guardrails-title font-medium">{t('employer.guardrails')}</div>
                   <ul className="guardrails-list">
                     {selectedCandidate.reliabilityGuardrails.map((g, idx) => (
                       <li key={idx}>
@@ -431,18 +462,18 @@ export default function EmployerScreen({ onNavigate }) {
 
                 {/* 5. Root Cause Analysis */}
                 <section className="detail-section">
-                  <h4 className="section-subheader">Root Cause Analysis (RCA)</h4>
+                  <h4 className="section-subheader">{t('employer.rcaSection')}</h4>
                   <div className="bordered-card border-purple-glow">
                     <div className="card-header-row">
                       <h5 className="card-title font-medium">{selectedCandidate.rca.title}</h5>
                       <span className="card-rating-pill">{selectedCandidate.rca.rating} ★</span>
                     </div>
                     <div className="card-block">
-                      <strong>Root cause:</strong>
+                      <strong>{t('employer.rootCause')}</strong>
                       <p>{selectedCandidate.rca.cause}</p>
                     </div>
                     <div className="card-block">
-                      <strong>Fix:</strong>
+                      <strong>{t('employer.fix')}</strong>
                       <p>{selectedCandidate.rca.fix}</p>
                     </div>
                   </div>
@@ -452,7 +483,7 @@ export default function EmployerScreen({ onNavigate }) {
 
                 {/* 6. Technical Memo */}
                 <section className="detail-section">
-                  <h4 className="section-subheader">Technical Memo</h4>
+                  <h4 className="section-subheader">{t('employer.technicalMemo')}</h4>
                   <div className="bordered-card">
                     <div className="memo-title-row">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18" className="doc-icon">
@@ -463,7 +494,7 @@ export default function EmployerScreen({ onNavigate }) {
                     </div>
                     <p className="memo-summary">{selectedCandidate.memo.summary}</p>
                     <a href={selectedCandidate.memo.link} onClick={(e) => { e.preventDefault(); alert(`Opening document link: ${selectedCandidate.memo.link}`); }} className="memo-link">
-                      View full technical RFC layout ➔
+                      {t('employer.viewRfc')}
                     </a>
                   </div>
                 </section>
@@ -472,7 +503,7 @@ export default function EmployerScreen({ onNavigate }) {
 
                 {/* 7. AI Usage */}
                 <section className="detail-section">
-                  <h4 className="section-subheader">AI Co-Pilot Integration</h4>
+                  <h4 className="section-subheader">{t('employer.aiIntegration')}</h4>
                   <div className="ai-tools-row">
                     {selectedCandidate.aiUsage.tools.map((t, idx) => (
                       <span key={idx} className="ai-tool-pill">{t}</span>
@@ -492,7 +523,7 @@ export default function EmployerScreen({ onNavigate }) {
 
                 {/* 8. Experience */}
                 <section className="detail-section">
-                  <h4 className="section-subheader">Work Experience</h4>
+                  <h4 className="section-subheader">{t('employer.workExperience')}</h4>
                   <div className="experience-list">
                     {selectedCandidate.experience.map((exp, idx) => (
                       <div key={idx} className="experience-item">
@@ -517,7 +548,7 @@ export default function EmployerScreen({ onNavigate }) {
 
                 {/* 9. Mentor-Reviewed Evidence */}
                 <section className="detail-section">
-                  <h4 className="section-subheader">Mentor-Reviewed Evidence</h4>
+                  <h4 className="section-subheader">{t('employer.mentorReviewed')}</h4>
                   <div className="evidence-cards-list">
                     {selectedCandidate.mentorReviews.map((rev, idx) => (
                       <div key={idx} className="bordered-card border-blue-glow">
@@ -526,24 +557,24 @@ export default function EmployerScreen({ onNavigate }) {
                           <span className="evidence-rating">{rev.rating} ★</span>
                         </div>
                         <p className="evidence-desc">{rev.description}</p>
-                        <div className="evidence-reviewer">Reviewed by <strong>{rev.reviewer}</strong></div>
+                        <div className="evidence-reviewer">{t('employer.reviewedBy').replace('{reviewer}', '')} <strong>{rev.reviewer}</strong></div>
                       </div>
                     ))}
                   </div>
 
                   <div className="evidence-metrics-summary-block">
-                    <h5 className="summary-title font-medium">Aggregate Simulator Performance</h5>
+                    <h5 className="summary-title font-medium">{t('employer.aggregateSim')}</h5>
                     <div className="metrics-summary-row">
                       <div className="metric-box">
-                        <span className="lbl">Total Scenarios</span>
+                        <span className="lbl">{t('employer.totalScenarios')}</span>
                         <span className="val">{selectedCandidate.scenarios}</span>
                       </div>
                       <div className="metric-box">
-                        <span className="lbl">RCA Star Rating</span>
+                        <span className="lbl">{t('employer.rcaRating')}</span>
                         <span className="val">{selectedCandidate.rcaRating} ★</span>
                       </div>
                       <div className="metric-box">
-                        <span className="lbl">Verified Evidence</span>
+                        <span className="lbl">{t('employer.verifiedEvidence')}</span>
                         <span className="val">{selectedCandidate.evidence}</span>
                       </div>
                     </div>
@@ -554,7 +585,7 @@ export default function EmployerScreen({ onNavigate }) {
 
                 {/* 10. Skills */}
                 <section className="detail-section">
-                  <h4 className="section-subheader">Technical Skills</h4>
+                  <h4 className="section-subheader">{t('employer.technicalSkills')}</h4>
                   <div className="skills-pill-wrap">
                     {selectedCandidate.skills.map((skill, idx) => (
                       <span key={idx} className="skill-pill large">{skill}</span>
@@ -566,7 +597,7 @@ export default function EmployerScreen({ onNavigate }) {
 
                 {/* 11. Certifications */}
                 <section className="detail-section">
-                  <h4 className="section-subheader">Certifications & Badges</h4>
+                  <h4 className="section-subheader">{t('employer.certifications')}</h4>
                   <div className="certifications-list">
                     {selectedCandidate.certifications.map((cert, idx) => (
                       <div key={idx} className="cert-row">
@@ -587,7 +618,7 @@ export default function EmployerScreen({ onNavigate }) {
             {/* Sticky Footer */}
             <div className="panel-detail-footer">
               <span className={`availability-badge avail-${selectedCandidate.availability.toLowerCase().replace(' ', '-')}`}>
-                {selectedCandidate.availability === 'Immediate' ? 'Immediate availability' : `Available in ${selectedCandidate.availability}`}
+                {selectedCandidate.availability === 'Immediate' ? t('employer.immediate') : `${t('employer.availableIn').split('{')[0]}${selectedCandidate.availability}`}
               </span>
               
               <button className="panel-contact-button" onClick={() => alert(`Contacting ${selectedCandidate.name} via recruiter dashboard integration...`)}>
@@ -595,7 +626,7 @@ export default function EmployerScreen({ onNavigate }) {
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                   <polyline points="22,6 12,13 2,6" />
                 </svg>
-                <span>Contact Candidate</span>
+                <span>{t('employer.contactCandidate')}</span>
               </button>
             </div>
 

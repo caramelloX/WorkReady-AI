@@ -1,12 +1,14 @@
 import React from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function StudentProfile({ initials, fullName, targetTrack, major, educationLevel, occupationGoal, targetIndustry, email, careerGoal, strengthsList, developAreasList }) {
+  const { t } = useLanguage();
   return (
     <div className="student-tab-panel">
             <div className="student-page-header">
               <div className="student-page-title-area">
-                <h1 className="student-page-title">Profile</h1>
-                <p className="student-page-subtitle">Your public learner profile — what mentors and recruiters see.</p>
+                <h1 className="student-page-title">{t('profile.title')}</h1>
+                <p className="student-page-subtitle">{t('profile.subtitle')}</p>
               </div>
             </div>
 
@@ -16,7 +18,7 @@ export default function StudentProfile({ initials, fullName, targetTrack, major,
               <div className="student-card profile-left-card">
                 <div className="profile-avatar-circle">{initials}</div>
                 <h3 className="profile-name">{fullName}</h3>
-                <p className="profile-cohort">Cohort 2026 — {targetTrack} Track</p>
+                <p className="profile-cohort">{t('dashboard.cohortPrefix')}{targetTrack}{t('dashboard.cohortSuffix')}</p>
 
                 <div className="profile-contact-details">
                   <div className="profile-contact-item">
@@ -38,7 +40,7 @@ export default function StudentProfile({ initials, fullName, targetTrack, major,
                       <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                     </svg>
-                    <span style={{ color: 'var(--accent-teal)', fontWeight: '600' }}>Open to {occupationGoal} roles</span>
+                    <span style={{ color: 'var(--accent-teal)', fontWeight: '600' }}>{t('profile.openToRoles')}{occupationGoal}{t('profile.rolesSuffix')}</span>
                   </div>
                 </div>
 
@@ -48,7 +50,7 @@ export default function StudentProfile({ initials, fullName, targetTrack, major,
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
                       </svg>
-                      <span>Education Level</span>
+                      <span>{t('profile.educationLevel')}</span>
                     </span>
                     <span className="profile-detail-val">{educationLevel} — {major}</span>
                   </div>
@@ -60,7 +62,7 @@ export default function StudentProfile({ initials, fullName, targetTrack, major,
                         <line x1="2" y1="12" x2="22" y2="12" />
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                       </svg>
-                      <span>Target Industry</span>
+                      <span>{t('profile.targetIndustry')}</span>
                     </span>
                     <span className="profile-detail-val">{targetIndustry}</span>
                   </div>
@@ -72,15 +74,15 @@ export default function StudentProfile({ initials, fullName, targetTrack, major,
                 
                 {/* About Card */}
                 <div className="student-card">
-                  <h4 className="profile-section-title">About</h4>
+                  <h4 className="profile-section-title">{t('profile.about')}</h4>
                   <p className="profile-about-text">
-                    Final-year student targeting {occupationGoal} roles. Active in WorkReady AI's mentorship track, with hands-on simulated experience in production incident response, database tuning, and secure code review.
+                    {t('profile.aboutDesc').replace('{0}', occupationGoal || '')}
                   </p>
                 </div>
 
                 {/* Career Goals */}
                 <div className="student-card">
-                  <h4 className="profile-section-title">Career Goals</h4>
+                  <h4 className="profile-section-title">{t('profile.careerGoals')}</h4>
                   <p className="profile-about-text" style={{ fontStyle: 'italic', color: 'var(--text-secondary)' }}>
                     "{careerGoal}"
                   </p>
@@ -92,7 +94,7 @@ export default function StudentProfile({ initials, fullName, targetTrack, major,
                   
                   {/* Strengths */}
                   <div className="student-card">
-                    <h4 className="profile-section-title" style={{ color: 'var(--accent-green)', borderColor: '#a7f3d0' }}>Strengths</h4>
+                    <h4 className="profile-section-title" style={{ color: 'var(--accent-green)', borderColor: '#a7f3d0' }}>{t('profile.strengths')}</h4>
                     <div className="profile-tags-container">
                       {strengthsList.map((str, idx) => (
                         <span key={idx} className="profile-pill green">{str}</span>
@@ -102,7 +104,7 @@ export default function StudentProfile({ initials, fullName, targetTrack, major,
 
                   {/* Develop Areas */}
                   <div className="student-card">
-                    <h4 className="profile-section-title" style={{ color: 'var(--accent-blue)', borderColor: '#bfdbfe' }}>Develop areas</h4>
+                    <h4 className="profile-section-title" style={{ color: 'var(--accent-blue)', borderColor: '#bfdbfe' }}>{t('profile.developAreas')}</h4>
                     <div className="profile-tags-container">
                       {developAreasList.map((dev, idx) => (
                         <span key={idx} className="profile-pill blue">{dev}</span>
@@ -114,14 +116,14 @@ export default function StudentProfile({ initials, fullName, targetTrack, major,
 
                 {/* Certifications & Badges */}
                 <div className="student-card">
-                  <h4 className="profile-section-title">Certifications & Badges</h4>
+                  <h4 className="profile-section-title">{t('profile.certifications')}</h4>
                   <div className="profile-tags-container">
-                    <span className="profile-pill badge">Clean Coder</span>
-                    <span className="profile-pill badge">Incident Responder</span>
-                    <span className="profile-pill badge">Code Reviewer</span>
-                    <span className="profile-pill badge">System Designer</span>
-                    <span className="profile-pill badge highlight">AWS Cloud Practitioner</span>
-                    <span className="profile-pill badge">Git Pro</span>
+                    <span className="profile-pill badge">{t('dashboard.badge1')}</span>
+                    <span className="profile-pill badge">{t('dashboard.badge2')}</span>
+                    <span className="profile-pill badge">{t('dashboard.badge3')}</span>
+                    <span className="profile-pill badge">{t('dashboard.badge4')}</span>
+                    <span className="profile-pill badge highlight">{t('profile.badgeAws')}</span>
+                    <span className="profile-pill badge">{t('profile.badgeGit')}</span>
                   </div>
                 </div>
 

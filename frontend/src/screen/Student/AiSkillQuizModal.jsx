@@ -1,26 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { createPortal } from 'react-dom';
 import './QuizModal.css';
 
 export default function AiSkillQuizModal({ isOpen, onClose, onComplete, occupationGoal }) {
+  const { t } = useLanguage();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentStep(1);
-      setSelectedOptions({});
-      setIsSubmitting(false);
-      setLoading(true);
-      setError(null);
-      setQuestions([]);
-      generateQuiz();
-    }
-  }, [isOpen, occupationGoal]);
 
   const generateQuiz = async () => {
     try {
@@ -44,6 +34,21 @@ export default function AiSkillQuizModal({ isOpen, onClose, onComplete, occupati
     }
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentStep(1);
+      setSelectedOptions({});
+      setIsSubmitting(false);
+      setLoading(true);
+      setError(null);
+      setQuestions([]);
+      generateQuiz();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, occupationGoal]);
+
+
+
   if (!isOpen) return null;
 
   if (loading) {
@@ -51,8 +56,8 @@ export default function AiSkillQuizModal({ isOpen, onClose, onComplete, occupati
       <div className="quiz-modal-overlay">
         <div className="quiz-modal-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
           <div className="quiz-modal-header-icon" style={{ animation: 'spin 2s linear infinite', marginBottom: '20px' }}>&gt;_</div>
-          <h2 className="quiz-modal-title" style={{ textAlign: 'center' }}>Generating your personalized {occupationGoal} assessment...</h2>
-          <p style={{ color: '#8892b0', marginTop: '10px' }}>Our AI is designing 50 questions to test your core skills. This may take a minute...</p>
+          <h2 className="quiz-modal-title" style={{ textAlign: 'center' }}>{t('aiquiz.generating')}</h2>
+          <p style={{ color: '#8892b0', marginTop: '10px' }}>{t('aiquiz.generatingDesc')}</p>
         </div>
       </div>,
       document.body
@@ -63,9 +68,9 @@ export default function AiSkillQuizModal({ isOpen, onClose, onComplete, occupati
     return createPortal(
       <div className="quiz-modal-overlay">
         <div className="quiz-modal-container" style={{ padding: '40px', textAlign: 'center' }}>
-          <h2 className="quiz-modal-title" style={{ color: '#ff6b6b' }}>Error</h2>
+          <h2 className="quiz-modal-title" style={{ color: '#ff6b6b' }}>{t('aiquiz.error')}</h2>
           <p style={{ color: '#8892b0', marginTop: '10px' }}>{error}</p>
-          <button className="quiz-btn-primary" style={{ marginTop: '20px' }} onClick={onClose}>Close</button>
+          <button className="quiz-btn-primary" style={{ marginTop: '20px' }} onClick={onClose}>{t('aiquiz.close')}</button>
         </div>
       </div>,
       document.body
@@ -142,7 +147,7 @@ export default function AiSkillQuizModal({ isOpen, onClose, onComplete, occupati
         <div className="quiz-modal-header">
           <div className="quiz-modal-header-left">
             <span className="quiz-modal-header-icon">&gt;_</span>
-            <h2 className="quiz-modal-title">AI Occupation Simulator Quiz</h2>
+            <h2 className="quiz-modal-title">{t('aiquiz.title')}</h2>
           </div>
           <div className="quiz-modal-header-right">
             <span style={{color: '#64ffda', fontSize: '12px'}}>[ {currentQuizItem.skill} ]</span>
@@ -153,14 +158,14 @@ export default function AiSkillQuizModal({ isOpen, onClose, onComplete, occupati
         <div className="quiz-modal-body">
           {/* Progress Row */}
           <div className="quiz-progress-row">
-            <span className="quiz-progress-text">QUESTION {currentStep} OF {totalSteps}</span>
+            <span className="quiz-progress-text">{t('aiquiz.questionOf')}{currentStep}{t('aiquiz.of')}{totalSteps}</span>
             <div className="quiz-progress-track">
               <div 
                 className="quiz-progress-fill" 
                 style={{ width: `${(currentStep / totalSteps) * 100}%` }}
               ></div>
             </div>
-            <span className="quiz-progress-text">{answeredCount}/{totalSteps} answered</span>
+            <span className="quiz-progress-text">{answeredCount}/{totalSteps}{t('aiquiz.answered')}</span>
           </div>
 
           {/* Question Area */}
@@ -201,7 +206,7 @@ export default function AiSkillQuizModal({ isOpen, onClose, onComplete, occupati
             onClick={handleNext}
             disabled={isNextDisabled}
           >
-            {isSubmitting ? 'Scoring...' : currentStep === totalSteps ? 'Finish Assessment →' : 'Next →'}
+            {isSubmitting ? t('aiquiz.scoring') : currentStep === totalSteps ? t('aiquiz.finish') : t('aiquiz.next')}
           </button>
         </div>
 

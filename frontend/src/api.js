@@ -72,6 +72,19 @@ export const api = {
     return data;
   },
 
+  changePassword: async (userId, currentPassword, newPassword) => {
+    const res = await fetch(`/api/auth/password/${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+    const data = await safeParseJson(res);
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to change password');
+    }
+    return data;
+  },
+
   // 2. Candidates Catalog
   getCandidates: async (params = {}) => {
     const query = new URLSearchParams(params).toString();
@@ -232,35 +245,7 @@ export const api = {
     return data;
   },
 
-  // 9. Admin Endpoints
-  getAdminDashboardData: async () => {
-    const res = await fetch('/api/admin/dashboard');
-    const data = await safeParseJson(res);
-    if (!res.ok) throw new Error(data.error || 'Failed to fetch admin dashboard');
-    return data;
-  },
-
-  addAdminUser: async (userData) => {
-    const res = await fetch('/api/admin/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData)
-    });
-    const data = await safeParseJson(res);
-    if (!res.ok) throw new Error(data.error || 'Failed to add user');
-    return data;
-  },
-
-  updateUserStatus: async (userId, status) => {
-    const res = await fetch(`/api/admin/users/${userId}/status`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
-    });
-    const data = await safeParseJson(res);
-    if (!res.ok) throw new Error(data.error || 'Failed to update user status');
-    return data;
-  },
+  // 9. Extra Endpoints
 
   getPortfolio: async () => {
     const res = await fetch('/api/portfolio');

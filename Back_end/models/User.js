@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema({
   career_goal: String,
   strengths: [String],
   develop_areas: [String],
+  phone: String,
+  location: String,
+  bio: String,
+  avatar_base64: String,
   profile_completed: { type: Boolean, default: false },
   status: { type: String, default: 'Active' }
 }, { timestamps: true });
