@@ -1,0 +1,151 @@
+.mentor-scenario-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.mentor-scenario-card {
+  background: var(--neutral-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mentor-scenario-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-color: var(--accent-blue, #0070f3);
+}
+
+.mentor-scenario-info {
+  flex: 1;
+}
+
+.mentor-scenario-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--neutral-heading, #0f172a);
+  margin-bottom: 0.5rem;
+}
+
+.mentor-scenario-desc {
+  font-size: 0.95rem;
+  color: var(--neutral-text, #475569);
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.mentor-scenario-action {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 250px;
+}
+
+.mentor-scenario-select {
+  padding: 0.75rem;
+  background: var(--neutral-bg, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--neutral-text, #475569);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.mentor-scenario-select:focus {
+  border-color: var(--accent-blue, #0070f3);
+}
+
+.mentor-scenario-send-btn {
+  padding: 0.75rem 1rem;
+  background: var(--accent-blue, #0070f3);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+}
+
+.mentor-scenario-send-btn:hover {
+  filter: brightness(1.1);
+}
+
+.mentor-scenario-send-btn:disabled {
+  background: var(--border-color, #e2e8f0);
+  color: var(--neutral-text, #475569);
+  cursor: not-allowed;
+}
+
+.mentor-scenario-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.mentor-create-scenario-btn {
+  padding: 0.75rem 1.5rem;
+  background: var(--accent-blue, #0070f3);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+}
+
+.mentor-create-scenario-btn:hover {
+  filter: brightness(1.1);
+}
+.scenario-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.scenario-modal-content {
+  background: var(--card-bg, #18181b);
+  border: 1px solid var(--border-color, #27272a);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  animation: modalPop 0.2s ease-out;
+}
+
+@keyframes modalPop {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

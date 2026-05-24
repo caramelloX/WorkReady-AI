@@ -6,6 +6,7 @@ import { api } from '../api.js';
 export default function ProfileCompletionModal({ user, onComplete }) {
   const { t } = useLanguage();
   const [obMajor, setObMajor] = useState('');
+  const [obFaculty, setObFaculty] = useState('');
   const [obEducationLevel, setObEducationLevel] = useState('Bootcamp Graduate');
   const [obTargetIndustry, setObTargetIndustry] = useState('');
   const [obOccupationGoal, setObOccupationGoal] = useState('');
@@ -37,6 +38,7 @@ export default function ProfileCompletionModal({ user, onComplete }) {
 
       const res = await api.updateProfile(userId, {
         major: obMajor,
+        faculty: obFaculty,
         education_level: obEducationLevel,
         career_goal: obCareerGoal,
         occupation_goal: obOccupationGoal,
@@ -106,6 +108,23 @@ export default function ProfileCompletionModal({ user, onComplete }) {
             
             <div className="form-row">
               <div className="form-group">
+                <label>{t('profileModal.faculty')}</label>
+                <select value={obFaculty} onChange={e => setObFaculty(e.target.value)} required>
+                  <option value="" disabled>{t('profileModal.facultyPh')}</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Science">Science</option>
+                  <option value="Business Administration">Business Administration</option>
+                  <option value="Arts / Humanities">Arts / Humanities</option>
+                  <option value="Medicine">Medicine</option>
+                  <option value="Architecture">Architecture</option>
+                  <option value="Law">Law</option>
+                  <option value="Education">Education</option>
+                  <option value="Communication Arts">Communication Arts</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div className="form-group">
                 <label>{t('profileModal.major')}</label>
                 <input 
                   type="text" 
@@ -115,6 +134,9 @@ export default function ProfileCompletionModal({ user, onComplete }) {
                   placeholder={t('profileModal.majorPh')} 
                 />
               </div>
+            </div>
+
+            <div className="form-row">
               <div className="form-group">
                 <label>{t('profileModal.education')}</label>
                 <select value={obEducationLevel} onChange={e => setObEducationLevel(e.target.value)}>
@@ -122,9 +144,6 @@ export default function ProfileCompletionModal({ user, onComplete }) {
                   <option value="Bootcamp Graduate">{t('profileModal.bootcamp')}</option>
                 </select>
               </div>
-            </div>
-
-            <div className="form-row">
               <div className="form-group">
                 <label>{t('profileModal.industry')}</label>
                 <input 
@@ -135,16 +154,17 @@ export default function ProfileCompletionModal({ user, onComplete }) {
                   placeholder={t('profileModal.industryPh')} 
                 />
               </div>
-              <div className="form-group">
-                <label>{t('profileModal.occupation')}</label>
-                <input 
-                  type="text" 
-                  value={obOccupationGoal} 
-                  onChange={e => setObOccupationGoal(e.target.value)} 
-                  required 
-                  placeholder={t('profileModal.occupationPh')} 
-                />
-              </div>
+            </div>
+
+            <div className="form-group full-width" style={{marginBottom: '1.25rem'}}>
+              <label>{t('profileModal.occupation')}</label>
+              <input 
+                type="text" 
+                value={obOccupationGoal} 
+                onChange={e => setObOccupationGoal(e.target.value)} 
+                required 
+                placeholder={t('profileModal.occupationPh')} 
+              />
             </div>
 
             <div className="form-group full-width">

@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema({
   target_industry: String,
   occupation_goal: String,
   major: String,
+  faculty: String,
+  university: String,
   education_level: String,
   career_goal: String,
   strengths: [String],

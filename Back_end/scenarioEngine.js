@@ -128,6 +128,70 @@ Return ONLY valid JSON.`;
   }
 }
 
+export async function generateSingleScenarioWithAI(apiKey, topicPrompt = "") {
+  try {
+    if (!apiKey) throw new Error('Missing API Key');
+
+    let systemInstruction = `You are a curriculum designer for a highly advanced software engineering and SRE training platform.
+Generate a JSON object containing exactly 1 highly realistic and diverse software engineering, SRE, DevOps, or system security production incident scenario.
+${topicPrompt ? `The scenario MUST be specifically about this topic: "${topicPrompt}"` : ''}
+
+The output MUST be a JSON object matching this exact schema:
+{
+  "id": "A unique identifier like S-999",
+  "title": "A short, descriptive, professional title",
+  "desc": "Category, difficulty, and estimated time (e.g. 'Backend · Intermediate · 30 min')",
+  "difficulty": "Available",
+  "initialLogs": [
+    "Line 1 of initial server or application logs showing the error",
+    "Line 2 of logs..."
+  ],
+  "initialChat": [
+    {
+      "sender": "coach",
+      "text": "The welcoming message from the SRE Coach explaining the incident context."
+    }
+  ]
+}
+
+Return ONLY valid JSON representing this single object (do not wrap it in a scenarios array).`;
+
+    const response = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [
+          { role: 'system', content: systemInstruction }
+        ],
+        response_format: { type: 'json_object' }
+      })
+    });
+
+    if (!response.ok) throw new Error(`Groq API returned status ${response.status}`);
+
+    const data = await response.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Empty response from Groq API');
+
+    let parsed = JSON.parse(text.trim());
+    return parsed;
+  } catch (err) {
+    console.error('[GENERATE SINGLE SCENARIO] Groq failed, using fallback...', err);
+    return {
+      id: 'S-' + Math.floor(Math.random() * 1000),
+      title: 'AI Generated Mock Scenario',
+      desc: 'AI Generation Failed · Intermediate · 30 min',
+      difficulty: 'Available',
+      initialLogs: ['[ERR] Mock logs due to AI failure.'],
+      initialChat: [{ sender: 'coach', text: 'Welcome to this mock scenario.' }]
+    };
+  }
+}
+
 export async function runScenarioAI(scenarioId, scenarioTitle, message, chatHistory, apiKey) {
   try {
     const formattedHistory = chatHistory

@@ -234,6 +234,26 @@ export const api = {
     return data;
   },
 
+  updateScenario: async (id, title, desc, quiz) => {
+    const res = await fetch(`/api/scenarios/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, desc, quiz })
+    });
+    const data = await safeParseJson(res);
+    if (!res.ok) throw new Error(data.error || 'Failed to update scenario');
+    return data;
+  },
+
+  generateScenarioContent: async (id) => {
+    const res = await fetch(`/api/scenarios/${id}/generate`, {
+      method: 'POST'
+    });
+    const data = await safeParseJson(res);
+    if (!res.ok) throw new Error(data.error || 'Failed to generate scenario content');
+    return data;
+  },
+
   chatWithScenario: async (scenarioId, scenarioTitle, message, chatHistory) => {
     const res = await fetch('/api/scenario/chat', {
       method: 'POST',

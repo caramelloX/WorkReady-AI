@@ -13,7 +13,7 @@ import MentorStudent from './models/MentorStudent.js';
 import Submission from './models/Submission.js';
 import StudentRating from './models/StudentRating.js';
 import MentorHighlight from './models/MentorHighlight.js';
-import { runScenarioFallback, runScenarioAI, generateScenariosWithAI } from './scenarioEngine.js';
+import { runScenarioFallback, runScenarioAI, generateScenariosWithAI, generateSingleScenarioWithAI } from './scenarioEngine.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -96,7 +96,7 @@ app.post('/api/auth/register', async (req, res) => {
 app.put('/api/auth/profile/:id', async (req, res) => {
   const { 
     fullname, username, email, phone, location, bio, avatar_base64,
-    major, education_level, career_goal, occupation_goal, strengths, develop_areas, target_industry 
+    major, faculty, university, education_level, career_goal, occupation_goal, strengths, develop_areas, target_industry 
   } = req.body;
   
   try {
@@ -112,6 +112,8 @@ app.put('/api/auth/profile/:id', async (req, res) => {
     if (avatar_base64 !== undefined) updateFields.avatar_base64 = avatar_base64;
     
     if (major !== undefined) updateFields.major = major;
+    if (faculty !== undefined) updateFields.faculty = faculty;
+    if (university !== undefined) updateFields.university = university;
     if (education_level !== undefined) updateFields.education_level = education_level;
     if (career_goal !== undefined) updateFields.career_goal = career_goal;
     if (occupation_goal !== undefined) updateFields.occupation_goal = occupation_goal;
@@ -122,7 +124,7 @@ app.put('/api/auth/profile/:id', async (req, res) => {
     const updatedUser = await User.findOneAndUpdate(
       { id: req.params.id },
       { $set: updateFields },
-      { new: true, select: '-_id -__v -password -createdAt -updatedAt' }
+      { returnDocument: 'after', select: '-_id -__v -password -createdAt -updatedAt' }
     ).lean();
     
     if (!updatedUser) {
@@ -322,6 +324,54 @@ app.post('/api/scenarios/regenerate', async (req, res) => {
   } catch (err) {
     console.error('[SCENARIOS] Regeneration error:', err);
     res.status(500).json({ error: 'Failed to regenerate scenarios', details: err.message });
+  }
+});
+
+app.put('/api/scenarios/:id', async (req, res) => {
+  try {
+    const { title, desc, quiz } = req.body;
+    const updated = await Scenario.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: { title, desc, quiz } },
+      { returnDocument: 'after' }
+    ).lean();
+    if (!updated) return res.status(404).json({ error: 'Scenario not found' });
+    res.json(updated);
+  } catch (err) {
+    console.error('[SCENARIO UPDATE] error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/scenarios/:id/generate', async (req, res) => {
+  try {
+    const apiKey = process.env.GROQ_API_KEY;
+    const hasApiKey = !!(apiKey && apiKey.trim().length > 0 && !apiKey.startsWith('#'));
+    
+    // Retrieve current scenario to use its title as context
+    const currentScenario = await Scenario.findOne({ id: req.params.id }).lean();
+    const topicPrompt = currentScenario ? currentScenario.title : "";
+
+    const generated = await generateSingleScenarioWithAI(hasApiKey ? apiKey : null, topicPrompt);
+    
+    // Update the existing scenario with the new AI-generated fields
+    const updated = await Scenario.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: { 
+          title: generated.title || topicPrompt, 
+          desc: generated.desc,
+          initialLogs: generated.initialLogs,
+          initialChat: generated.initialChat
+        } 
+      },
+      { returnDocument: 'after' }
+    ).lean();
+
+    if (!updated) return res.status(404).json({ error: 'Scenario not found' });
+    res.json(updated);
+  } catch (err) {
+    console.error('[SCENARIO GENERATE] error:', err);
+    res.status(500).json({ error: 'Generation error' });
   }
 });
 
@@ -702,7 +752,7 @@ app.put('/api/admin/users/:id', async (req, res) => {
       updateData.develop_areas = updateData.develop_areas.split(',').map(s => s.trim()).filter(s => s);
     }
 
-    const updatedUser = await User.findOneAndUpdate({ id: req.params.id }, updateData, { new: true });
+    const updatedUser = await User.findOneAndUpdate({ id: req.params.id }, updateData, { returnDocument: 'after' });
     res.json({ success: true, user: updatedUser });
   } catch (err) {
     res.status(500).json({ error: 'Database error' });

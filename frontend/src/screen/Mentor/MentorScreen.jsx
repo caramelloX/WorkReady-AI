@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import './MentorScreen.css';
 import { api } from '../../api.js';
 import StudentSettings from '../Student/StudentSettings';
+import MentorScenario from './MentorScenario';
 
 export default function MentorScreen({ onNavigate }) {
   const { t } = useLanguage();
@@ -186,6 +187,18 @@ export default function MentorScreen({ onNavigate }) {
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
             </svg>
             <span>{t('mentor.portfolioTab')}</span>
+          </button>
+
+          <button 
+            className={`mentor-nav-btn ${activeTab === 'scenario' ? 'active' : ''}`}
+            onClick={() => setActiveTab('scenario')}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mentor-nav-icon">
+              <polygon points="12 2 2 7 12 12 22 7 12 2" />
+              <polyline points="2 17 12 22 22 17" />
+              <polyline points="2 12 12 17 22 12" />
+            </svg>
+            <span>{t('mentor.scenarioTab', 'Scenario management')}</span>
           </button>
         </nav>
 
@@ -688,6 +701,20 @@ export default function MentorScreen({ onNavigate }) {
             )}
 
           </div>
+        )}
+
+        {activeTab === 'scenario' && (
+          <>
+            <header className="mentor-header">
+              <div className="mentor-header-title-box">
+                <h1 className="mentor-page-title">{t('mentor.scenarioTitle', 'Scenario management')}</h1>
+                <p className="mentor-page-subtitle">{t('mentor.scenarioSubtitle', 'Manage simulation scenarios and assign them to your students.')}</p>
+              </div>
+            </header>
+            <main className="mentor-content">
+              <MentorScenario scenarios={scenarios} students={students} />
+            </main>
+          </>
         )}
 
         {activeTab === 'settings' && (

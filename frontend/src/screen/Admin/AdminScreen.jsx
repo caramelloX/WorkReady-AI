@@ -144,6 +144,7 @@ export default function AdminScreen({ onNavigate }) {
       target_industry: user.target_industry || '',
       occupation_goal: user.occupation_goal || '',
       major: user.major || '',
+      faculty: user.faculty || '',
       education_level: user.education_level || '',
       career_goal: user.career_goal || '',
       strengths: Array.isArray(user.strengths) ? user.strengths.join(', ') : '',
@@ -967,7 +968,13 @@ export default function AdminScreen({ onNavigate }) {
                   </div>
                   <div>
                     <h3 style={{margin: 0, fontSize: '22px', color: '#0F172A', fontWeight: 800}}>{selectedProfile.name || selectedProfile.fullname}</h3>
-                    <p style={{margin: '4px 0 0 0', color: '#64748B', fontSize: '13px'}}>{selectedProfile.major || 'Unknown Major'} — {selectedProfile.target_track || selectedProfile.role || 'Track'}</p>
+                    <div style={{display: 'flex', gap: '16px', marginTop: '16px'}}>
+                      <div style={{flex: 1}}>
+                        <label style={{fontSize: '11px', fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase'}}>Education</label>
+                        <p style={{margin: '4px 0 0 0', color: '#1E293B', fontSize: '13px'}}>{selectedProfile.education_level || 'Unknown Level'}</p>
+                        <p style={{margin: '4px 0 0 0', color: '#64748B', fontSize: '13px'}}>{selectedProfile.faculty ? `${selectedProfile.faculty}, ${selectedProfile.major}` : (selectedProfile.major || 'Unknown Major')} — {selectedProfile.target_track || selectedProfile.role || 'Track'}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1114,6 +1121,10 @@ export default function AdminScreen({ onNavigate }) {
                 <div className="form-group">
                   <label>{t('admin.edit.major')}</label>
                   <input type="text" value={editForm.major} onChange={e => setEditForm({...editForm, major: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label>{t('admin.edit.faculty')}</label>
+                  <input type="text" value={editForm.faculty} onChange={e => setEditForm({...editForm, faculty: e.target.value})} />
                 </div>
                 <div className="form-group">
                   <label>{t('admin.edit.eduLevel')}</label>

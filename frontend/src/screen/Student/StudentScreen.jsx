@@ -3,9 +3,9 @@ import './StudentScreen.css';
 import StudentDashboard from './StudentDashboard';
 import StudentProfile from './StudentProfile';
 import StudentSkillGap from './StudentSkillGap';
+import StudentSkillGapA from './StudentSkillGapA';
 import StudentScenarioSimulator from './StudentScenarioSimulator';
 import StudentEvidencePortfolio from './StudentEvidencePortfolio';
-import SkillAssessmentQuizModal from './SkillAssessmentQuizModal';
 import AiSkillQuizModal from './AiSkillQuizModal';
 import StudentSettings from './StudentSettings';
 import { api } from '../../api';
@@ -20,7 +20,6 @@ export default function StudentScreen({ onNavigate }) {
   useEffect(() => {
     sessionStorage.setItem('studentActiveTab', activeTab);
   }, [activeTab]);
-  const [showSkillAssessment, setShowSkillAssessment] = useState(false);
   const [showAiQuiz, setShowAiQuiz] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   
@@ -31,6 +30,7 @@ export default function StudentScreen({ onNavigate }) {
   const [fullName, setFullName] = useState('');
   const [targetTrack, setTargetTrack] = useState('');
   const [major, setMajor] = useState('Computer Science');
+  const [faculty, setFaculty] = useState('Engineering');
   const [educationLevel, setEducationLevel] = useState('Senior');
   const [occupationGoal, setOccupationGoal] = useState('Software Engineer');
   const [targetIndustry, setTargetIndustry] = useState('Tech');
@@ -58,6 +58,7 @@ export default function StudentScreen({ onNavigate }) {
         if (user.target_industry) setTargetIndustry(user.target_industry);
         if (user.email) setEmail(user.email);
         if (user.major) setMajor(user.major);
+        if (user.faculty) setFaculty(user.faculty);
         if (user.education_level) setEducationLevel(user.education_level);
         if (user.occupation_goal) setOccupationGoal(user.occupation_goal);
         if (user.career_goal) setCareerGoal(user.career_goal);
@@ -185,10 +186,7 @@ export default function StudentScreen({ onNavigate }) {
       const user = JSON.parse(storedUserStr);
       
       if (activeTab === 'skillgap') {
-        const hasCompletedSkill = localStorage.getItem(`hasCompletedSkillQuiz_${user.id}`);
-        if (!hasCompletedSkill) {
-          setShowSkillAssessment(true);
-        }
+        // Handled by StudentSkillGapA inline now
       }
 
       if (activeTab === 'simulator') {
@@ -214,7 +212,6 @@ export default function StudentScreen({ onNavigate }) {
     } catch (e) {
       console.error('Failed to save assessment', e);
     }
-    setShowSkillAssessment(false);
   };
 
   const handleAiQuizComplete = async (newRatings) => {
@@ -406,12 +403,12 @@ export default function StudentScreen({ onNavigate }) {
         
         {/* DASHBOARD TAB */}
         {activeTab === 'dashboard' && (
-          <StudentDashboard avatarBase64={currentUser?.avatar_base64} firstName={firstName} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} setActiveTab={setActiveTab} scenarios={scenarios} handleOpenScenario={handleOpenScenario} overallReadiness={overallReadiness} ratings={ratings} aiRatings={aiRatings} />
+          <StudentDashboard avatarBase64={currentUser?.avatar_base64} firstName={firstName} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} faculty={faculty} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} setActiveTab={setActiveTab} scenarios={scenarios} handleOpenScenario={handleOpenScenario} overallReadiness={overallReadiness} ratings={ratings} aiRatings={aiRatings} />
         )}
         
         {/* PROFILE TAB */}
         {activeTab === 'profile' && (
-          <StudentProfile avatarBase64={currentUser?.avatar_base64} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} email={email} careerGoal={careerGoal} strengthsList={strengthsList} developAreasList={developAreasList} />
+          <StudentProfile avatarBase64={currentUser?.avatar_base64} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} faculty={faculty} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} email={email} careerGoal={careerGoal} strengthsList={strengthsList} developAreasList={developAreasList} />
         )}
 
         {/* SETTINGS TAB */}
@@ -424,12 +421,17 @@ export default function StudentScreen({ onNavigate }) {
             email={email} 
             targetIndustry={targetIndustry} 
             major={major} 
+            faculty={faculty}
           />
         )}
         
         {/* SKILL GAP TAB */}
         {activeTab === 'skillgap' && (
-          <StudentSkillGap ratings={ratings} handleRate={handleRate} handleResetRatings={handleResetRatings} calculateRadarPoints={calculateRadarPoints} overallReadiness={overallReadiness} strengthsCount={strengthsCount} gapsCount={gapsCount} />
+          Object.keys(ratings).length === 0 ? (
+            <StudentSkillGapA onComplete={handleAssessmentComplete} />
+          ) : (
+            <StudentSkillGap ratings={ratings} handleRate={handleRate} handleResetRatings={handleResetRatings} calculateRadarPoints={calculateRadarPoints} overallReadiness={overallReadiness} strengthsCount={strengthsCount} gapsCount={gapsCount} />
+          )
         )}
         
         {/* SCENARIO SIMULATOR TAB */}
@@ -456,12 +458,6 @@ export default function StudentScreen({ onNavigate }) {
           <StudentEvidencePortfolio portfolioItems={portfolioItems} handleSubmitPortfolio={handleSubmitPortfolio} onNavigate={onNavigate} />
         )}
       </div>
-
-      <SkillAssessmentQuizModal 
-        isOpen={showSkillAssessment} 
-        onClose={() => setShowSkillAssessment(false)}
-        onComplete={handleAssessmentComplete} 
-      />
 
       <AiSkillQuizModal 
         isOpen={showAiQuiz} 

@@ -26,7 +26,7 @@
   border-radius: 16px;
   display: flex;
   width: 100%;
-  max-width: 900px;
+  max-width: 1050px;
   min-height: 550px;
   max-height: 90vh; /* Added to fit on screen */
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);

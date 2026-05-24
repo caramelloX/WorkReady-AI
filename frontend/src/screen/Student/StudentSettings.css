@@ -258,7 +258,7 @@
 
 /* Security Tab Styles */
 .settings-section-card {
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 32px;
@@ -267,8 +267,8 @@
 }
 
 .settings-section-card.danger-zone {
-  border-color: #fca5a5;
-  background-color: #fef2f2;
+  border-color: rgba(239, 68, 68, 0.3);
+  background-color: rgba(239, 68, 68, 0.05);
   box-shadow: none;
 }
 
@@ -394,7 +394,7 @@
 
 /* Notifications Tab Styles */
 .settings-notification-header {
-  background-color: #f8fafc;
+  background-color: var(--hover-bg, rgba(0, 0, 0, 0.03));
   border-radius: 8px;
   display: grid;
   grid-template-columns: 1fr 80px 80px;

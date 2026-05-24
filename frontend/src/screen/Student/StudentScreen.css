@@ -221,7 +221,7 @@
   bottom: calc(100% + 8px);
   left: 0;
   width: 100%;
-  background-color: #fff;
+  background-color: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
@@ -253,7 +253,7 @@
 }
 
 .dropdown-item:hover {
-  background-color: #f1f5f9;
+  background-color: var(--hover-bg, rgba(0, 0, 0, 0.05));
 }
 
 .dropdown-item-icon {
@@ -265,7 +265,7 @@
 .dropdown-item.logout {
   color: var(--accent-red);
   margin-top: 4px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--border-color);
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   padding-top: 12px;

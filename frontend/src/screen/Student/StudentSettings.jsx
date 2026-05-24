@@ -18,7 +18,9 @@ export default function StudentSettings({ currentUser, onProfileUpdate, initials
     username: currentUser?.username || (fullName ? fullName.toLowerCase().replace(/\s+/g, '.') : ''),
     email: currentUser?.email || email || '',
     phone: currentUser?.phone || '',
-    university: currentUser?.major || major || '',
+    university: currentUser?.university || '',
+    faculty: currentUser?.faculty || '',
+    major: currentUser?.major || major || '',
     location: currentUser?.location || '',
     bio: currentUser?.bio || '',
     avatar_base64: currentUser?.avatar_base64 || ''
@@ -223,6 +225,27 @@ export default function StudentSettings({ currentUser, onProfileUpdate, initials
                   name="university" 
                   className="settings-input" 
                   value={formData.university} 
+                  onChange={handleChange} 
+                />
+              </div>
+              <div className="settings-form-group">
+                <label>Faculty</label>
+                <input 
+                  type="text" 
+                  name="faculty" 
+                  className="settings-input" 
+                  value={formData.faculty} 
+                  onChange={handleChange} 
+                />
+              </div>
+
+              <div className="settings-form-group">
+                <label>Major</label>
+                <input 
+                  type="text" 
+                  name="major" 
+                  className="settings-input" 
+                  value={formData.major} 
                   onChange={handleChange} 
                 />
               </div>

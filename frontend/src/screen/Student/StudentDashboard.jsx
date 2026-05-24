@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-export default function StudentDashboard({ avatarBase64, firstName, initials, fullName, targetTrack, major, educationLevel, occupationGoal, targetIndustry, setActiveTab, scenarios, handleOpenScenario, overallReadiness, ratings, aiRatings }) {
+export default function StudentDashboard({ avatarBase64, firstName, initials, fullName, targetTrack, major, faculty, educationLevel, occupationGoal, targetIndustry, setActiveTab, scenarios, handleOpenScenario, overallReadiness, ratings, aiRatings }) {
   const { t } = useLanguage();
   
   const skillMapping = {
@@ -89,6 +89,7 @@ export default function StudentDashboard({ avatarBase64, firstName, initials, fu
                     </svg>
                     <div className="student-info-column-details">
                       <h4 className="student-info-column-title">{major}</h4>
+                      <p className="student-info-column-subtitle" style={{ color: '#64748B', fontSize: '13px' }}>{faculty}</p>
                       <p className="student-info-column-subtitle">{educationLevel}</p>
                     </div>
                   </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-export default function StudentProfile({ avatarBase64, initials, fullName, targetTrack, major, educationLevel, occupationGoal, targetIndustry, email, careerGoal, strengthsList, developAreasList }) {
+export default function StudentProfile({ avatarBase64, initials, fullName, targetTrack, major, faculty, educationLevel, occupationGoal, targetIndustry, email, careerGoal, strengthsList, developAreasList }) {
   const { t } = useLanguage();
   return (
     <div className="student-tab-panel">
@@ -56,7 +56,7 @@ export default function StudentProfile({ avatarBase64, initials, fullName, targe
                       </svg>
                       <span>{t('profile.educationLevel')}</span>
                     </span>
-                    <span className="profile-detail-val">{educationLevel} — {major}</span>
+                    <span className="profile-detail-val">{educationLevel} — {faculty ? `${faculty}, ${major}` : major}</span>
                   </div>
 
                   <div className="profile-details-section">
