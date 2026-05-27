@@ -449,3 +449,9 @@
     padding: 40px 24px;
   }
 }
+
+/* Mobile: 480px */
+@media (max-width: 480px) {
+  .register-left-panel { display: none; }
+  .register-right-panel { padding: 24px 16px; }
+}

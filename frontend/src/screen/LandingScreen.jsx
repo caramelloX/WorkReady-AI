@@ -43,7 +43,7 @@ export default function LandingScreen({ onNavigate }) {
             <>
               <button className="landing-btn-login" onClick={() => onNavigate('login')}>{t('landing.nav.login')}</button>
               <button className="landing-btn-register" onClick={handleContinue}>
-                Continue as {currentUser.username || 'User'}
+                {t('landing.continueAs').replace('{0}', currentUser.username || 'User')}
               </button>
             </>
           ) : (
@@ -70,7 +70,7 @@ export default function LandingScreen({ onNavigate }) {
             {currentUser ? (
               <>
                 <button className="landing-btn-primary" onClick={handleContinue}>
-                  Continue as {currentUser.username || 'User'}
+                  {t('landing.continueAs').replace('{0}', currentUser.username || 'User')}
                 </button>
                 <button className="landing-btn-secondary" onClick={() => onNavigate('login')}>
                   {t('landing.hero.btnSecondary')}

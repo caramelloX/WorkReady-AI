@@ -3,11 +3,13 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import './StudentScenarioSimulator.css';
 import QuizModal from './QuizModal';
 
-export default function StudentScenarioSimulator({ scenarios, activeScenario, handleOpenScenario, handleLaunchScenario, simCompleted, stepIndex, terminalLogs, chatMessages, inputVal, setInputVal, handleSendChat, choicesForStep, onRegenerate }) {
+export default function StudentScenarioSimulator({ scenarios, activeScenario, handleOpenScenario, handleLaunchScenario, simCompleted, stepIndex, terminalLogs, chatMessages, inputVal, setInputVal, handleSendChat, choicesForStep, isSimulating, onCloseScenario, onGoToPortfolio, onRegenerate, onSubmitToMentor }) {
   const { t } = useLanguage();
   const [selectedScenarioId, setSelectedScenarioId] = useState(null);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   // Default selection
   useEffect(() => {
@@ -125,7 +127,7 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                   </div>
                 </div>
                 
-                <button className="launch-btn" onClick={() => setIsQuizOpen(true)}>
+                <button className="launch-btn" onClick={() => handleLaunchScenario(selectedScenario)}>
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                   </svg>
@@ -199,23 +201,45 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                       <span className="simulator-choice-title">{t('sim.selectStrategy')}</span>
                       
                       {!simCompleted ? (
-                        choicesForStep[stepIndex] && choicesForStep[stepIndex].map((ch, idx) => (
+                        choicesForStep[stepIndex] && choicesForStep[stepIndex].length > 0 ? choicesForStep[stepIndex].map((ch, idx) => (
                           <button
                             className="simulator-choice-btn"
                             key={idx}
+                            disabled={isSimulating}
                             onClick={ch.action}
                           >
                             {ch.text}
                           </button>
-                        ))
+                        )) : (
+                          <div className="student-card" style={{ padding: '14px', color: '#64748b', fontSize: '13px' }}>
+                            {isSimulating ? 'Coach is reviewing your action...' : 'Type your next observation or command to continue.'}
+                          </div>
+                        )
                       ) : (
                         <div className="student-card" style={{ padding: '16px', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', textAlign: 'center' }}>
                           <h4 style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)' }}>{t('sim.cleared')}</h4>
                           <p style={{ margin: 0, fontSize: '13px' }}>{t('sim.clearedDesc')}</p>
-                          <button className="student-header-btn" style={{ marginTop: '12px' }} onClick={() => {
-                            setActiveScenario(null);
-                            setActiveTab('portfolio');
-                          }}>{t('sim.goToPortfolio')}</button>
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '12px', flexWrap: 'wrap' }}>
+                            {!submitted ? (
+                              <button
+                                className="student-header-btn"
+                                style={{ backgroundColor: '#7c3aed' }}
+                                disabled={isSubmitting}
+                                onClick={async () => {
+                                  if (!onSubmitToMentor) return;
+                                  setIsSubmitting(true);
+                                  const ok = await onSubmitToMentor();
+                                  setIsSubmitting(false);
+                                  if (ok) setSubmitted(true);
+                                }}
+                              >
+                                {isSubmitting ? t('sim.submitting') : t('sim.submitToMentor')}
+                              </button>
+                            ) : (
+                              <span style={{ fontSize: '13px', color: '#6d28d9', fontWeight: '600' }}>{t('sim.submitDone')}</span>
+                            )}
+                            <button className="student-header-btn" style={{ marginTop: 0 }} onClick={onGoToPortfolio}>{t('sim.goToPortfolio')}</button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -245,6 +269,11 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                             <p>{msg.text}</p>
                           </div>
                         ))}
+                        {isSimulating && (
+                          <div className="simulator-chat-bubble coach">
+                            <p>Reviewing the evidence and preparing the next coaching step...</p>
+                          </div>
+                        )}
                       </div>
 
                       <div className="simulator-chat-footer">
@@ -254,9 +283,10 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
                             className="simulator-chat-input"
                             placeholder={t('sim.chatPlaceholder')}
                             value={inputVal}
+                            disabled={isSimulating}
                             onChange={(e) => setInputVal(e.target.value)}
                           />
-                          <button type="submit" className="simulator-chat-send-btn">
+                          <button type="submit" className="simulator-chat-send-btn" disabled={isSimulating}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                               <line x1="22" y1="2" x2="11" y2="13"></line>
                               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -272,7 +302,7 @@ export default function StudentScenarioSimulator({ scenarios, activeScenario, ha
 
                 {/* Console Footer */}
                 <div className="simulator-console-footer">
-                  <button className="simulator-quit-btn" onClick={() => setActiveScenario(null)}>
+                  <button className="simulator-quit-btn" onClick={onCloseScenario}>
                     {t('sim.quit')}
                   </button>
                   <span style={{ fontSize: '12px', color: '#94a3b8' }}>{t('sim.stagingPod')}</span>

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import './LoginScreen.css';
-import { api } from '../api.js';
+import { api } from '../components/api.js';
 import ProfileCompletionModal from '../components/ProfileCompletionModal';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, X } from 'lucide-react';
 
 export default function LoginScreen({ onNavigate }) {
   const { t } = useLanguage();
@@ -21,6 +21,24 @@ export default function LoginScreen({ onNavigate }) {
   const [showSavedAccounts, setShowSavedAccounts] = useState(true);
 
   React.useEffect(() => {
+    const fetchLatestAccountDetails = async (accounts) => {
+      try {
+        const usernames = accounts.map(acc => acc.username);
+        const dbUsers = await api.getUsersByUsernames(usernames);
+        if (dbUsers && dbUsers.length > 0) {
+          const updatedAccounts = accounts.map(localAcc => {
+            const dbUser = dbUsers.find(u => u.username === localAcc.username);
+            return dbUser ? { ...localAcc, ...dbUser } : localAcc;
+          });
+          const filtered = updatedAccounts.filter(acc => acc.role === 'mentor' || acc.role === 'student');
+          setSavedAccounts(filtered);
+          localStorage.setItem('savedAccounts', JSON.stringify(filtered));
+        }
+      } catch (err) {
+        console.error("Failed to sync saved accounts with DB:", err);
+      }
+    };
+
     try {
       const stored = localStorage.getItem('savedAccounts');
       if (stored) {
@@ -28,6 +46,7 @@ export default function LoginScreen({ onNavigate }) {
         if (accounts && accounts.length > 0) {
           const filteredAccounts = accounts.filter(acc => acc.role === 'mentor' || acc.role === 'student');
           setSavedAccounts(filteredAccounts);
+          fetchLatestAccountDetails(filteredAccounts);
         }
       }
     } catch (e) {}
@@ -100,6 +119,17 @@ export default function LoginScreen({ onNavigate }) {
     // Focus the password input automatically if possible, otherwise they just type it
   };
 
+  const handleRemoveSavedAccount = (e, usernameToRemove) => {
+    e.stopPropagation();
+    try {
+      const updatedAccounts = savedAccounts.filter(acc => acc.username !== usernameToRemove);
+      setSavedAccounts(updatedAccounts);
+      localStorage.setItem('savedAccounts', JSON.stringify(updatedAccounts));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="login-screen-container">
       {/* Left Column: Branding and Gradient */}
@@ -149,11 +179,25 @@ export default function LoginScreen({ onNavigate }) {
               <div className="saved-accounts-list">
                 {savedAccounts.map((acc, idx) => (
                   <div key={idx} className="saved-account-item" onClick={() => handleSavedAccountClick(acc)}>
-                    <div className="saved-avatar">{(acc.fullname || acc.username)[0].toUpperCase()}</div>
+                    <div className="saved-avatar">
+                      {acc.avatar_base64 ? (
+                        <img src={acc.avatar_base64} alt={acc.fullname || acc.username} className="saved-avatar-img" />
+                      ) : (
+                        (acc.fullname || acc.username)[0].toUpperCase()
+                      )}
+                    </div>
                     <div className="saved-info">
                       <div className="saved-name">{acc.fullname || acc.username}</div>
                       <div className="saved-role">@{acc.username} • {acc.role}</div>
                     </div>
+                    <button 
+                      type="button" 
+                      className="remove-account-btn" 
+                      onClick={(e) => handleRemoveSavedAccount(e, acc.username)}
+                      title={t('login.removeAccount') || 'Remove account'}
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -290,6 +334,7 @@ export default function LoginScreen({ onNavigate }) {
             setShowProfileModal(false);
             if (onNavigate) onNavigate('demo');
           }} 
+          onClose={() => setShowProfileModal(false)}
         />
       )}
     </div>

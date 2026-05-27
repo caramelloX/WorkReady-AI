@@ -1,25 +1,30 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=Prompt:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
 
 .student-workspace {
-  --primary-color: #062b50;
-  --primary-hover: #031b33;
-  --accent-blue: #0070f3;
-  --accent-teal: #14b8a6;
-  --accent-green: #10b981;
-  --accent-yellow: #f59e0b;
-  --accent-glow: rgba(0, 112, 243, 0.08);
-  --border-color: #e2e8f0;
-  --neutral-bg: #f8fafc;
-  --neutral-card: #ffffff;
-  --neutral-heading: #0f172a;
+  --primary-color: #2563EB;
+  --primary-hover: #1D4ED8;
+  --accent-blue: #3B82F6;
+  --accent-teal: #0D9488;
+  --accent-green: #059669;
+  --accent-yellow: #D97706;
+  --accent-glow: rgba(37, 99, 235, 0.1);
+  --border-color: rgba(226, 232, 240, 0.8);
+  --neutral-bg: transparent;
+  --neutral-card: rgba(255, 255, 255, 0.85);
+  --neutral-heading: #0F172A;
   --neutral-text: #475569;
+  --glass-shadow: 0 4px 24px rgba(15, 23, 42, 0.04);
+  --glass-blur: blur(16px);
   
-  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Outfit', 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'Fira Code', ui-monospace, monospace;
 
   font-family: var(--font-body);
-  background-color: var(--neutral-bg);
+  /* Soft Premium Light Theme Background */
+  background: radial-gradient(circle at top left, #F8FAFC 0%, #F1F5F9 100%);
+  background-color: #F8FAFC;
+  
   color: var(--neutral-text);
   min-height: 100vh;
   width: 100vw;
@@ -33,25 +38,31 @@
 }
 
 :root.dark .student-workspace {
-  --primary-color: #c084fc;
-  --primary-hover: #a855f7;
-  --border-color: #2e303a;
-  --neutral-bg: #16171d;
-  --neutral-card: #1f2028;
-  --neutral-heading: #f3f4f6;
-  --neutral-text: #9ca3af;
+  --primary-color: #8b5cf6;
+  --primary-hover: #7c3aed;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --neutral-bg: transparent;
+  --neutral-card: rgba(30, 41, 59, 0.7);
+  --neutral-heading: #f8fafc;
+  --neutral-text: #cbd5e1;
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  
+  /* Dark mode mesh gradient */
+  background: 
+    radial-gradient(circle at 20% 0%, rgba(139, 92, 246, 0.15), transparent 40%),
+    radial-gradient(circle at 80% 100%, rgba(56, 189, 248, 0.1), transparent 40%);
+  background-color: #0f172a;
 }
 
-:root.dark .student-sidebar {
-  background-color: var(--neutral-card);
-}
 
-
-/* Sidebar Styling */
+/* Sidebar Styling - Glassmorphism */
 .student-sidebar {
   width: 260px;
-  background-color: #ffffff;
+  background-color: var(--neutral-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--border-color);
+  box-shadow: 1px 0 20px rgba(0,0,0,0.02);
   display: flex;
   flex-direction: column;
   padding: 30px 16px;
@@ -97,7 +108,7 @@
   color: #ffffff;
 }
 
-.student-nav {
+.student-sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -113,7 +124,7 @@
   color: var(--neutral-text);
   background: none;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   text-align: left;
   transition: all 0.2s ease;
@@ -126,8 +137,8 @@
 }
 
 .student-nav-btn.active {
-  background-color: var(--primary-color);
-  color: #ffffff;
+  background-color: #eff6ff;
+  color: #2563eb;
 }
 
 .student-nav-icon {
@@ -221,7 +232,7 @@
   bottom: calc(100% + 8px);
   left: 0;
   width: 100%;
-  background-color: var(--card-bg);
+  background-color: var(--neutral-card, #fff);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
@@ -253,7 +264,7 @@
 }
 
 .dropdown-item:hover {
-  background-color: var(--hover-bg, rgba(0, 0, 0, 0.05));
+  background-color: var(--border-color, #f1f5f9);
 }
 
 .dropdown-item-icon {
@@ -265,7 +276,7 @@
 .dropdown-item.logout {
   color: var(--accent-red);
   margin-top: 4px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid #f1f5f9;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   padding-top: 12px;
@@ -276,7 +287,7 @@
 }
 
 .dropdown-item.logout:hover {
-  background-color: #fef2f2;
+  background-color: rgba(239, 68, 68, 0.1);
 }
 
 /* Main Content Styling */
@@ -321,15 +332,23 @@
   margin: 0;
 }
 
-/* Common Card elements */
+/* Common Card elements - Glassmorphism */
 .student-card {
   background-color: var(--neutral-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
-  padding: 24px;
+  border-radius: 20px;
+  box-shadow: var(--glass-shadow);
+  padding: 28px;
   margin-bottom: 24px;
   box-sizing: border-box;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.student-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(31, 38, 135, 0.1);
 }
 
 /* ----------------------------------------------------
@@ -393,19 +412,22 @@
 /* Student Profile ID Overview Card */
 .student-profile-overview-card {
   background-color: var(--neutral-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-  padding: 24px;
+  border-radius: 20px;
+  box-shadow: var(--glass-shadow);
+  padding: 30px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  gap: 24px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .student-profile-overview-card:hover {
-  box-shadow: 0 8px 30px rgba(6, 43, 80, 0.04);
+  transform: translateY(-4px);
+  box-shadow: 0 15px 40px rgba(0, 112, 243, 0.12);
 }
 
 .student-profile-overview-header {
@@ -2503,12 +2525,6 @@
 }
 
 /* Right column Readiness Card styling */
-.portfolio-right-column {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
 .portfolio-readiness-card {
   padding: 24px;
   background-color: var(--neutral-card);
@@ -2900,23 +2916,51 @@
     position: relative;
     padding: 16px 24px;
   }
+  .student-sidebar-brand {
+    margin-bottom: 12px;
+  }
   .student-sidebar-header {
     display: none;
   }
-  .student-nav {
+  .student-sidebar-nav {
     flex-direction: row;
     overflow-x: auto;
-    padding-bottom: 8px;
-    gap: 8px;
+    flex-grow: 0;
+    gap: 10px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0;
+  }
+  .student-sidebar-nav::-webkit-scrollbar {
+    display: none;
   }
   .student-nav-btn {
-    padding: 8px 12px;
-    font-size: 13.5px;
+    padding: 10px 18px;
+    font-size: 14px;
     white-space: nowrap;
     width: auto;
+    border-radius: 12px;
   }
   .student-sidebar-footer {
-    display: none;
+    display: block;
+    position: absolute;
+    top: 12px;
+    right: 24px;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    width: auto;
+    z-index: 10;
+  }
+  .student-profile-btn {
+    padding: 6px 8px;
+  }
+  .student-profile-dropdown-menu {
+    top: calc(100% + 8px);
+    bottom: auto;
+    right: 0;
+    left: auto;
+    width: 200px;
   }
   .student-content-container {
     padding: 24px;
@@ -3149,4 +3193,399 @@
 .student-workspace.text-size-xlarge h1 { font-size: 1.25em; }
 .student-workspace.text-size-xlarge p { font-size: 1.25em; }
 .student-workspace.text-size-xlarge .student-nav-btn { font-size: 18px; }
+
+
+/* ============================================================
+   ADDITIONAL MOBILE RESPONSIVE IMPROVEMENTS
+   ============================================================ */
+
+/* Fix sidebar on small tablet to use top nav (supplement existing 992px rule) */
+@media (max-width: 992px) {
+  .student-dashboard-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .continue-training-btn { width: 100%; justify-content: center; }
+  .student-sublinks-grid { grid-template-columns: repeat(2, 1fr); }
+  .student-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .skillgap-body-grid { grid-template-columns: 1fr; }
+  .skillgap-summary-row { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-bottom-row { grid-template-columns: 1fr 1fr; }
+}
+
+/* Mobile: 640px */
+@media (max-width: 640px) {
+  .student-content-container { padding: 16px !important; }
+  .student-page-title { font-size: 24px; }
+  .student-page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .student-header-btn { width: 100%; justify-content: center; }
+  .student-sublinks-grid { grid-template-columns: 1fr; }
+  .student-stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .student-info-columns-grid { grid-template-columns: 1fr; }
+  .dashboard-middle-row { grid-template-columns: 1fr; }
+  .dashboard-bottom-row { grid-template-columns: 1fr; }
+  .skillgap-summary-row { grid-template-columns: 1fr 1fr; }
+  .skillgap-bottom-grid { grid-template-columns: 1fr; }
+  .skillgap-item-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .skillgap-btn-group { align-self: flex-end; }
+  .portfolio-layout-grid { grid-template-columns: 1fr; }
+  .portfolio-stats-container { grid-template-columns: 1fr 1fr; }
+  .breakdown-skills-grid { grid-template-columns: 1fr; }
+  .scenario-simulator-layout { flex-direction: column !important; }
+  .scenario-library-column, .scenario-detail-column { width: 100% !important; }
+}
+
+/* Small mobile: 480px */
+@media (max-width: 480px) {
+  .student-stats-grid { grid-template-columns: 1fr; }
+  .portfolio-stats-container { grid-template-columns: 1fr; }
+  .skillgap-summary-row { grid-template-columns: 1fr; }
+  .student-nav-btn.active { background-color: #eff6ff; color: var(--accent-blue); }
+  .student-profile-info { display: none; }
+}
+
+/* =========================================================
+   Skill Gap Assessment (SGA) — Pre-submit & Post-submit UI
+   ========================================================= */
+
+/* ── Empty-state placeholder ──────────────────────────────── */
+.sga-empty-state {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 20px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1.5px solid rgba(245, 158, 11, 0.28);
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+.sga-empty-icon {
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  display: flex; align-items: center; justify-content: center;
+}
+.sga-empty-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #92400e;
+  margin: 0 0 4px;
+  font-family: var(--font-heading);
+}
+.sga-empty-desc {
+  font-size: 13px;
+  color: #78350f;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Progress bar ─────────────────────────────────────────── */
+.sga-progress-wrap {
+  background: var(--neutral-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+.sga-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.sga-progress-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+.sga-progress-count {
+  font-size: 14px;
+  color: #475569;
+}
+.sga-progress-count strong {
+  color: var(--primary-color);
+  font-weight: 800;
+}
+.sga-progress-track {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.sga-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-teal), var(--primary-color));
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+.sga-progress-state {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* ── Question sections ────────────────────────────────────── */
+.sga-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.sga-section {
+  padding: 20px;
+}
+.sga-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+.sga-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--neutral-heading);
+  margin: 0 0 3px;
+  font-family: var(--font-heading);
+}
+.sga-section-subtitle {
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+.sga-section-progress {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(226, 232, 240, 0.6);
+  color: #64748b;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sga-section-progress.done {
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+}
+
+/* ── Individual question row ──────────────────────────────── */
+.sga-questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sga-question-row {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  background: rgba(248, 250, 252, 0.7);
+  transition: border-color 0.15s;
+}
+.sga-question-row:has(.sga-answer-btn.selected) {
+  border-color: rgba(13, 148, 136, 0.3);
+  background: rgba(236, 253, 245, 0.5);
+}
+.sga-question-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.sga-question-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+}
+.sga-question-text {
+  font-size: 13.5px;
+  color: var(--neutral-heading);
+  line-height: 1.55;
+  margin: 0 0 12px;
+}
+
+/* ── Difficulty badges ────────────────────────────────────── */
+.sga-difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.sga-difficulty-badge.easy {
+  background: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+}
+.sga-difficulty-badge.medium {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+}
+.sga-difficulty-badge.hard {
+  background: rgba(239, 68, 68, 0.1);
+  color: #991b1b;
+}
+
+/* ── Subskill tag ─────────────────────────────────────────── */
+.sga-subskill-tag {
+  font-size: 11px;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* ── Answer button group ──────────────────────────────────── */
+.sga-answer-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sga-answer-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 90px;
+  background: rgba(255, 255, 255, 0.8);
+}
+.sga-answer-label-th {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-body);
+}
+.sga-answer-label-en {
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+/* unselected defaults */
+.sga-answer-low    { border-color: rgba(239, 68, 68, 0.25);   color: #b91c1c; }
+.sga-answer-medium { border-color: rgba(245, 158, 11, 0.3);   color: #92400e; }
+.sga-answer-high   { border-color: rgba(16, 185, 129, 0.3);   color: #065f46; }
+
+.sga-answer-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* selected state */
+.sga-answer-low.selected {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #991b1b;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+.sga-answer-medium.selected {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #f59e0b;
+  color: #78350f;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+.sga-answer-high.selected {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+  color: #065f46;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* ── Submit bar ───────────────────────────────────────────── */
+.sga-submit-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 -2px 16px rgba(15, 23, 42, 0.08);
+  margin-top: 4px;
+  z-index: 10;
+}
+.sga-submit-info {
+  font-size: 13px;
+  color: #64748b;
+}
+.sga-submit-btn {
+  padding: 11px 28px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent-teal), var(--primary-color));
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+.sga-submit-btn:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+}
+.sga-submit-btn:not(:disabled):hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* ── Reset & view-result buttons ──────────────────────────── */
+.sga-reset-btn {
+  padding: 8px 16px;
+  border-radius: 9px;
+  border: 1.5px solid rgba(100, 116, 139, 0.3);
+  background: rgba(100, 116, 139, 0.06);
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sga-reset-btn:hover { background: rgba(100, 116, 139, 0.12); }
+
+.sga-view-result-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent-teal), var(--primary-color));
+  color: white;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  font-family: var(--font-body);
+}
+.sga-view-result-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .sga-answer-group { flex-direction: column; }
+  .sga-answer-btn { min-width: unset; flex-direction: row; gap: 8px; }
+  .sga-submit-bar { flex-direction: column; align-items: stretch; }
+  .sga-submit-btn { text-align: center; }
+}
 

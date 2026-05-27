@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import './ProfileCompletionModal.css';
-import { api } from '../api.js';
+import { api } from './api.js';
 
-export default function ProfileCompletionModal({ user, onComplete }) {
+export default function ProfileCompletionModal({ user, onComplete, onClose }) {
   const { t } = useLanguage();
   const [obMajor, setObMajor] = useState('');
-  const [obFaculty, setObFaculty] = useState('');
   const [obEducationLevel, setObEducationLevel] = useState('Bootcamp Graduate');
   const [obTargetIndustry, setObTargetIndustry] = useState('');
   const [obOccupationGoal, setObOccupationGoal] = useState('');
@@ -38,7 +37,6 @@ export default function ProfileCompletionModal({ user, onComplete }) {
 
       const res = await api.updateProfile(userId, {
         major: obMajor,
-        faculty: obFaculty,
         education_level: obEducationLevel,
         career_goal: obCareerGoal,
         occupation_goal: obOccupationGoal,
@@ -70,6 +68,14 @@ export default function ProfileCompletionModal({ user, onComplete }) {
   return (
     <div className="profile-modal-overlay">
       <div className="profile-modal-container">
+        {onClose && (
+          <button className="profile-modal-close-btn" onClick={onClose} aria-label={t('admin.modal.cancel') || 'Close'}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="18" height="18">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        )}
         
         <div className="profile-modal-left">
           <div className="profile-modal-brand">
@@ -108,23 +114,6 @@ export default function ProfileCompletionModal({ user, onComplete }) {
             
             <div className="form-row">
               <div className="form-group">
-                <label>{t('profileModal.faculty')}</label>
-                <select value={obFaculty} onChange={e => setObFaculty(e.target.value)} required>
-                  <option value="" disabled>{t('profileModal.facultyPh')}</option>
-                  <option value="Engineering">Engineering</option>
-                  <option value="Science">Science</option>
-                  <option value="Business Administration">Business Administration</option>
-                  <option value="Arts / Humanities">Arts / Humanities</option>
-                  <option value="Medicine">Medicine</option>
-                  <option value="Architecture">Architecture</option>
-                  <option value="Law">Law</option>
-                  <option value="Education">Education</option>
-                  <option value="Communication Arts">Communication Arts</option>
-                  <option value="Information Technology">Information Technology</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div className="form-group">
                 <label>{t('profileModal.major')}</label>
                 <input 
                   type="text" 
@@ -134,9 +123,6 @@ export default function ProfileCompletionModal({ user, onComplete }) {
                   placeholder={t('profileModal.majorPh')} 
                 />
               </div>
-            </div>
-
-            <div className="form-row">
               <div className="form-group">
                 <label>{t('profileModal.education')}</label>
                 <select value={obEducationLevel} onChange={e => setObEducationLevel(e.target.value)}>
@@ -144,6 +130,9 @@ export default function ProfileCompletionModal({ user, onComplete }) {
                   <option value="Bootcamp Graduate">{t('profileModal.bootcamp')}</option>
                 </select>
               </div>
+            </div>
+
+            <div className="form-row">
               <div className="form-group">
                 <label>{t('profileModal.industry')}</label>
                 <input 
@@ -154,17 +143,16 @@ export default function ProfileCompletionModal({ user, onComplete }) {
                   placeholder={t('profileModal.industryPh')} 
                 />
               </div>
-            </div>
-
-            <div className="form-group full-width" style={{marginBottom: '1.25rem'}}>
-              <label>{t('profileModal.occupation')}</label>
-              <input 
-                type="text" 
-                value={obOccupationGoal} 
-                onChange={e => setObOccupationGoal(e.target.value)} 
-                required 
-                placeholder={t('profileModal.occupationPh')} 
-              />
+              <div className="form-group">
+                <label>{t('profileModal.occupation')}</label>
+                <input 
+                  type="text" 
+                  value={obOccupationGoal} 
+                  onChange={e => setObOccupationGoal(e.target.value)} 
+                  required 
+                  placeholder={t('profileModal.occupationPh')} 
+                />
+              </div>
             </div>
 
             <div className="form-group full-width">

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getReadinessLevel } from '../../utils/readiness.js';
 
-export default function StudentDashboard({ avatarBase64, firstName, initials, fullName, targetTrack, major, faculty, educationLevel, occupationGoal, targetIndustry, setActiveTab, scenarios, handleOpenScenario, overallReadiness, ratings, aiRatings }) {
+export default function StudentDashboard({ avatarBase64, firstName, initials, fullName, targetTrack, major, educationLevel, occupationGoal, targetIndustry, setActiveTab, scenarios, handleOpenScenario, overallReadiness, ratings, aiRatings, assignedMentor, recommendedResult, suggestedMentorResult, onStartScenario, onViewSkillGapResult }) {
   const { t } = useLanguage();
   
   const skillMapping = {
@@ -43,6 +44,7 @@ export default function StudentDashboard({ avatarBase64, firstName, initials, fu
   const topGaps = sortedSkills.slice(0, 4);
   const biggestGap = [...mappedSkills].sort((a, b) => a.score - b.score)[0]?.name || '-';
   const displayReadiness = overallReadiness || 0;
+  const readinessInfo = getReadinessLevel(displayReadiness);
 
   return (
     <div className="student-tab-panel dashboard-container-updated">
@@ -89,7 +91,6 @@ export default function StudentDashboard({ avatarBase64, firstName, initials, fu
                     </svg>
                     <div className="student-info-column-details">
                       <h4 className="student-info-column-title">{major}</h4>
-                      <p className="student-info-column-subtitle" style={{ color: '#64748B', fontSize: '13px' }}>{faculty}</p>
                       <p className="student-info-column-subtitle">{educationLevel}</p>
                     </div>
                   </div>
@@ -131,68 +132,139 @@ export default function StudentDashboard({ avatarBase64, firstName, initials, fu
               </div>
             </div>
 
-            {/* Quick-Link Shortcut Cards */}
-            <div className="student-sublinks-grid">
-              <div className="student-sublink-card" onClick={() => setActiveTab('portfolio')}>
-                <div className="student-sublink-card-left">
-                  <div className="student-sublink-icon-wrapper blue">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </div>
-                  <div className="student-sublink-info">
-                    <h4 className="student-sublink-title">{t('dashboard.viewPortfolio')}</h4>
-                    <p className="student-sublink-subtitle">{t('dashboard.portfolioDesc')}</p>
-                  </div>
-                </div>
-                <svg className="student-sublink-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </div>
 
-              <div className="student-sublink-card" onClick={() => setActiveTab('portfolio')}>
-                <div className="student-sublink-card-left">
-                  <div className="student-sublink-icon-wrapper teal">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </div>
-                  <div className="student-sublink-info">
-                    <h4 className="student-sublink-title">{t('dashboard.viewFeedback')}</h4>
-                    <p className="student-sublink-subtitle">{t('dashboard.feedbackDesc')}</p>
-                  </div>
-                </div>
-                <svg className="student-sublink-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </div>
 
-              <div className="student-sublink-card" onClick={() => {
-                const element = document.querySelector('.dashboard-breakdown-card');
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                }
+            {/* Readiness Level + Mentor Card Row */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
+
+              {/* Readiness Level Badge */}
+              <div style={{
+                flex: '1', minWidth: '200px', padding: '16px 20px',
+                background: readinessInfo.bg, border: `1.5px solid ${readinessInfo.color}30`,
+                borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '14px'
               }}>
-                <div className="student-sublink-card-left">
-                  <div className="student-sublink-icon-wrapper orange">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-                      <polyline points="12 12 16 8" />
-                    </svg>
+                <div style={{
+                  width: '48px', height: '48px', borderRadius: '50%',
+                  background: readinessInfo.color, color: 'white',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '16px', fontWeight: '800', flexShrink: 0
+                }}>
+                  {displayReadiness}
+                </div>
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: readinessInfo.color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}>Readiness Level</div>
+                  <div style={{ fontSize: '15px', fontWeight: '700', color: '#0F172A' }}>{readinessInfo.level}</div>
+                  <div style={{ fontSize: '12px', color: '#64748B' }}>out of 100</div>
+                </div>
+              </div>
+
+              {/* Assigned Mentor Card */}
+              {assignedMentor ? (
+                <div style={{
+                  flex: '2', minWidth: '280px', padding: '16px 20px',
+                  background: 'white', border: '1.5px solid #E2E8F0',
+                  borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '14px'
+                }}>
+                  <div style={{
+                    width: '48px', height: '48px', borderRadius: '50%',
+                    background: '#2563EB', color: 'white',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '16px', fontWeight: '700', flexShrink: 0
+                  }}>
+                    {(assignedMentor.fullname || assignedMentor.name || 'M').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
                   </div>
-                  <div className="student-sublink-info">
-                    <h4 className="student-sublink-title">{t('dashboard.checkReadiness')}</h4>
-                    <p className="student-sublink-subtitle">{displayReadiness}{t('dashboard.readinessAgainst')}{targetTrack || t('dashboard.yourTrack')}</p>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}>Assigned Mentor</div>
+                    <div style={{ fontSize: '15px', fontWeight: '700', color: '#0F172A' }}>{assignedMentor.fullname || assignedMentor.name}</div>
+                    <div style={{ fontSize: '12px', color: '#64748B' }}>{assignedMentor.jobTitle || assignedMentor.expertise || 'Mentor'}</div>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('chat')}
+                    style={{
+                      padding: '8px 14px', borderRadius: '8px', border: 'none',
+                      background: '#EFF6FF', color: '#2563EB', fontWeight: '600',
+                      fontSize: '12px', cursor: 'pointer', flexShrink: 0
+                    }}
+                  >
+                    Message
+                  </button>
+                </div>
+              ) : (
+                <div style={{
+                  flex: '2', minWidth: '280px', padding: '16px 20px',
+                  background: '#F8FAFC', border: '1.5px dashed #CBD5E1',
+                  borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '14px', color: '#94A3B8'
+                }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="32" height="32" style={{ flexShrink: 0 }}>
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                    <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+                  </svg>
+                  <div>
+                    <div style={{ fontWeight: '600', fontSize: '14px', color: '#64748B' }}>No mentor assigned yet</div>
+                    <div style={{ fontSize: '12px' }}>An admin will match you with a mentor based on your track and skill gaps.</div>
                   </div>
                 </div>
-                <svg className="student-sublink-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </div>
+              )}
             </div>
+
+            {/* Recommended Scenario Row */}
+            {recommendedResult && recommendedResult.scenario && (
+              <div style={{
+                display: 'flex', gap: '16px', marginBottom: '20px', flexWrap: 'wrap',
+                padding: '16px 20px', background: '#EFF6FF',
+                border: '1.5px solid #BFDBFE', borderRadius: '14px', alignItems: 'center'
+              }}>
+                <div style={{
+                  width: '44px', height: '44px', borderRadius: '10px',
+                  background: '#2563EB', color: 'white',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                  </svg>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}>
+                    Recommended Scenario · {recommendedResult.score}% match
+                  </div>
+                  <div style={{ fontSize: '15px', fontWeight: '700', color: '#0F172A', marginBottom: '3px' }}>
+                    {recommendedResult.scenario.title}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#3B82F6' }}>
+                    Trains: {recommendedResult.scenario.mainSkillCode?.replace(/_/g, ' ')} · {recommendedResult.scenario.difficulty} · {recommendedResult.scenario.estimatedTime}
+                  </div>
+                </div>
+                {suggestedMentorResult && suggestedMentorResult.mentor && (
+                  <div style={{ fontSize: '12px', color: '#475569', textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontWeight: '600' }}>Suggested Mentor</div>
+                    <div>{suggestedMentorResult.mentor.fullname}</div>
+                    <div style={{ color: '#94A3B8' }}>{suggestedMentorResult.matchScore}% fit</div>
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                  <button
+                    onClick={() => onStartScenario?.(recommendedResult.scenario)}
+                    style={{
+                      padding: '8px 14px', borderRadius: '8px', border: 'none',
+                      background: '#2563EB', color: 'white', fontWeight: '700',
+                      fontSize: '12px', cursor: 'pointer'
+                    }}
+                  >
+                    Start
+                  </button>
+                  <button
+                    onClick={() => onViewSkillGapResult?.()}
+                    style={{
+                      padding: '8px 14px', borderRadius: '8px',
+                      border: '1px solid #BFDBFE', background: 'white',
+                      color: '#2563EB', fontWeight: '600', fontSize: '12px', cursor: 'pointer'
+                    }}
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Stats Metrics Cards Grid */}
             <div className="student-stats-grid">
@@ -250,7 +322,7 @@ export default function StudentDashboard({ avatarBase64, firstName, initials, fu
                   </span>
                   <div>
                     <h3 className="breakdown-card-title">{t('dashboard.breakdownTitle')}</h3>
-                    <p className="breakdown-card-subtitle">{t('dashboard.breakdownDesc')}</p>
+                    <p className="breakdown-card-subtitle">{t('dashboard.breakdownDesc').replace('{track}', targetTrack || t('dashboard.yourTrack'))}</p>
                   </div>
                 </div>
                 

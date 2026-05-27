@@ -126,3 +126,35 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* ============================================================
+   GLOBAL MOBILE RESET
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+/* Prevent horizontal overflow */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Mobile touch targets */
+@media (max-width: 768px) {
+  button, a, input, select, textarea {
+    min-height: 40px;
+  }
+
+  /* Tables scroll horizontally on mobile */
+  .table-responsive, .admin-table-wrapper, .skillgap-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent font size inflation on iOS */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}

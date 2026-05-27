@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './StudentScreen.css';
 import StudentDashboard from './StudentDashboard';
 import StudentProfile from './StudentProfile';
 import StudentSkillGap from './StudentSkillGap';
-import StudentSkillGapA from './StudentSkillGapA';
 import StudentScenarioSimulator from './StudentScenarioSimulator';
 import StudentEvidencePortfolio from './StudentEvidencePortfolio';
+import SkillAssessmentQuizModal from './SkillAssessmentQuizModal';
 import AiSkillQuizModal from './AiSkillQuizModal';
 import StudentSettings from './StudentSettings';
-import { api } from '../../api';
+import ScenarioWorkspace from './ScenarioWorkspace';
+import { api } from '../../components/api';
 import { useLanguage } from '../../contexts/LanguageContext';
+import ChatWidget from '../../components/Chat/ChatWidget';
+import { DEMO_SCENARIO } from '../../data/demoData.js';
+import { SCENARIOS } from '../../data/scenarioData.js';
+import { getTopRecommendation } from '../../utils/scenarioRecommendation.js';
+import { getTopMentorMatch } from '../../utils/scenarioMentorMatching.js';
+import { DEMO_MENTORS } from '../../data/demoData.js';
+import SkillGapResult from './SkillGapResult';
 
 export default function StudentScreen({ onNavigate }) {
   const { t } = useLanguage();
@@ -20,6 +28,7 @@ export default function StudentScreen({ onNavigate }) {
   useEffect(() => {
     sessionStorage.setItem('studentActiveTab', activeTab);
   }, [activeTab]);
+  const [showSkillAssessment, setShowSkillAssessment] = useState(false);
   const [showAiQuiz, setShowAiQuiz] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   
@@ -29,15 +38,15 @@ export default function StudentScreen({ onNavigate }) {
   const [initials, setInitials] = useState('');
   const [fullName, setFullName] = useState('');
   const [targetTrack, setTargetTrack] = useState('');
-  const [major, setMajor] = useState('Computer Science');
-  const [faculty, setFaculty] = useState('Engineering');
-  const [educationLevel, setEducationLevel] = useState('Senior');
-  const [occupationGoal, setOccupationGoal] = useState('Software Engineer');
-  const [targetIndustry, setTargetIndustry] = useState('Tech');
+  const [major, setMajor] = useState('');
+  const [educationLevel, setEducationLevel] = useState('');
+  const [occupationGoal, setOccupationGoal] = useState('');
+  const [targetIndustry, setTargetIndustry] = useState('');
   const [email, setEmail] = useState('');
-  const [careerGoal, setCareerGoal] = useState('Lead a global engineering team');
-  const [strengthsList, setStrengthsList] = useState(['Process Optimization', 'Data Analysis']);
-  const [developAreasList, setDevelopAreasList] = useState(['Automation', 'Leadership']);
+  const [careerGoal, setCareerGoal] = useState('');
+  const [bio, setBio] = useState('');
+  const [strengthsList, setStrengthsList] = useState([]);
+  const [developAreasList, setDevelopAreasList] = useState([]);
 
   useEffect(() => {
     // Load from database session (localStorage)
@@ -58,19 +67,19 @@ export default function StudentScreen({ onNavigate }) {
         if (user.target_industry) setTargetIndustry(user.target_industry);
         if (user.email) setEmail(user.email);
         if (user.major) setMajor(user.major);
-        if (user.faculty) setFaculty(user.faculty);
         if (user.education_level) setEducationLevel(user.education_level);
         if (user.occupation_goal) setOccupationGoal(user.occupation_goal);
         if (user.career_goal) setCareerGoal(user.career_goal);
+        if (user.bio) setBio(user.bio);
+        if (user.strengths && Array.isArray(user.strengths) && user.strengths.length > 0) {
+          setStrengthsList(user.strengths);
+        }
+        if (user.develop_areas && Array.isArray(user.develop_areas) && user.develop_areas.length > 0) {
+          setDevelopAreasList(user.develop_areas);
+        }
       } catch(e) {
         console.error('Failed to parse currentUser from localStorage', e);
       }
-    } else {
-      // Fallback if not logged in
-      setFullName('Jane Doe');
-      setFirstName('Jane');
-      setInitials('JD');
-      setTargetTrack('Quality Engineer');
     }
   }, []);
 
@@ -86,6 +95,18 @@ export default function StudentScreen({ onNavigate }) {
       setInitials(inits.toUpperCase());
     }
     if (updatedUser.email) setEmail(updatedUser.email);
+    if (updatedUser.major) setMajor(updatedUser.major);
+    if (updatedUser.education_level) setEducationLevel(updatedUser.education_level);
+    if (updatedUser.occupation_goal) setOccupationGoal(updatedUser.occupation_goal);
+    if (updatedUser.target_industry) setTargetIndustry(updatedUser.target_industry);
+    if (updatedUser.career_goal) setCareerGoal(updatedUser.career_goal);
+    if (updatedUser.bio !== undefined) setBio(updatedUser.bio);
+    if (updatedUser.strengths && Array.isArray(updatedUser.strengths) && updatedUser.strengths.length > 0) {
+      setStrengthsList(updatedUser.strengths);
+    }
+    if (updatedUser.develop_areas && Array.isArray(updatedUser.develop_areas) && updatedUser.develop_areas.length > 0) {
+      setDevelopAreasList(updatedUser.develop_areas);
+    }
   };
   
   const [ratings, setRatings] = useState({});
@@ -94,6 +115,25 @@ export default function StudentScreen({ onNavigate }) {
   const [overallReadiness, setOverallReadiness] = useState(0);
   const [strengthsCount, setStrengthsCount] = useState(0);
   const [gapsCount, setGapsCount] = useState(0);
+
+  // Scenario & mentor recommendations (computed from aiRatings + user profile)
+  const recommendedResult = React.useMemo(() => {
+    if (!Object.keys(aiRatings).length) return null;
+    const studentProfile = {
+      target_track: targetTrack,
+      facultyId: currentUser?.facultyId,
+      majorCode: currentUser?.majorCode,
+      weakestSkillCode: currentUser?.weakestSkillCode,
+      career_goal: careerGoal || occupationGoal,
+    };
+    return getTopRecommendation(studentProfile, aiRatings, overallReadiness, SCENARIOS);
+  }, [aiRatings, overallReadiness, targetTrack, careerGoal, occupationGoal, currentUser]);
+
+  const suggestedMentorResult = React.useMemo(() => {
+    if (!recommendedResult?.scenario) return null;
+    const studentProfile = { target_track: targetTrack };
+    return getTopMentorMatch(studentProfile, recommendedResult.scenario, DEMO_MENTORS.filter(m => m.role === 'mentor'));
+  }, [recommendedResult, targetTrack]);
 
   useEffect(() => {
     let strengths = 0;
@@ -155,15 +195,39 @@ export default function StudentScreen({ onNavigate }) {
   // Scenarios & Simulator State
   const [scenarios, setScenarios] = useState([]);
   const [activeScenario, setActiveScenario] = useState(null);
+  const [workspaceScenario, setWorkspaceScenario] = useState(null); // full scenario object for workspace
   const [simCompleted, setSimCompleted] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [terminalLogs, setTerminalLogs] = useState([]);
   const [chatMessages, setChatMessages] = useState([]);
   const [inputVal, setInputVal] = useState('');
   const [choicesForStep, setChoicesForStep] = useState([]);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const chatMessagesRef = useRef([]);
   
   // Portfolio State
   const [portfolioItems, setPortfolioItems] = useState([]);
+
+  // Chat State
+  const [assignedMentor, setAssignedMentor] = useState(null);
+
+  useEffect(() => {
+    // Fetch a mentor for the student to chat with
+    const fetchMentor = async () => {
+      try {
+        const res = await fetch(`${api.API_URL || 'http://localhost:5000'}/api/users/mentors`);
+        if (res.ok) {
+          const mentors = await res.json();
+          if (mentors && mentors.length > 0) {
+            setAssignedMentor(mentors[0]);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch mentors', err);
+      }
+    };
+    fetchMentor();
+  }, []);
 
   useEffect(() => {
     // Fetch scenarios on mount
@@ -179,6 +243,10 @@ export default function StudentScreen({ onNavigate }) {
   }, []);
 
   useEffect(() => {
+    chatMessagesRef.current = chatMessages;
+  }, [chatMessages]);
+
+  useEffect(() => {
     const storedUserStr = localStorage.getItem('currentUser');
     if (!storedUserStr) return;
 
@@ -186,7 +254,10 @@ export default function StudentScreen({ onNavigate }) {
       const user = JSON.parse(storedUserStr);
       
       if (activeTab === 'skillgap') {
-        // Handled by StudentSkillGapA inline now
+        const hasCompletedSkill = localStorage.getItem(`hasCompletedSkillQuiz_${user.id}`);
+        if (!hasCompletedSkill) {
+          setShowSkillAssessment(true);
+        }
       }
 
       if (activeTab === 'simulator') {
@@ -212,6 +283,7 @@ export default function StudentScreen({ onNavigate }) {
     } catch (e) {
       console.error('Failed to save assessment', e);
     }
+    setShowSkillAssessment(false);
   };
 
   const handleAiQuizComplete = async (newRatings) => {
@@ -246,35 +318,149 @@ export default function StudentScreen({ onNavigate }) {
     localStorage.removeItem('hasCompletedSkillAssessment');
   };
 
-  const calculateRadarPoints = () => {
-    const getR = (val) => val === 'high' ? 100 : val === 'low' ? 33 : 66;
-    const p1 = `${150},${150 - getR(ratings.processMap)}`;
-    const p2 = `${150 + getR(ratings.safetyRisk) * 0.866},${150 - getR(ratings.safetyRisk) * 0.5}`;
-    const p3 = `${150 + getR(ratings.rca) * 0.866},${150 + getR(ratings.rca) * 0.5}`;
-    const p4 = `${150},${150 + getR(ratings.traceability)}`;
-    const p5 = `${150 - getR(ratings.memo) * 0.866},${150 + getR(ratings.memo) * 0.5}`;
-    const p6 = `${150 - getR(ratings.responsibleAi) * 0.866},${150 - getR(ratings.responsibleAi) * 0.5}`;
-    return `${p1} ${p2} ${p3} ${p4} ${p5} ${p6}`;
+  const handleAssessmentSubmit = (newRatings, newReadiness) => {
+    setAiRatings(newRatings);
+    const storedUserStr = localStorage.getItem('currentUser');
+    if (storedUserStr) {
+      try {
+        const user = JSON.parse(storedUserStr);
+        api.saveStudentRatings(user.id, newRatings).catch(e => console.error('Failed to save ratings', e));
+      } catch(e) {}
+    }
+  };
+
+  const resolveScenario = (scenarioOrId) => {
+    if (!scenarioOrId) return null;
+    if (typeof scenarioOrId === 'string') {
+      return scenarios.find(sc => sc.id === scenarioOrId) || null;
+    }
+    return scenarioOrId;
+  };
+
+  const buildChoiceActions = (choices, scenario) => {
+    const active = scenario || activeScenario;
+    return (choices || []).map(choice => {
+      const text = typeof choice === 'string' ? choice : choice.text;
+      return {
+        text,
+        action: () => runScenarioAction(text, active)
+      };
+    });
   };
 
   const handleOpenScenario = (scenario) => {
-    setActiveScenario(scenario);
-    setActiveTab('simulator');
+    const resolvedScenario = resolveScenario(scenario);
+    if (resolvedScenario) {
+      handleLaunchScenario(resolvedScenario);
+    } else {
+      setActiveTab('simulator');
+    }
   };
 
-  const handleLaunchScenario = () => {
-    // Launch logic
+  const handleLaunchScenario = (scenario) => {
+    const resolvedScenario = resolveScenario(scenario);
+    if (!resolvedScenario) return;
+
+    setActiveScenario(resolvedScenario);
+    setActiveTab('simulator');
+    setSimCompleted(false);
+    setStepIndex(0);
+    setTerminalLogs(resolvedScenario.initialLogs?.length ? resolvedScenario.initialLogs : [
+      `$ scenarioctl open ${resolvedScenario.id}`,
+      `[INFO] Loaded incident briefing for ${resolvedScenario.title}`,
+      '[INFO] Start by observing evidence before changing production state.'
+    ]);
+    const initialMessages = resolvedScenario.initialChat?.length ? resolvedScenario.initialChat.map(msg => ({
+      sender: msg.sender === 'coach' ? 'coach' : 'user',
+      text: msg.text
+    })) : [
+      {
+        sender: 'coach',
+        text: `Let's take this one carefully. Read the briefing for ${resolvedScenario.id}, tell me what signal you want to inspect first, and I will help you reason through the tradeoffs.`
+      }
+    ];
+    setChatMessages(initialMessages);
+    chatMessagesRef.current = initialMessages;
+    setChoicesForStep([buildChoiceActions([
+      { text: 'Summarize the incident and list the first signals to inspect' },
+      { text: 'Show the most relevant logs and recent deploy activity' },
+      { text: 'Check service health without making changes' }
+    ], resolvedScenario)]);
+  };
+
+  const handleCloseScenario = () => {
+    setActiveScenario(null);
+    setInputVal('');
+    setIsSimulating(false);
+  };
+
+  const runScenarioAction = async (message, scenario = activeScenario) => {
+    const resolvedScenario = resolveScenario(scenario);
+    if (!message?.trim() || !resolvedScenario || isSimulating) return;
+
+    const userMessage = { text: message.trim(), sender: 'user' };
+    const nextHistory = [...chatMessagesRef.current, userMessage];
+
+    setChatMessages(nextHistory);
+    chatMessagesRef.current = nextHistory;
+    setInputVal('');
+    setIsSimulating(true);
+
+    try {
+      const result = await api.chatWithScenario(
+        resolvedScenario.id,
+        resolvedScenario.title,
+        userMessage.text,
+        nextHistory,
+        resolvedScenario
+      );
+
+      setTerminalLogs(prev => [...prev, ...(result.terminalLogs || [])]);
+      if (result.coachReply) {
+        const coachMessage = { text: result.coachReply, sender: 'coach' };
+        setChatMessages(prev => {
+          const updated = [...prev, coachMessage];
+          chatMessagesRef.current = updated;
+          return updated;
+        });
+      }
+      setChoicesForStep([buildChoiceActions(result.choices || [], resolvedScenario)]);
+      setSimCompleted(Boolean(result.completed));
+    } catch (err) {
+      console.error('Failed to run scenario action:', err);
+      setChatMessages(prev => {
+        const updated = [...prev, {
+          text: 'I could not reach the scenario coach right now. Keep your notes and try again in a moment; do not lose the reasoning you already built.',
+          sender: 'coach'
+        }];
+        chatMessagesRef.current = updated;
+        return updated;
+      });
+    } finally {
+      setIsSimulating(false);
+    }
   };
 
   const handleSendChat = (e) => {
     e.preventDefault();
-    if (!inputVal.trim()) return;
-    setChatMessages(prev => [...prev, { text: inputVal, sender: 'user' }]);
-    setInputVal('');
+    runScenarioAction(inputVal);
   };
 
   const handleSubmitPortfolio = () => {
     // Handle submission
+  };
+
+  const handleSubmitScenarioToMentor = async () => {
+    if (!activeScenario) return;
+    try {
+      const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const studentName = user.fullname || user.username || 'Student';
+      await api.addSubmission(studentName, 'Scenario Simulation', activeScenario.title);
+      return true;
+    } catch (err) {
+      console.error('Failed to submit scenario to mentor:', err);
+      return false;
+    }
   };
   
   const handleRegenerateScenarios = async () => {
@@ -348,7 +534,7 @@ export default function StudentScreen({ onNavigate }) {
             <span>{t('sidebar.simulator')}</span>
           </button>
 
-          <button 
+          <button
             className={`student-nav-btn ${activeTab === 'portfolio' ? 'active' : ''}`}
             onClick={() => setActiveTab('portfolio')}
           >
@@ -357,6 +543,19 @@ export default function StudentScreen({ onNavigate }) {
             </svg>
             <span>{t('sidebar.portfolio')}</span>
           </button>
+
+          {assignedMentor && (
+            <button
+              className={`student-nav-btn ${activeTab === 'chat' ? 'active' : ''}`}
+              onClick={() => setActiveTab('chat')}
+              style={{ position: 'relative' }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="student-nav-icon">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>{t('sidebar.chat')}</span>
+            </button>
+          )}
         </nav>
 
         <div className="student-sidebar-footer">
@@ -369,7 +568,7 @@ export default function StudentScreen({ onNavigate }) {
               )}
               <div className="student-profile-info">
                 <span className="student-profile-name">{firstName}</span>
-                <span className="student-profile-role">Student</span>
+                <span className="student-profile-role">{t('settings.studentRole')}</span>
               </div>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`dropdown-icon ${showProfileDropdown ? 'open' : ''}`}>
                 <polyline points="6 9 12 15 18 9" />
@@ -403,61 +602,166 @@ export default function StudentScreen({ onNavigate }) {
         
         {/* DASHBOARD TAB */}
         {activeTab === 'dashboard' && (
-          <StudentDashboard avatarBase64={currentUser?.avatar_base64} firstName={firstName} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} faculty={faculty} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} setActiveTab={setActiveTab} scenarios={scenarios} handleOpenScenario={handleOpenScenario} overallReadiness={overallReadiness} ratings={ratings} aiRatings={aiRatings} />
+          <StudentDashboard
+            avatarBase64={currentUser?.avatar_base64}
+            firstName={firstName} initials={initials} fullName={fullName}
+            targetTrack={targetTrack} major={major} educationLevel={educationLevel}
+            occupationGoal={occupationGoal} targetIndustry={targetIndustry}
+            setActiveTab={setActiveTab} scenarios={scenarios}
+            handleOpenScenario={handleOpenScenario}
+            overallReadiness={overallReadiness} ratings={ratings} aiRatings={aiRatings}
+            assignedMentor={assignedMentor}
+            recommendedResult={recommendedResult}
+            suggestedMentorResult={suggestedMentorResult}
+            onStartScenario={(sc) => {
+              handleLaunchScenario(sc);
+              const enriched = { ...DEMO_SCENARIO, ...sc };
+              setWorkspaceScenario(enriched);
+            }}
+            onViewSkillGapResult={() => setActiveTab('skillgapresult')}
+          />
         )}
         
         {/* PROFILE TAB */}
         {activeTab === 'profile' && (
-          <StudentProfile avatarBase64={currentUser?.avatar_base64} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} faculty={faculty} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} email={email} careerGoal={careerGoal} strengthsList={strengthsList} developAreasList={developAreasList} />
+          <StudentProfile avatarBase64={currentUser?.avatar_base64} initials={initials} fullName={fullName} targetTrack={targetTrack} major={major} educationLevel={educationLevel} occupationGoal={occupationGoal} targetIndustry={targetIndustry} email={email} bio={bio} careerGoal={careerGoal} strengthsList={strengthsList} developAreasList={developAreasList} />
         )}
 
         {/* SETTINGS TAB */}
         {activeTab === 'settings' && (
-          <StudentSettings 
+          <StudentSettings
             currentUser={currentUser}
             onProfileUpdate={handleProfileUpdate}
-            initials={initials} 
-            fullName={fullName} 
-            email={email} 
-            targetIndustry={targetIndustry} 
-            major={major} 
-            faculty={faculty}
+            initials={initials}
+            fullName={fullName}
+            email={email}
+            targetIndustry={targetIndustry}
+            major={major}
+            onNavigate={onNavigate}
           />
         )}
         
         {/* SKILL GAP TAB */}
         {activeTab === 'skillgap' && (
-          Object.keys(ratings).length === 0 ? (
-            <StudentSkillGapA onComplete={handleAssessmentComplete} />
-          ) : (
-            <StudentSkillGap ratings={ratings} handleRate={handleRate} handleResetRatings={handleResetRatings} calculateRadarPoints={calculateRadarPoints} overallReadiness={overallReadiness} strengthsCount={strengthsCount} gapsCount={gapsCount} />
-          )
+          <StudentSkillGap
+            userId={currentUser?.id}
+            onSubmit={handleAssessmentSubmit}
+            onViewResult={() => setActiveTab('skillgapresult')}
+          />
+        )}
+
+        {/* SKILL GAP RESULT TAB */}
+        {activeTab === 'skillgapresult' && (
+          <SkillGapResult
+            student={currentUser}
+            aiRatings={aiRatings}
+            overallReadiness={overallReadiness}
+            recommendedResult={recommendedResult}
+            mentorMatchResult={suggestedMentorResult}
+            onStartScenario={(sc) => {
+              handleLaunchScenario(sc);
+              const enriched = { ...DEMO_SCENARIO, ...sc };
+              setWorkspaceScenario(enriched);
+              setActiveTab('simulator');
+            }}
+            onViewScenarioDetail={(sc) => {
+              handleLaunchScenario(sc);
+              const enriched = { ...DEMO_SCENARIO, ...sc };
+              setWorkspaceScenario(enriched);
+              setActiveTab('simulator');
+            }}
+            onMessageMentor={() => setActiveTab('chat')}
+            onBack={() => setActiveTab('skillgap')}
+          />
         )}
         
-        {/* SCENARIO SIMULATOR TAB */}
-        {activeTab === 'simulator' && (
-          <StudentScenarioSimulator 
-            scenarios={scenarios} 
-            activeScenario={activeScenario} 
-            handleOpenScenario={handleOpenScenario} 
-            handleLaunchScenario={handleLaunchScenario} 
-            simCompleted={simCompleted} 
-            stepIndex={stepIndex} 
-            terminalLogs={terminalLogs} 
-            chatMessages={chatMessages} 
-            inputVal={inputVal} 
-            setInputVal={setInputVal} 
-            handleSendChat={handleSendChat} 
+        {/* SCENARIO SIMULATOR TAB — launches full ScenarioWorkspace when a scenario is open */}
+        {activeTab === 'simulator' && workspaceScenario ? (
+          <ScenarioWorkspace
+            scenario={workspaceScenario}
+            currentUser={currentUser}
+            onClose={() => setWorkspaceScenario(null)}
+            onSubmitToMentor={async () => {
+              await handleSubmitScenarioToMentor();
+            }}
+          />
+        ) : activeTab === 'simulator' && (
+          <StudentScenarioSimulator
+            scenarios={scenarios}
+            activeScenario={activeScenario}
+            handleOpenScenario={(id) => {
+              handleOpenScenario(id);
+              // Launch workspace with demo scenario or matching DB scenario
+              const dbScenario = scenarios.find(s => s.id === id);
+              if (dbScenario) {
+                // Merge DB scenario with demo data for rich context
+                const enriched = { ...DEMO_SCENARIO, ...dbScenario };
+                setWorkspaceScenario(enriched);
+              } else {
+                setWorkspaceScenario(DEMO_SCENARIO);
+              }
+            }}
+            handleLaunchScenario={(sc) => {
+              handleLaunchScenario(sc);
+              const enriched = { ...DEMO_SCENARIO, ...sc };
+              setWorkspaceScenario(enriched);
+            }}
+            simCompleted={simCompleted}
+            stepIndex={stepIndex}
+            terminalLogs={terminalLogs}
+            chatMessages={chatMessages}
+            inputVal={inputVal}
+            setInputVal={setInputVal}
+            handleSendChat={handleSendChat}
             choicesForStep={choicesForStep}
+            isSimulating={isSimulating}
+            onCloseScenario={handleCloseScenario}
+            onGoToPortfolio={() => {
+              setActiveScenario(null);
+              setActiveTab('portfolio');
+            }}
             onRegenerate={handleRegenerateScenarios}
+            onSubmitToMentor={handleSubmitScenarioToMentor}
           />
         )}
         
         {/* EVIDENCE PORTFOLIO TAB */}
         {activeTab === 'portfolio' && (
-          <StudentEvidencePortfolio portfolioItems={portfolioItems} handleSubmitPortfolio={handleSubmitPortfolio} onNavigate={onNavigate} />
+          <StudentEvidencePortfolio portfolioItems={portfolioItems} handleSubmitPortfolio={handleSubmitPortfolio} onNavigate={onNavigate} targetTrack={targetTrack} overallReadiness={overallReadiness} currentUser={currentUser} />
+        )}
+
+        {/* CHAT TAB */}
+        {activeTab === 'chat' && assignedMentor && currentUser && (
+          <div className="student-tab-panel">
+            <div className="student-page-header">
+              <div className="student-page-title-area">
+                <h1 className="student-page-title">{t('sidebar.chat')}</h1>
+                <p className="student-page-subtitle">{assignedMentor.fullname || assignedMentor.name || assignedMentor.username}</p>
+              </div>
+            </div>
+            <div className="student-card" style={{ padding: 0, overflow: 'hidden', height: '560px', display: 'flex', flexDirection: 'column' }}>
+              <ChatWidget
+                currentUser={currentUser}
+                contactUser={assignedMentor}
+                isFloating={false}
+              />
+            </div>
+          </div>
         )}
       </div>
+
+      <SkillAssessmentQuizModal
+        isOpen={showSkillAssessment}
+        onClose={() => setShowSkillAssessment(false)}
+        onComplete={handleAssessmentComplete}
+        userProfile={{
+          career_goal:     careerGoal,
+          target_track:    targetTrack,
+          target_industry: targetIndustry,
+          occupation_goal: occupationGoal,
+          major,
+        }}
+      />
 
       <AiSkillQuizModal 
         isOpen={showAiQuiz} 
@@ -465,6 +769,7 @@ export default function StudentScreen({ onNavigate }) {
         onComplete={handleAiQuizComplete}
         occupationGoal={occupationGoal}
       />
+
     </div>
   );
 }

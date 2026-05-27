@@ -1,0 +1,455 @@
+.sgr-root {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  min-height: 100%;
+}
+
+/* Header */
+.sgr-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.sgr-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: 8px;
+  background: white;
+  color: var(--text-secondary, #475569);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 4px;
+  transition: background 0.15s;
+}
+.sgr-back-btn:hover { background: #F8FAFC; }
+
+.sgr-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary, #0F172A);
+  margin: 0 0 4px;
+}
+
+.sgr-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary, #64748B);
+  margin: 0;
+}
+
+/* Responsible AI Notice */
+.sgr-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 10px;
+}
+
+.sgr-notice p {
+  margin: 0;
+  font-size: 13px;
+  color: #1E40AF;
+  line-height: 1.5;
+}
+
+/* Two-column body */
+.sgr-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .sgr-body { grid-template-columns: 1fr; }
+}
+
+.sgr-left,
+.sgr-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Card */
+.sgr-card {
+  background: white;
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.sgr-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sgr-card-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary, #0F172A);
+  margin: 0;
+}
+
+/* Readiness Card */
+.sgr-readiness-card {
+  border-left: 4px solid var(--brand, #2563EB);
+}
+
+.sgr-readiness-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.sgr-score-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: white;
+}
+
+.sgr-score-num {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.sgr-score-max {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.sgr-readiness-level {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.sgr-readiness-desc {
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.sgr-student-meta {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  color: #94A3B8;
+  text-transform: capitalize;
+}
+
+/* Skills list */
+.sgr-skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sgr-skill-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sgr-skill-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sgr-skill-name {
+  font-size: 13px;
+  color: #334155;
+  font-weight: 500;
+}
+
+.sgr-skill-score {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sgr-skill-bar-outer {
+  height: 6px;
+  background: #F1F5F9;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.sgr-skill-bar-inner {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.sgr-gap-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #F59E0B;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: 4px;
+  padding: 1px 6px;
+  align-self: flex-start;
+}
+
+/* Match badge */
+.sgr-match-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: #059669;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+
+/* Scenario Card */
+.sgr-scenario-card { border-left: 4px solid #3B82F6; }
+
+.sgr-scenario-title-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.sgr-scenario-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #EFF6FF;
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sgr-scenario-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 6px;
+}
+
+.sgr-scenario-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sgr-pill {
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  padding: 2px 8px;
+  border-radius: 99px;
+  text-transform: capitalize;
+}
+
+.sgr-scenario-desc {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+/* Reasons */
+.sgr-reasons {
+  margin-bottom: 14px;
+}
+
+.sgr-reasons-label,
+.sgr-subskills-label,
+.sgr-capabilities-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.sgr-reasons-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sgr-reasons-list li {
+  font-size: 13px;
+  color: #334155;
+}
+
+/* Subskill chips */
+.sgr-subskills { margin-bottom: 14px; }
+
+.sgr-subskills-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sgr-chip {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2563EB;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+
+/* Scenario actions */
+.sgr-scenario-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.sgr-btn-primary {
+  flex: 1;
+  padding: 10px;
+  background: #2563EB;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.sgr-btn-primary:hover { background: #1D4ED8; }
+
+.sgr-btn-secondary {
+  flex: 1;
+  padding: 10px;
+  background: white;
+  color: #334155;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.sgr-btn-secondary:hover { background: #F8FAFC; }
+
+.sgr-btn-full { width: 100%; }
+
+/* Mentor Card */
+.sgr-mentor-card { border-left: 4px solid #8B5CF6; }
+
+.sgr-mentor-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.sgr-mentor-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #8B5CF6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sgr-mentor-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.sgr-mentor-title {
+  font-size: 13px;
+  color: #64748B;
+  margin-bottom: 3px;
+}
+
+.sgr-mentor-capacity {
+  font-size: 12px;
+  color: #94A3B8;
+  text-transform: capitalize;
+}
+
+/* Review capability chips */
+.sgr-capabilities { margin-bottom: 12px; }
+
+.sgr-capabilities-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sgr-cap-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+
+.sgr-cap-chip.can {
+  color: #059669;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+}
+
+.sgr-cap-chip.cannot {
+  color: #DC2626;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+}
+
+/* Mentor notice */
+.sgr-mentor-notice {
+  font-size: 11px;
+  color: #94A3B8;
+  font-style: italic;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  background: #F8FAFC;
+  border-radius: 6px;
+}
+
+/* Empty state */
+.sgr-empty {
+  color: #94A3B8;
+  font-size: 13px;
+  text-align: center;
+  padding: 32px 20px;
+}

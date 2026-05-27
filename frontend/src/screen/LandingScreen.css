@@ -260,3 +260,34 @@
   font-size: 14px;
   margin-top: auto;
 }
+
+/* ============================================================
+   RESPONSIVE STYLES
+   ============================================================ */
+
+/* Tablet: 768px */
+@media (max-width: 768px) {
+  .landing-nav { padding: 16px 24px; }
+  .landing-hero { padding: 60px 24px; }
+  .landing-headline { font-size: 40px; }
+  .landing-subheadline { font-size: 16px; }
+  .landing-hero-actions { flex-direction: column; align-items: center; gap: 12px; }
+  .landing-btn-primary, .landing-btn-secondary { width: 100%; max-width: 320px; text-align: center; }
+  .landing-features { padding: 40px 24px; gap: 24px; }
+  .landing-feature-card { padding: 28px 24px; }
+}
+
+/* Mobile: 640px */
+@media (max-width: 640px) {
+  .landing-nav { padding: 14px 16px; }
+  .landing-nav-actions { gap: 8px; }
+  .landing-btn-login { padding: 8px 12px; font-size: 14px; }
+  .landing-btn-register { padding: 10px 16px; font-size: 14px; }
+  .landing-hero { padding: 48px 16px; }
+  .landing-headline { font-size: 32px; letter-spacing: -0.5px; }
+  .landing-subheadline { font-size: 15px; margin-bottom: 28px; }
+  .landing-features { padding: 32px 16px; grid-template-columns: 1fr; }
+  .landing-feature-card { padding: 24px; }
+  .landing-feature-card h3 { font-size: 20px; }
+  .landing-footer { padding: 24px 16px; }
+}

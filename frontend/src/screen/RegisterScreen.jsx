@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './RegisterScreen.css';
-import { api } from '../api.js';
+import { api } from '../components/api.js';
 import ProfileCompletionModal from '../components/ProfileCompletionModal';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Eye, EyeOff } from 'lucide-react';
@@ -380,6 +380,10 @@ export default function RegisterScreen({ onNavigate }) {
             alert(`Account created and profile completed successfully! Please sign in to continue.`);
             if (onNavigate) onNavigate('login');
           }} 
+          onClose={() => {
+            setShowProfileModal(false);
+            if (onNavigate) onNavigate('login');
+          }}
         />
       )}
     </div>

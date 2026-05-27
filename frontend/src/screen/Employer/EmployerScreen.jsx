@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import './EmployerScreen.css';
-import { api } from '../../api.js';
+import { api } from '../../components/api.js';
 import { Briefcase, Search, LogOut, LayoutDashboard } from 'lucide-react';
 import StudentSettings from '../Student/StudentSettings';
 
@@ -64,25 +64,7 @@ export default function EmployerScreen({ onNavigate }) {
     setSelectedCandidate(null);
   };
 
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
-  // Retrieve current user from localStorage
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const savedUser = localStorage.getItem('currentUser');
-      return savedUser ? JSON.parse(savedUser) : null;
-    } catch (e) {
-      return null;
-    }
-  });
-
-  const handleProfileUpdate = (updatedUser) => {
-    setCurrentUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-  };
-
-  const employerName = currentUser?.fullname || currentUser?.username || t('employer.guestRecruiter');
-  const employerInitials = employerName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
   return (
     <div className="employer-workspace">
@@ -105,41 +87,10 @@ export default function EmployerScreen({ onNavigate }) {
         </nav>
 
         <div className="employer-sidebar-footer">
-          <div className="employer-profile-dropdown-container">
-            <button className="employer-profile-btn" onClick={() => setShowProfileDropdown(!showProfileDropdown)}>
-              {currentUser && currentUser.avatar_base64 ? (
-                <img src={currentUser.avatar_base64} alt="Avatar" className="employer-profile-avatar" style={{ objectFit: 'cover' }} />
-              ) : (
-                <div className="employer-profile-avatar">{employerInitials}</div>
-              )}
-              <div className="employer-profile-info">
-                <span className="employer-profile-name">{employerName}</span>
-                <span className="employer-profile-role">{t('employer.publicPreview')}</span>
-              </div>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`dropdown-icon ${showProfileDropdown ? 'open' : ''}`}>
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-            {showProfileDropdown && (
-              <div className="employer-profile-dropdown-menu">
-                <button className="dropdown-item" onClick={() => { setShowProfileDropdown(false); setActiveTab('settings'); }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="dropdown-item-icon">
-                    <circle cx="12" cy="12" r="3" />
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                  </svg>
-                  {t('sidebar.settings') || 'Settings'}
-                </button>
-                <button className="dropdown-item logout" onClick={() => onNavigate('logout')}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="dropdown-item-icon">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <polyline points="16 17 21 12 16 7" />
-                    <line x1="21" y1="12" x2="9" y2="12" />
-                  </svg>
-                  {t('employer.backToHome')}
-                </button>
-              </div>
-            )}
-          </div>
+          <button className="employer-nav-btn" onClick={() => onNavigate('logout')} style={{ color: '#ef4444' }}>
+            <LogOut className="employer-nav-icon" />
+            <span>{t('employer.backToHome')}</span>
+          </button>
         </div>
       </div>
 
@@ -176,19 +127,13 @@ export default function EmployerScreen({ onNavigate }) {
 
             <div className="employer-filters-container">
               <div className="employer-filter-dropdown-wrapper">
-                <select
+                <input
+                  type="text"
                   className="employer-filter-dropdown"
-                  value={domainFilter}
-                  onChange={(e) => setDomainFilter(e.target.value)}
-                >
-                  <option value="All tracks">{t('employer.allTracks')}</option>
-                  <option value="Backend">Backend</option>
-                  <option value="Frontend">Frontend</option>
-                  <option value="DevOps">DevOps</option>
-                  <option value="Security">Security</option>
-                  <option value="Fullstack">Fullstack</option>
-                  <option value="AI / Data">AI / Data</option>
-                </select>
+                  placeholder={t('employer.allTracks')}
+                  value={domainFilter === 'All tracks' ? '' : domainFilter}
+                  onChange={(e) => setDomainFilter(e.target.value || 'All tracks')}
+                />
               </div>
 
               <div className="employer-filter-dropdown-wrapper">
@@ -336,9 +281,7 @@ export default function EmployerScreen({ onNavigate }) {
           )}
         </main>
         </>)}
-        {activeTab === 'settings' && (
-          <StudentSettings currentUser={currentUser || { role: 'employer', fullname: 'Guest Recruiter' }} onProfileUpdate={handleProfileUpdate} />
-        )}
+
       </div>
 
             {/* 5. Candidate Detail Panel (Slide-out Modal) */}
@@ -647,13 +590,7 @@ export default function EmployerScreen({ onNavigate }) {
                 {selectedCandidate.availability === 'Immediate' ? t('employer.immediate') : `${t('employer.availableIn').split('{')[0]}${selectedCandidate.availability}`}
               </span>
               
-              <button className="panel-contact-button" onClick={() => alert(`Contacting ${selectedCandidate.name} via recruiter dashboard integration...`)}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14" className="envelope-icon">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-                <span>{t('employer.contactCandidate')}</span>
-              </button>
+
             </div>
 
           </div>

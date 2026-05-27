@@ -1,24 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=Prompt:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
 
 .mentor-workspace {
-  --primary-color: #062b50;
-  --primary-hover: #031b33;
-  --accent-blue: #0070f3;
-  --accent-teal: #14b8a6;
-  --accent-green: #10b981;
-  --accent-yellow: #f59e0b;
-  --accent-red: #ef4444;
-  --border-color: #e2e8f0;
-  --neutral-bg: #f8fafc;
-  --neutral-card: #ffffff;
-  --neutral-heading: #0f172a;
+  --primary-color: #2563EB;
+  --primary-hover: #1D4ED8;
+  --accent-blue: #3B82F6;
+  --accent-teal: #0D9488;
+  --accent-green: #059669;
+  --accent-yellow: #D97706;
+  --accent-red: #DC2626;
+  --border-color: rgba(226, 232, 240, 0.8);
+  --neutral-bg: transparent;
+  --neutral-card: rgba(255, 255, 255, 0.85);
+  --neutral-heading: #0F172A;
   --neutral-text: #475569;
+  --glass-shadow: 0 4px 24px rgba(15, 23, 42, 0.04);
+  --glass-blur: blur(16px);
   
-  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Outfit', 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   font-family: var(--font-body);
-  background-color: var(--neutral-bg);
+  /* Soft Premium Light Theme Background */
+  background: radial-gradient(circle at top left, #F8FAFC 0%, #F1F5F9 100%);
+  background-color: #F8FAFC;
   color: var(--neutral-text);
   min-height: 100vh;
   width: 100vw;
@@ -31,11 +35,31 @@
   text-align: left;
 }
 
+:root.dark .mentor-workspace {
+  --primary-color: #8b5cf6;
+  --primary-hover: #7c3aed;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --neutral-bg: transparent;
+  --neutral-card: rgba(30, 41, 59, 0.7);
+  --neutral-heading: #f8fafc;
+  --neutral-text: #cbd5e1;
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  
+  /* Dark mode mesh gradient */
+  background: 
+    radial-gradient(circle at 20% 0%, rgba(139, 92, 246, 0.15), transparent 40%),
+    radial-gradient(circle at 80% 100%, rgba(56, 189, 248, 0.1), transparent 40%);
+  background-color: #0f172a;
+}
+
 /* 1. Global Navigation Sidebar */
 .mentor-sidebar {
   width: 260px;
-  background-color: #ffffff;
+  background-color: var(--neutral-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--border-color);
+  box-shadow: 1px 0 20px rgba(0,0,0,0.02);
   display: flex;
   flex-direction: column;
   padding: 30px 16px;
@@ -92,13 +116,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
+  padding: 12px 16px;
   border: none;
   background: none;
-  border-radius: 8px;
+  border-radius: 12px;
   color: var(--neutral-text);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -113,7 +137,7 @@
 
 .mentor-nav-btn.active {
   background-color: #eff6ff;
-  color: var(--accent-blue);
+  color: #2563eb;
 }
 
 .mentor-nav-icon {
@@ -219,7 +243,7 @@
   bottom: calc(100% + 8px);
   left: 0;
   width: 100%;
-  background-color: var(--card-bg, #fff);
+  background-color: var(--neutral-card, #fff);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
@@ -251,7 +275,7 @@
 }
 
 .dropdown-item:hover {
-  background-color: var(--hover-bg, rgba(0, 0, 0, 0.05));
+  background-color: var(--border-color, #f1f5f9);
 }
 
 .dropdown-item-icon {
@@ -269,7 +293,7 @@
 }
 
 .dropdown-item.logout:hover {
-  background-color: var(--hover-bg, rgba(239, 68, 68, 0.05));
+  background-color: rgba(239, 68, 68, 0.1);
 }
 
 /* 2. Main Panel and Header */
@@ -288,7 +312,7 @@
   align-items: center;
   padding: 30px 40px;
   border-bottom: 1px solid var(--border-color);
-  background-color: #ffffff;
+  background-color: transparent;
 }
 
 .mentor-header-title-box {
@@ -314,7 +338,7 @@
 .mentor-content {
   padding: 30px 40px;
   flex-grow: 1;
-  background-color: var(--neutral-bg);
+  background-color: transparent;
 }
 
 /* 3. Top Metrics Section */
@@ -326,17 +350,19 @@
 }
 
 .mentor-stat-card {
-  background-color: #ffffff;
+  background-color: var(--neutral-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--glass-shadow);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
 }
 
 .mentor-stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.04);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 112, 243, 0.1);
 }
 
 .mentor-stat-card.border-blue {
@@ -398,11 +424,13 @@
 
 /* 5. Custom Table Layouts */
 .mentor-table-card {
-  background-color: #ffffff;
+  background-color: var(--neutral-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+  box-shadow: var(--glass-shadow);
 }
 
 .mentor-table-card.full-width {
@@ -824,17 +852,19 @@
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: 30px;
-  background-color: #ffffff;
+  background-color: var(--neutral-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+  border-radius: 20px;
+  box-shadow: var(--glass-shadow);
   overflow: hidden;
   height: calc(100vh - 170px);
 }
 
 .portfolio-master-sidebar {
   border-right: 1px solid var(--border-color);
-  background-color: #fafbfc;
+  background-color: transparent;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -903,7 +933,7 @@
 .detail-panel-header {
   padding: 30px;
   border-bottom: 1px solid var(--border-color);
-  background-color: #ffffff;
+  background-color: transparent;
 }
 
 .detail-student-name {
@@ -925,15 +955,17 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  background-color: var(--neutral-bg);
+  background-color: transparent;
 }
 
 .detail-section-card {
-  background-color: #ffffff;
+  background-color: var(--neutral-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.005);
+  box-shadow: var(--glass-shadow);
 }
 
 .section-card-title {
@@ -996,6 +1028,65 @@
   line-height: 1.5;
   color: var(--neutral-text);
   margin: 0;
+}
+
+/* Comprehensive Profile Styles */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.profile-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.profile-value {
+  font-size: 14px;
+  color: var(--neutral-heading);
+  font-weight: 500;
+}
+
+.skill-tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.strength-tag {
+  background-color: #ecfdf5;
+  color: var(--accent-green);
+  border: 1px solid #a7f3d0;
+}
+
+.develop-tag {
+  background-color: #fffbeb;
+  color: var(--accent-yellow);
+  border: 1px solid #fde68a;
+}
+
+.skills-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skill-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 /* Mentor Highlights highlights feedback forms */
@@ -1150,4 +1241,88 @@
   .mentor-stats-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ============================================================
+   ADDITIONAL RESPONSIVE IMPROVEMENTS
+   ============================================================ */
+
+/* Tablet: sidebar becomes top horizontal nav */
+@media (max-width: 900px) {
+  .mentor-workspace { flex-direction: column; }
+  .mentor-sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .mentor-sidebar-brand { margin-bottom: 12px; }
+  .mentor-sidebar-header { display: none; }
+  .mentor-sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    flex-grow: 0;
+    gap: 10px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mentor-sidebar-nav::-webkit-scrollbar { display: none; }
+  .mentor-nav-btn {
+    white-space: nowrap;
+    width: auto;
+    padding: 10px 18px;
+    font-size: 14px;
+    flex-shrink: 0;
+    border-radius: 12px;
+  }
+  .mentor-sidebar-footer {
+    display: block;
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    width: auto;
+    z-index: 10;
+  }
+  .mentor-profile-btn {
+    padding: 6px 8px;
+  }
+  .mentor-profile-dropdown-menu {
+    top: calc(100% + 8px);
+    bottom: auto;
+    right: 0;
+    left: auto;
+    width: 200px;
+  }
+  .mentor-main-panel { height: auto; overflow-y: visible; }
+  .mentor-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .mentor-grid-layout { grid-template-columns: 1fr; }
+}
+
+/* Mobile: 640px */
+@media (max-width: 640px) {
+  .mentor-header { padding: 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .mentor-content { padding: 16px; }
+  .mentor-stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mentor-stat-value { font-size: 24px; }
+  .mentor-page-title { font-size: 22px; }
+  .submission-filters-bar { flex-wrap: wrap; width: 100%; }
+  .filter-btn { padding: 6px 12px; font-size: 12px; }
+  .portfolio-review-layout { grid-template-columns: 1fr; height: auto; }
+  .portfolio-master-sidebar { border-right: none; border-bottom: 1px solid var(--border-color); max-height: 180px; }
+  .detail-panel-header { padding: 20px; }
+  .detail-panel-body { padding: 16px; }
+}
+
+/* Small mobile: 480px */
+@media (max-width: 480px) {
+  .mentor-stats-grid { grid-template-columns: 1fr; }
+  .mentor-nav-btn span { font-size: 12px; }
+  .mentor-profile-info { display: none; }
 }

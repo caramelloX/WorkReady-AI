@@ -279,3 +279,42 @@
 .evaluation-list li::before {
   background: #3b82f6; /* Blue */
 }
+
+/* ============================================================
+   RESPONSIVE STYLES
+   ============================================================ */
+
+@media (max-width: 900px) {
+  .scenario-simulator-layout {
+    flex-direction: column !important;
+  }
+  .scenario-library-column, .scenario-detail-column {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .simulator-console {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+  }
+  .simulator-terminal-column,
+  .simulator-chat-column {
+    height: 420px !important;
+  }
+  .simulator-console-footer {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .simulator-terminal-column,
+  .simulator-chat-column {
+    height: 360px !important;
+  }
+  .scenario-lib-card { padding: 14px; }
+  .simulator-choice-btn { font-size: 12px; padding: 10px 12px; }
+}
